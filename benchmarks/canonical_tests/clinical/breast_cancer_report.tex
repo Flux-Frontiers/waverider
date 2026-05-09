@@ -1,0 +1,161 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=2.5cm,top=3.5cm,bottom=3cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{caption}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+\definecolor{wavblue}{RGB}{26,58,92}
+\definecolor{wavgray}{RGB}{120,120,120}
+\definecolor{wavlight}{RGB}{235,242,250}
+\definecolor{wincolor}{RGB}{0,110,0}
+
+\graphicspath{{/Users/egs/repos/waverider/benchmarks/canonical_tests/}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{wavgray}Manifold-Informed Architecture Benchmark \textemdash\ BREAST\_CANCER}
+\fancyhead[R]{\small\color{wavgray}\texttt{waverider @ 054030a}}
+\fancyfoot[C]{\small\color{wavgray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\large\bfseries\color{wavblue}}{}{0em}{}[\color{wavblue}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{wavblue}}{}{0em}{}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt plus 1pt}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{wavblue} Manifold-Informed Architecture Benchmark}\\[6pt]
+  {\large BREAST\_CANCER: 2 classes, 30D input}\\[8pt]
+  {\small Generated: 2026-04-15 09:41:11 \quad$|$\quad Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD}\\[2pt]
+  {\small\texttt{waverider @ 054030a} (--abbrev-re
+054030a600978c0e9ffac58faf7157939927d009) \quad$|$\quad 2026-04-14 22:20:05 -0400}
+\end{center}
+{\color{wavblue}\noindent\rule{\linewidth}{1.5pt}}
+\medskip
+
+\noindent\colorbox{wavlight}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
+  \smallskip
+  \textbf{Best:} Standard (240$\rightarrow$120)\quad test acc $= 0.9731 \pm 0.0141$\\[2pt]
+  \textbf{Manifold:} 30D $\rightarrow$ 9D (70.0\%\ noise dimensions)\\[2pt]
+  \smallskip
+}}
+\bigskip
+
+\section{Experimental Setup}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+  Dataset & BREAST\_CANCER \\
+  Input dimensionality & 30D \\
+  Classes & 2 \\
+  Intrinsic dim ($d$) & 9 \\
+  Variance threshold ($\tau$) & 0.9 \\
+  Epochs & 50 \\
+  Trials & 3 \\
+  Batch size & 32 \\
+  Learning rate & 0.001 \\
+  $k$ neighbors (local PCA) & 40 \\
+\bottomrule
+\end{tabular}
+
+\section{Manifold Discovery}
+
+Local PCA over the training set, $k = 40$ neighbors. Intrinsic dimensionality $d$ is taken as the maximum per-class maximum at $\tau = 0.9$, clamped to $n_{\mathrm{classes}} = 2$.
+
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$\tau$ & Mean $d$ & Std & Min & Max & Noise (\%) \\
+\midrule
+  0.95 & 10.4 & 0.5 & 9 & 12 & 65.2 \\
+  0.90 & 8.2 & 0.6 & 7 & 10 & 72.5 \\
+  0.85 & 6.9 & 0.6 & 5 & 8 & 77.1 \\
+  0.80 & 5.9 & 0.5 & 4 & 7 & 80.2 \\
+\bottomrule
+\end{tabular}
+
+\subsection{Per-Class Intrinsic Dimensionality}
+
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Class & Mean $d$ & Std & Min & Max \\
+\midrule
+  1 & 8.4 & 0.6 & 7 & 9 \\
+  0 & 7.8 & 0.5 & 7 & 9 \\
+\bottomrule
+\end{tabular}
+
+\section{Architecture Comparison}
+
+{\small
+\begin{tabular}{@{}p{7cm}rccr@{}}
+\toprule
+\textbf{Architecture} & \textbf{Params} & \textbf{Test Acc ($\mu \pm \sigma$)} & \textbf{Loss} & \textbf{Acc/Kparam} \\
+\midrule
+  {Euclidean KNN (k=7)} & 0 & $0.9596 \pm 0.0142$ & --- & --- \\
+  {ManifoldModel ($\tau$=0.9)} & 0 & $0.9631 \pm 0.0161$ & --- & --- \\
+  {\color{wincolor}Standard (240$\rightarrow$120)\,$\star$} & 36,602 & $0.9731 \pm 0.0141$ & 0.1552 & 0.0266 \\
+  {Manifold (2d$\rightarrow$d, d=9)} & 299 & $0.9713 \pm 0.0134$ & 0.0808 & 3.2486 \\
+  {Wide Manifold (d+1=10)} & 332 & $0.9713 \pm 0.0117$ & 0.0864 & 2.9257 \\
+  {Manifold+ManifoldAdam (d=9)} & 299 & $0.9690 \pm 0.0127$ & 0.0882 & 3.2407 \\
+  {PCA$\rightarrow$9D + MLP (2d$\rightarrow$d)} & 371 & $0.9701 \pm 0.0114$ & 0.0839 & 2.6150 \\
+  {Intrinsic Dim (PCA$\rightarrow$9D$\rightarrow$C)} & 110 & $0.9696 \pm 0.0115$ & 0.1020 & 8.8141 \\
+\bottomrule
+\end{tabular}
+}
+
+\smallskip
+{\small $\star$ = best performing architecture}
+
+\section{Key Findings}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{Best architecture:} Standard (240$\rightarrow$120) \textemdash\ test accuracy $0.9731 \pm 0.0141$
+  \item \textbf{Manifold compression:} 30D $\rightarrow$ 9D (70.0\%\ of ambient dimensions carry no structure)
+\end{itemize}
+
+\clearpage
+\section{Result Figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{breast_cancer_disease_architecture_results}
+\caption{BREAST\_CANCER manifold-informed vs.\ standard architecture comparison. $d = 9$, 50 epochs, 3 trials.}
+\end{figure}
+
+\section{Provenance}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Item} & \textbf{Value} \\
+\midrule
+  Repository & \href{https://github.com/Flux-Frontiers/waverider}{Flux-Frontiers/waverider} \\
+  Commit & \texttt{054030a} (--abbrev-re
+054030a600978c0e9ffac58faf7157939927d009) \\
+  Commit date & 2026-04-14 22:20:05 -0400 \\
+  Commit message & chore(release): bump version to 0.6.0 \\
+  Python & 3.12.13 \\
+  TensorFlow & 2.21.0 \\
+  Device & CPU (forced) \\
+  Host & Turing \\
+  OS & macOS-26.4-arm64-arm-64bit \\
+  Machine & Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD \\
+  Generated & 2026-04-15 09:41:11 \\
+\bottomrule
+\end{tabular}
+
+\end{document}

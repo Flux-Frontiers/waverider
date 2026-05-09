@@ -1,0 +1,161 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=2.5cm,top=3.5cm,bottom=3cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{caption}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+\definecolor{wavblue}{RGB}{26,58,92}
+\definecolor{wavgray}{RGB}{120,120,120}
+\definecolor{wavlight}{RGB}{235,242,250}
+\definecolor{wincolor}{RGB}{0,110,0}
+
+\graphicspath{{/Users/egs/repos/waverider/benchmarks/canonical_tests/}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{wavgray}Manifold-Informed Architecture Benchmark \textemdash\ PARKINSONS}
+\fancyhead[R]{\small\color{wavgray}\texttt{waverider @ 054030a}}
+\fancyfoot[C]{\small\color{wavgray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\large\bfseries\color{wavblue}}{}{0em}{}[\color{wavblue}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{wavblue}}{}{0em}{}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt plus 1pt}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{wavblue} Manifold-Informed Architecture Benchmark}\\[6pt]
+  {\large PARKINSONS: 2 classes, 22D input}\\[8pt]
+  {\small Generated: 2026-04-15 09:41:12 \quad$|$\quad Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD}\\[2pt]
+  {\small\texttt{waverider @ 054030a} (--abbrev-re
+054030a600978c0e9ffac58faf7157939927d009) \quad$|$\quad 2026-04-14 22:20:05 -0400}
+\end{center}
+{\color{wavblue}\noindent\rule{\linewidth}{1.5pt}}
+\medskip
+
+\noindent\colorbox{wavlight}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
+  \smallskip
+  \textbf{Best:} Standard (176$\rightarrow$88)\quad test acc $= 0.9333 \pm 0.0308$\\[2pt]
+  \textbf{Manifold:} 22D $\rightarrow$ 7D (68.2\%\ noise dimensions)\\[2pt]
+  \smallskip
+}}
+\bigskip
+
+\section{Experimental Setup}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+  Dataset & PARKINSONS \\
+  Input dimensionality & 22D \\
+  Classes & 2 \\
+  Intrinsic dim ($d$) & 7 \\
+  Variance threshold ($\tau$) & 0.9 \\
+  Epochs & 50 \\
+  Trials & 3 \\
+  Batch size & 32 \\
+  Learning rate & 0.001 \\
+  $k$ neighbors (local PCA) & 40 \\
+\bottomrule
+\end{tabular}
+
+\section{Manifold Discovery}
+
+Local PCA over the training set, $k = 40$ neighbors. Intrinsic dimensionality $d$ is taken as the maximum per-class maximum at $\tau = 0.9$, clamped to $n_{\mathrm{classes}} = 2$.
+
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$\tau$ & Mean $d$ & Std & Min & Max & Noise (\%) \\
+\midrule
+  0.95 & 7.9 & 0.8 & 6 & 9 & 64.2 \\
+  0.90 & 6.3 & 0.8 & 4 & 8 & 71.5 \\
+  0.85 & 5.3 & 0.7 & 4 & 6 & 75.9 \\
+  0.80 & 4.6 & 0.5 & 3 & 5 & 79.1 \\
+\bottomrule
+\end{tabular}
+
+\subsection{Per-Class Intrinsic Dimensionality}
+
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Class & Mean $d$ & Std & Min & Max \\
+\midrule
+  1 & 6.4 & 0.7 & 4 & 7 \\
+  0 & 5.3 & 0.4 & 5 & 6 \\
+\bottomrule
+\end{tabular}
+
+\section{Architecture Comparison}
+
+{\small
+\begin{tabular}{@{}p{7cm}rccr@{}}
+\toprule
+\textbf{Architecture} & \textbf{Params} & \textbf{Test Acc ($\mu \pm \sigma$)} & \textbf{Loss} & \textbf{Acc/Kparam} \\
+\midrule
+  {Euclidean KNN (k=7)} & 0 & $0.8974 \pm 0.0229$ & --- & --- \\
+  {ManifoldModel ($\tau$=0.9)} & 0 & $0.9077 \pm 0.0261$ & --- & --- \\
+  {\color{wincolor}Standard (176$\rightarrow$88)\,$\star$} & 19,802 & $0.9333 \pm 0.0308$ & 0.1964 & 0.0471 \\
+  {Manifold (2d$\rightarrow$d, d=7)} & 177 & $0.8530 \pm 0.0697$ & 0.3439 & 4.8192 \\
+  {Wide Manifold (d+1=8)} & 202 & $0.8171 \pm 0.0783$ & 0.3542 & 4.0450 \\
+  {Manifold+ManifoldAdam (d=7)} & 177 & $0.8325 \pm 0.0591$ & 0.3849 & 4.7033 \\
+  {PCA$\rightarrow$7D + MLP (2d$\rightarrow$d)} & 233 & $0.8462 \pm 0.0477$ & 0.3332 & 3.6316 \\
+  {Intrinsic Dim (PCA$\rightarrow$7D$\rightarrow$C)} & 72 & $0.8171 \pm 0.0799$ & 0.4188 & 11.3485 \\
+\bottomrule
+\end{tabular}
+}
+
+\smallskip
+{\small $\star$ = best performing architecture}
+
+\section{Key Findings}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{Best architecture:} Standard (176$\rightarrow$88) \textemdash\ test accuracy $0.9333 \pm 0.0308$
+  \item \textbf{Manifold compression:} 22D $\rightarrow$ 7D (68.2\%\ of ambient dimensions carry no structure)
+\end{itemize}
+
+\clearpage
+\section{Result Figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{parkinsons_disease_architecture_results}
+\caption{PARKINSONS manifold-informed vs.\ standard architecture comparison. $d = 7$, 50 epochs, 3 trials.}
+\end{figure}
+
+\section{Provenance}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Item} & \textbf{Value} \\
+\midrule
+  Repository & \href{https://github.com/Flux-Frontiers/waverider}{Flux-Frontiers/waverider} \\
+  Commit & \texttt{054030a} (--abbrev-re
+054030a600978c0e9ffac58faf7157939927d009) \\
+  Commit date & 2026-04-14 22:20:05 -0400 \\
+  Commit message & chore(release): bump version to 0.6.0 \\
+  Python & 3.12.13 \\
+  TensorFlow & 2.21.0 \\
+  Device & CPU (forced) \\
+  Host & Turing \\
+  OS & macOS-26.4-arm64-arm-64bit \\
+  Machine & Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD \\
+  Generated & 2026-04-15 09:41:12 \\
+\bottomrule
+\end{tabular}
+
+\end{document}

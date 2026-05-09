@@ -1,0 +1,168 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=2.5cm,top=3.5cm,bottom=3cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{caption}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+\definecolor{wavblue}{RGB}{26,58,92}
+\definecolor{wavgray}{RGB}{120,120,120}
+\definecolor{wavlight}{RGB}{235,242,250}
+\definecolor{wincolor}{RGB}{0,110,0}
+
+\graphicspath{{/Users/egs/repos/waverider/benchmarks/canonical_tests/}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{wavgray}Manifold-Informed Architecture Benchmark \textemdash\ DIGITS}
+\fancyhead[R]{\small\color{wavgray}\texttt{waverider @ 4b8002e}}
+\fancyfoot[C]{\small\color{wavgray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\large\bfseries\color{wavblue}}{}{0em}{}[\color{wavblue}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{wavblue}}{}{0em}{}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt plus 1pt}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{wavblue} Manifold-Informed Architecture Benchmark}\\[6pt]
+  {\large DIGITS: 10 classes, 64D input}\\[8pt]
+  {\small Generated: 2026-04-14 20:54:31 \quad$|$\quad Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD}\\[2pt]
+  {\small\texttt{waverider @ 4b8002e} (--abbrev-re
+4b8002ee9a2e3d56a219d7dab695a80b8efd1e07) \quad$|$\quad 2026-04-14 20:51:52 -0400}
+\end{center}
+{\color{wavblue}\noindent\rule{\linewidth}{1.5pt}}
+\medskip
+
+\noindent\colorbox{wavlight}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
+  \smallskip
+  \textbf{Best:} Standard (128$\rightarrow$64)\quad test acc $= 0.9787 \pm 0.0051$\\[2pt]
+  \textbf{Manifold:} 64D $\rightarrow$ 14D (78.1\%\ noise dimensions)\\[2pt]
+  \smallskip
+}}
+\bigskip
+
+\section{Experimental Setup}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+  Dataset & DIGITS \\
+  Input dimensionality & 64D \\
+  Classes & 10 \\
+  Intrinsic dim ($d$) & 14 \\
+  Variance threshold ($\tau$) & 0.9 \\
+  Epochs & 50 \\
+  Trials & 3 \\
+  Batch size & 64 \\
+  Learning rate & 0.001 \\
+  $k$ neighbors (local PCA) & 30 \\
+\bottomrule
+\end{tabular}
+
+\section{Manifold Discovery}
+
+Local PCA over the training set, $k = 30$ neighbors. Intrinsic dimensionality $d$ is taken as the maximum per-class maximum at $\tau = 0.9$, clamped to $n_{\mathrm{classes}} = 10$.
+
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$\tau$ & Mean $d$ & Std & Min & Max & Noise (\%) \\
+\midrule
+  0.95 & 14.3 & 1.7 & 8 & 18 & 77.6 \\
+  0.90 & 10.9 & 1.5 & 5 & 14 & 83.0 \\
+  0.85 & 8.8 & 1.4 & 4 & 11 & 86.3 \\
+  0.80 & 7.3 & 1.3 & 3 & 10 & 88.6 \\
+\bottomrule
+\end{tabular}
+
+\subsection{Per-Class Intrinsic Dimensionality}
+
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Class & Mean $d$ & Std & Min & Max \\
+\midrule
+  Digit 0 & 12.6 & 0.6 & 11 & 14 \\
+  Digit 8 & 12.5 & 1.0 & 7 & 13 \\
+  Digit 9 & 11.8 & 0.7 & 10 & 13 \\
+  Digit 5 & 11.6 & 0.9 & 10 & 13 \\
+  Digit 3 & 11.5 & 0.7 & 10 & 13 \\
+  Digit 6 & 10.7 & 1.3 & 4 & 12 \\
+  Digit 7 & 10.6 & 1.1 & 6 & 12 \\
+  Digit 2 & 10.2 & 0.9 & 8 & 11 \\
+  Digit 4 & 9.4 & 1.2 & 5 & 11 \\
+  Digit 1 & 8.8 & 1.7 & 5 & 11 \\
+\bottomrule
+\end{tabular}
+
+\section{Architecture Comparison}
+
+{\small
+\begin{tabular}{@{}p{7cm}rccr@{}}
+\toprule
+\textbf{Architecture} & \textbf{Params} & \textbf{Test Acc ($\mu \pm \sigma$)} & \textbf{Loss} & \textbf{Acc/Kparam} \\
+\midrule
+  {Euclidean KNN (k=7)} & 0 & $0.9733 \pm 0.0054$ & --- & --- \\
+  {ManifoldModel ($\tau$=0.9)} & 0 & $0.9727 \pm 0.0054$ & --- & --- \\
+  {\color{wincolor}Standard (128$\rightarrow$64)\,$\star$} & 17,226 & $0.9787 \pm 0.0051$ & 0.0825 & 0.0568 \\
+  {Wide Manifold (d$\rightarrow$d+1$\rightarrow$d, d=14)} & 1,509 & $0.9521 \pm 0.0061$ & 0.1780 & 0.6310 \\
+  {Manifold (2d$\rightarrow$d, d=14)} & 2,376 & $0.9668 \pm 0.0079$ & 0.1227 & 0.4069 \\
+  {PCA$\rightarrow$14D + MLP (2d$\rightarrow$d)} & 976 & $0.9375 \pm 0.0116$ & 0.2006 & 0.9605 \\
+  {Intrinsic Dim (PCA$\rightarrow$14D$\rightarrow$output)} & 360 & $0.9178 \pm 0.0108$ & 0.2837 & 2.5495 \\
+\bottomrule
+\end{tabular}
+}
+
+\smallskip
+{\small $\star$ = best performing architecture}
+
+\section{Key Findings}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{Best architecture:} Standard (128$\rightarrow$64) \textemdash\ test accuracy $0.9787 \pm 0.0051$
+  \item \textbf{Manifold compression:} 64D $\rightarrow$ 14D (78.1\%\ of ambient dimensions carry no structure)
+\end{itemize}
+
+\clearpage
+\section{Result Figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{digits_manifold_architecture_results}
+\caption{DIGITS manifold-informed vs.\ standard architecture comparison. $d = 14$, 50 epochs, 3 trials.}
+\end{figure}
+
+\section{Provenance}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Item} & \textbf{Value} \\
+\midrule
+  Repository & \href{https://github.com/Flux-Frontiers/waverider}{Flux-Frontiers/waverider} \\
+  Commit & \texttt{4b8002e} (--abbrev-re
+4b8002ee9a2e3d56a219d7dab695a80b8efd1e07) \\
+  Commit date & 2026-04-14 20:51:52 -0400 \\
+  Commit message & add: cifar10 results \\
+  Python & 3.12.13 \\
+  TensorFlow & 2.16.2 \\
+  Device & CPU \\
+  Host & Turing \\
+  OS & macOS-26.4-arm64-arm-64bit \\
+  Machine & Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD \\
+  Generated & 2026-04-14 20:54:31 \\
+\bottomrule
+\end{tabular}
+
+\end{document}

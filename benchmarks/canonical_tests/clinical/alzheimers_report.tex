@@ -1,0 +1,161 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=2.5cm,top=3.5cm,bottom=3cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{caption}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+\definecolor{wavblue}{RGB}{26,58,92}
+\definecolor{wavgray}{RGB}{120,120,120}
+\definecolor{wavlight}{RGB}{235,242,250}
+\definecolor{wincolor}{RGB}{0,110,0}
+
+\graphicspath{{/Users/egs/repos/waverider/benchmarks/canonical_tests/}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{wavgray}Manifold-Informed Architecture Benchmark \textemdash\ ALZHEIMERS}
+\fancyhead[R]{\small\color{wavgray}\texttt{waverider @ 054030a}}
+\fancyfoot[C]{\small\color{wavgray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\large\bfseries\color{wavblue}}{}{0em}{}[\color{wavblue}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{wavblue}}{}{0em}{}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt plus 1pt}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{wavblue} Manifold-Informed Architecture Benchmark}\\[6pt]
+  {\large ALZHEIMERS: 2 classes, 8D input}\\[8pt]
+  {\small Generated: 2026-04-15 09:41:10 \quad$|$\quad Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD}\\[2pt]
+  {\small\texttt{waverider @ 054030a} (--abbrev-re
+054030a600978c0e9ffac58faf7157939927d009) \quad$|$\quad 2026-04-14 22:20:05 -0400}
+\end{center}
+{\color{wavblue}\noindent\rule{\linewidth}{1.5pt}}
+\medskip
+
+\noindent\colorbox{wavlight}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{
+  \smallskip
+  \textbf{Best:} Standard (64$\rightarrow$32)\quad test acc $= 0.8170 \pm 0.0337$\\[2pt]
+  \textbf{Manifold:} 8D $\rightarrow$ 6D (25.0\%\ noise dimensions)\\[2pt]
+  \smallskip
+}}
+\bigskip
+
+\section{Experimental Setup}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+  Dataset & ALZHEIMERS \\
+  Input dimensionality & 8D \\
+  Classes & 2 \\
+  Intrinsic dim ($d$) & 6 \\
+  Variance threshold ($\tau$) & 0.9 \\
+  Epochs & 150 \\
+  Trials & 3 \\
+  Batch size & 32 \\
+  Learning rate & 0.001 \\
+  $k$ neighbors (local PCA) & 20 \\
+\bottomrule
+\end{tabular}
+
+\section{Manifold Discovery}
+
+Local PCA over the training set, $k = 20$ neighbors. Intrinsic dimensionality $d$ is taken as the maximum per-class maximum at $\tau = 0.9$, clamped to $n_{\mathrm{classes}} = 2$.
+
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$\tau$ & Mean $d$ & Std & Min & Max & Noise (\%) \\
+\midrule
+  0.95 & 5.3 & 0.5 & 4 & 6 & 34.2 \\
+  0.90 & 4.6 & 0.5 & 4 & 6 & 42.6 \\
+  0.85 & 4.0 & 0.4 & 3 & 5 & 49.5 \\
+  0.80 & 3.6 & 0.5 & 3 & 5 & 54.9 \\
+\bottomrule
+\end{tabular}
+
+\subsection{Per-Class Intrinsic Dimensionality}
+
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Class & Mean $d$ & Std & Min & Max \\
+\midrule
+  1 & 5.0 & 0.3 & 4 & 6 \\
+  0 & 4.2 & 0.4 & 4 & 5 \\
+\bottomrule
+\end{tabular}
+
+\section{Architecture Comparison}
+
+{\small
+\begin{tabular}{@{}p{7cm}rccr@{}}
+\toprule
+\textbf{Architecture} & \textbf{Params} & \textbf{Test Acc ($\mu \pm \sigma$)} & \textbf{Loss} & \textbf{Acc/Kparam} \\
+\midrule
+  {Euclidean KNN (k=7)} & 0 & $0.7532 \pm 0.0289$ & --- & --- \\
+  {ManifoldModel ($\tau$=0.9)} & 0 & $0.7404 \pm 0.0434$ & --- & --- \\
+  {\color{wincolor}Standard (64$\rightarrow$32)\,$\star$} & 2,722 & $0.8170 \pm 0.0337$ & 0.6774 & 0.3002 \\
+  {Manifold (2d$\rightarrow$d, d=6)} & 68 & $0.8014 \pm 0.0558$ & 0.4074 & 11.7856 \\
+  {Wide Manifold (d+1=7)} & 79 & $0.7929 \pm 0.0518$ & 0.4058 & 10.0368 \\
+  {Manifold+ManifoldAdam (d=6)} & 68 & $0.7929 \pm 0.0422$ & 0.4199 & 11.6604 \\
+  {PCA$\rightarrow$6D + MLP (2d$\rightarrow$d)} & 176 & $0.8099 \pm 0.0325$ & 0.4157 & 4.6019 \\
+  {Intrinsic Dim (PCA$\rightarrow$6D$\rightarrow$C)} & 56 & $0.8170 \pm 0.0520$ & 0.3789 & 14.5897 \\
+\bottomrule
+\end{tabular}
+}
+
+\smallskip
+{\small $\star$ = best performing architecture}
+
+\section{Key Findings}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{Best architecture:} Standard (64$\rightarrow$32) \textemdash\ test accuracy $0.8170 \pm 0.0337$
+  \item \textbf{Manifold compression:} 8D $\rightarrow$ 6D (25.0\%\ of ambient dimensions carry no structure)
+\end{itemize}
+
+\clearpage
+\section{Result Figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{alzheimers_disease_architecture_results}
+\caption{ALZHEIMERS manifold-informed vs.\ standard architecture comparison. $d = 6$, 150 epochs, 3 trials.}
+\end{figure}
+
+\section{Provenance}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Item} & \textbf{Value} \\
+\midrule
+  Repository & \href{https://github.com/Flux-Frontiers/waverider}{Flux-Frontiers/waverider} \\
+  Commit & \texttt{054030a} (--abbrev-re
+054030a600978c0e9ffac58faf7157939927d009) \\
+  Commit date & 2026-04-14 22:20:05 -0400 \\
+  Commit message & chore(release): bump version to 0.6.0 \\
+  Python & 3.12.13 \\
+  TensorFlow & 2.21.0 \\
+  Device & CPU (forced) \\
+  Host & Turing \\
+  OS & macOS-26.4-arm64-arm-64bit \\
+  Machine & Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD \\
+  Generated & 2026-04-15 09:41:10 \\
+\bottomrule
+\end{tabular}
+
+\end{document}

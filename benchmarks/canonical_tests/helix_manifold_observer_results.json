@@ -1,0 +1,223 @@
+{
+  "config": {
+    "n_total": 500,
+    "n_trials": 10,
+    "noise_sigma": 0.02,
+    "k_graph": 10,
+    "k_pca": 20,
+    "k_vote": 7,
+    "tau": 0.9,
+    "base_seed": 42,
+    "plot": false
+  },
+  "trials": [
+    {
+      "seed": 42,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 0.99,
+      "agreement": 0.99,
+      "mean_height": 0.04996136445359692,
+      "max_height": 0.0984735033231279,
+      "mean_curvature_rad": 0.13408598379715447,
+      "std_curvature_rad": 0.035263511452041096,
+      "fit_time_s": 0.3489629949999653,
+      "subject_predict_time_s": 0.012743178000050648,
+      "observer_predict_time_s": 0.0079949690000376
+    },
+    {
+      "seed": 43,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.050493855362193155,
+      "max_height": 0.08930583660192407,
+      "mean_curvature_rad": 0.1335684120414756,
+      "std_curvature_rad": 0.03565607051999719,
+      "fit_time_s": 0.07167110499995033,
+      "subject_predict_time_s": 0.013313704999973197,
+      "observer_predict_time_s": 0.007279401000005237
+    },
+    {
+      "seed": 44,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.05076829321951688,
+      "max_height": 0.09117515255611704,
+      "mean_curvature_rad": 0.13428671286459354,
+      "std_curvature_rad": 0.034633621654992446,
+      "fit_time_s": 0.0703975479999599,
+      "subject_predict_time_s": 0.012276746999987154,
+      "observer_predict_time_s": 0.007019873999979609
+    },
+    {
+      "seed": 45,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.0505133510113575,
+      "max_height": 0.10417541269105016,
+      "mean_curvature_rad": 0.13369152364852346,
+      "std_curvature_rad": 0.030138098208447844,
+      "fit_time_s": 0.08686061499997777,
+      "subject_predict_time_s": 0.012102064000032442,
+      "observer_predict_time_s": 0.006954711000048519
+    },
+    {
+      "seed": 46,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.05014426192169931,
+      "max_height": 0.0889643420975678,
+      "mean_curvature_rad": 0.13374239023066603,
+      "std_curvature_rad": 0.036029513008253515,
+      "fit_time_s": 0.0692061269999158,
+      "subject_predict_time_s": 0.012241962999951284,
+      "observer_predict_time_s": 0.0069516240000666585
+    },
+    {
+      "seed": 47,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.049628106776100495,
+      "max_height": 0.08058250472221162,
+      "mean_curvature_rad": 0.13428813264075062,
+      "std_curvature_rad": 0.0322268351877119,
+      "fit_time_s": 0.06817564699997547,
+      "subject_predict_time_s": 0.012665519000051972,
+      "observer_predict_time_s": 0.006648119000033148
+    },
+    {
+      "seed": 48,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0075,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.050330776913509234,
+      "max_height": 0.1120358269277574,
+      "mean_curvature_rad": 0.13194133706923397,
+      "std_curvature_rad": 0.032874307043036316,
+      "fit_time_s": 0.06660078599998087,
+      "subject_predict_time_s": 0.012401045000046906,
+      "observer_predict_time_s": 0.0068182109999952445
+    },
+    {
+      "seed": 49,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.0501430307543194,
+      "max_height": 0.0912330313892437,
+      "mean_curvature_rad": 0.13441495458487124,
+      "std_curvature_rad": 0.03287468484289699,
+      "fit_time_s": 0.07018329100003484,
+      "subject_predict_time_s": 0.0128522539999949,
+      "observer_predict_time_s": 0.007060885999976563
+    },
+    {
+      "seed": 50,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.0497935285418826,
+      "max_height": 0.09168938196333404,
+      "mean_curvature_rad": 0.13411656819709242,
+      "std_curvature_rad": 0.03139314326080342,
+      "fit_time_s": 0.06973303200004466,
+      "subject_predict_time_s": 0.011934981999957017,
+      "observer_predict_time_s": 0.006847168999911446
+    },
+    {
+      "seed": 51,
+      "n_train": 400,
+      "n_test": 100,
+      "ambient_dim": 5,
+      "mean_intrinsic_dim": 1.0,
+      "subject_acc": 1.0,
+      "observer_acc": 1.0,
+      "agreement": 1.0,
+      "mean_height": 0.051100825846974646,
+      "max_height": 0.08318137806950758,
+      "mean_curvature_rad": 0.13337772805432258,
+      "std_curvature_rad": 0.03634755191287729,
+      "fit_time_s": 0.06982348600001842,
+      "subject_predict_time_s": 0.012314090000018041,
+      "observer_predict_time_s": 0.006803254999908859
+    }
+  ],
+  "aggregated": {
+    "mean_intrinsic_dim": {
+      "mean": 1.00075,
+      "std": 0.0022500000000000185
+    },
+    "subject_acc": {
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "observer_acc": {
+      "mean": 0.999,
+      "std": 0.0030000000000000022
+    },
+    "agreement": {
+      "mean": 0.999,
+      "std": 0.0030000000000000022
+    },
+    "mean_height": {
+      "mean": 0.050287739480115015,
+      "std": 0.0004259911637197173
+    },
+    "max_height": {
+      "mean": 0.09308163703418412,
+      "std": 0.00897690379597262
+    },
+    "mean_curvature_rad": {
+      "mean": 0.13375137431286838,
+      "std": 0.0006865384245133
+    },
+    "std_curvature_rad": {
+      "mean": 0.03374373370910581,
+      "std": 0.002027346193133871
+    },
+    "fit_time_s": {
+      "mean": 0.09916146319998234,
+      "std": 0.08343819471497738
+    }
+  }
+}

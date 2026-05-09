@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "pycodekg": {
+      "command": "${REPO_PATH}/.venv/bin/pycodekg",
+      "args": [
+        "mcp",
+        "--repo", "${REPO_PATH}"
+      ]
+    },
+    "dockg": {
+      "command": "${REPO_PATH}/.venv/bin/dockg",
+      "args": [
+        "mcp",
+        "--repo", "${REPO_PATH}"
+      ]
+    }
+  }
+}

@@ -1,0 +1,108 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+.env
+*.DS_Store
+*.log
+# Canonical benchmark artifacts: ignore ad-hoc outputs, keep result files
+# cited in the WaveRider papers (JSONs and PNG plots under the repo's
+# 1 MB per-file pre-commit size guard). Raw dim-probe array dumps
+# (*_arrays.npz, ~17 MB) and the CIFAR-100 dim-probe panel PNG (1.3 MB)
+# exceed the guard and are regenerated on demand, not versioned.
+benchmarks/canonical_tests/*.json
+!benchmarks/canonical_tests/*_results.json
+benchmarks/canonical_tests/*.png
+!benchmarks/canonical_tests/*_results.png
+!benchmarks/canonical_tests/manifold_dim_probe.png
+!benchmarks/canonical_tests/manifold_dim_probe_cifar10.png
+benchmarks/canonical_tests/*.pdf
+benchmarks/canonical_tests/logs/
+benchmarks/canonical_tests/*.npz
+# clinical/ subdir — same rules; LaTeX intermediates excluded, results kept
+benchmarks/canonical_tests/clinical/*.json
+!benchmarks/canonical_tests/clinical/*_results.json
+benchmarks/canonical_tests/clinical/*.png
+!benchmarks/canonical_tests/clinical/*_results.png
+benchmarks/canonical_tests/clinical/*.pdf
+benchmarks/canonical_tests/clinical/*.aux
+benchmarks/canonical_tests/clinical/*.fls
+benchmarks/canonical_tests/clinical/*.fdb_latexmk
+benchmarks/canonical_tests/clinical/*.log
+benchmarks/canonical_tests/clinical/*.out
+
+# pykan spline dumps — individual edge activation PNGs, not versioned
+papers/clinical_manifolds/sp_*.png
+papers/clinical_manifolds/kan_*/sp_*.png
+
+# LaTeX intermediate files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.nav
+*.snm
+*.vrb
+# Claude Code — local settings only; .claude/settings.json is committed as project config
+.claude/settings.local.json
+.claude/projects/
+
+# MCP server config (paths are machine-specific; use scripts/setup-mcp.sh to generate)
+.mcp.json
+
+# Mission logs — private
+waverider_missions/
+
+# macOS
+.DS_Store
+
+# Build/cache artifacts
+.arc_cache/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# CodeKG generated artifacts — databases are transient/reproducible, snapshots are tracked
+# MUST include .codekg/snapshots!
+# This is the correct pattern
+.pycodekg/lancedb/
+.pycodekg/lancedb-*
+.pycodekg/graph.sqlite
+.pycodekg/graph.sqlite*
+.pycodekg/models
+
+# DocKG generated artifacts — same pattern as CodeKG; snapshots will be tracked once added
+.dockg/lancedb/
+.dockg/lancedb-*
+.dockg/graph.sqlite
+.dockg/graph.sqlite*
+.dockg/models
+
+# AgentKG — conversational memory graph; local/transient, not versioned
+.agentkg/
+
+# ARC-AGI datasets (fetched externally, not versioned)
+benchmarks/arc_agi/data/
+
+# 3D ship mesh assets — large binary files, not part of the ML codebase
+3D_Objs/
+
+# ARC scout eval results: exploratory runs are ignored, locked numbers are kept
+benchmarks/arc_agi/eval_results/*.json
+# Exceptions: locked benchmark numbers cited in the ARC paper
+!benchmarks/arc_agi/eval_results/locked_*.json
+
+# OASIS data — restricted access, never commit
+benchmarks/data/
+
+# Paper PDFs are regenerable from .tex source — exclude to avoid LFS bloat
+papers/**/*.pdf
