@@ -1,7 +1,6 @@
-
-[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
-[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
+[![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
+[![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
+[![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 
 # WaveRider
@@ -317,6 +316,6 @@ By zeroing off-manifold gradient components, WaveRider implicitly regularizes op
 
 ## License
 
-[Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) — see [LICENSE](LICENSE).
+[Elastic License 2.0 (ELv2)](https://www.elastic.co/licensing/elastic-license) — see [LICENSE](LICENSE).
 
-Free to share and adapt for any purpose, including commercially, with attribution.
+Free to use, modify, and distribute. May not be offered as a hosted or managed service to third parties.

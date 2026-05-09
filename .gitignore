@@ -106,3 +106,7 @@ benchmarks/data/
 
 # Paper PDFs are regenerable from .tex source — exclude to avoid LFS bloat
 papers/**/*.pdf
+
+# IDE / editor directories
+.vscode/
+.idea/

@@ -132,8 +132,9 @@ module = ["waverider.manifold_model", "waverider.manifold_observer"]
 disable_error_code = ["union-attr", "index", "assignment", "arg-type", "type-var", "operator", "misc", "var-annotated"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts   = "-v --tb=short"
+testpaths  = ["tests"]
+pythonpath = ["src"]
+addopts    = "-v --tb=short"
 markers = [
     "slow: marks tests as slow (deselect with '-m not slow')",
     "integration: marks tests that exercise real external dependencies",
