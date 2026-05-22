@@ -40,7 +40,7 @@ WaveRider measures the manifold geometry, designs architectures from it, builds 
 
 | Component | Class | Description |
 |-----------|-------|-------------|
-| **TurtleND** | `TurtleND` | N-dimensional position + orthonormal frame (navigation primitive) |
+| **TurtleND** | `TurtleND` | N-dimensional position + orthonormal frame |
 | **Manifold Walker** | `ManifoldWalker` | Riemannian gradient descent in discovered tangent space |
 | **Manifold Adam** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
 | **Manifold Model** | `ManifoldModel` | Zero-parameter classifier: the manifold *is* the model |
@@ -157,17 +157,6 @@ walker = ManifoldAdamWalker(
     reorient_every=10
 )
 walker.fit(X, y, epochs=200)
-```
-
-### TurtleND — N-dimensional frame navigation
-
-```python
-from waverider import TurtleND
-
-turtle = TurtleND(dim=10)
-turtle.forward(0.1)          # step along heading
-turtle.turn(axis=1, angle=0.3)   # rotate frame
-print(turtle.position, turtle.frame)
 ```
 
 ### ManifoldObserver — extrinsic manifold sensor
