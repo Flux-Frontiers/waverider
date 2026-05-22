@@ -13,7 +13,7 @@
       "Non-demented",
       "Demented"
     ],
-    "source": "OASIS: benchmarks/data/oasis_cross-sectional.xlsx",
+    "source": "OASIS: /Users/egs/repos/waverider/benchmarks/data/oasis_cross-sectional.xlsx",
     "class_balance": "100 demented / 135 non-demented",
     "features": [
       "Age",

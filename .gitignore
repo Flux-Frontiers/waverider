@@ -52,24 +52,9 @@ papers/clinical_manifolds/kan_*/sp_*.png
 *.nav
 *.snm
 *.vrb
-# Claude Code — local settings only; .claude/settings.json is committed as project config
-.claude/settings.local.json
-.claude/projects/
-
-# MCP server config (paths are machine-specific; use scripts/setup-mcp.sh to generate)
+.claude/
 .mcp.json
-
-# Mission logs — private
-waverider_missions/
-
-# macOS
-.DS_Store
-
-# Build/cache artifacts
-.arc_cache/
-.mypy_cache/
-.ruff_cache/
-.pytest_cache/
+.vscode/
 
 # CodeKG generated artifacts — databases are transient/reproducible, snapshots are tracked
 # MUST include .codekg/snapshots!
@@ -90,23 +75,21 @@ waverider_missions/
 # AgentKG — conversational memory graph; local/transient, not versioned
 .agentkg/
 
-# ARC-AGI datasets (fetched externally, not versioned)
-benchmarks/arc_agi/data/
+# Private/experimental directories — not part of the public release
+benchmarks/arc_agi/
+src/waverider/arc/
+tests/test_arc_harness.py
+docs/ARC_PAPER_PLAN.md
+docs/ARC_TAXONOMY_V1.md
 
 # 3D ship mesh assets — large binary files, not part of the ML codebase
 3D_Objs/
 
-# ARC scout eval results: exploratory runs are ignored, locked numbers are kept
-benchmarks/arc_agi/eval_results/*.json
-# Exceptions: locked benchmark numbers cited in the ARC paper
-!benchmarks/arc_agi/eval_results/locked_*.json
-
 # OASIS data — restricted access, never commit
 benchmarks/data/
 
+# Model checkpoints — large binaries, regenerable
+benchmarks/**/*.ckpt
+
 # Paper PDFs are regenerable from .tex source — exclude to avoid LFS bloat
 papers/**/*.pdf
-
-# IDE / editor directories
-.vscode/
-.idea/
