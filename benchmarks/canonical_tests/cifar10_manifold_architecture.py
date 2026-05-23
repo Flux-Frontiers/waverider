@@ -58,18 +58,25 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
-# TensorFlow setup
+# TensorFlow setup — must come before numpy/sklearn
 # ---------------------------------------------------------------------------
+# sklearn.preprocessing imports pandas which imports pyarrow, loading libarrow.dylib.
+# Both libarrow and libtensorflow_framework export _AbslInternalPerThreadSemWait_lts_20250814
+# with WEAK_DEFINES.  With this flag, the FIRST dylib loaded wins the symbol table entry.
+# If Arrow loads first (via sklearn→pandas→pyarrow), TF's Mutex::Block ends up calling
+# Arrow's semwait implementation but with TF's TLS state → non-deterministic deadlock on
+# the first model.fit() call.  Loading TF first ensures TF's symbols are established before
+# Arrow arrives and its (second) weak definition is discarded.
 
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 # Force CPU — Metal GPU per-op sync overhead dominates for small MLPs
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
+# isort: split — numpy/sklearn must follow tensorflow (see comment above)
+import numpy as np  # noqa: E402
 import tensorflow as tf  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 gpus = tf.config.list_physical_devices("GPU")
 for gpu in gpus:
@@ -89,10 +96,6 @@ import keras  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
-from waverider.dimensionality_discovery import (  # noqa: E402
-    discover_dimensionality,
-    discover_per_class_dimensionality,
-)
 from model_builder import (  # noqa: E402
     build_manifold_model,
     build_pca_intrinsic_dim_model,
@@ -100,8 +103,11 @@ from model_builder import (  # noqa: E402
     build_standard_model,
     build_wide_manifold_model,
 )
+from waverider.dimensionality_discovery import (  # noqa: E402
+    discover_dimensionality,
+    discover_per_class_dimensionality,
+)
 from waverider.manifold_optimizer import ManifoldAdam, make_basis  # noqa: E402
-
 
 # ---------------------------------------------------------------------------
 # CIFAR-10 class names
@@ -125,15 +131,71 @@ def count_params(model):
     return sum(int(np.prod(w.shape)) for w in model.trainable_weights)
 
 
+class EpochHeartbeat(keras.callbacks.Callback):
+    """Print periodic epoch progress when fit() runs with verbose=0."""
+
+    def __init__(self, label, every=5):
+        super().__init__()
+        self.label = label
+        self.every = max(1, int(every))
+        self._t0 = None
+        self._epochs = None
+
+    def on_train_begin(self, logs=None):
+        self._t0 = time.perf_counter()
+        self._epochs = int(self.params.get("epochs", 0) or 0)
+        print(f"    {self.label}: started ({self._epochs} epochs)")
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        epoch_num = epoch + 1
+        should_print = (epoch_num % self.every == 0) or (
+            self._epochs > 0 and epoch_num == self._epochs
+        )
+        if not should_print:
+            return
+
+        elapsed = time.perf_counter() - self._t0
+        train_acc = logs.get("accuracy")
+        val_acc = logs.get("val_accuracy")
+        loss = logs.get("loss")
+
+        msg = f"    {self.label}: epoch {epoch_num}/{self._epochs}"
+        if loss is not None:
+            msg += f"  loss={loss:.4f}"
+        if train_acc is not None:
+            msg += f"  acc={train_acc:.4f}"
+        if val_acc is not None:
+            msg += f"  val_acc={val_acc:.4f}"
+        msg += f"  elapsed={elapsed:.1f}s"
+        print(msg)
+
+
 # ---------------------------------------------------------------------------
 # Phase 3: Benchmark
 # ---------------------------------------------------------------------------
 
 
-def run_trial(build_fn, X_train, y_train, X_test, y_test, epochs, batch_size, trial):
+def run_trial(
+    build_fn,
+    X_train,
+    y_train,
+    X_test,
+    y_test,
+    epochs,
+    batch_size,
+    trial,
+    fit_verbose=0,
+    progress_every=5,
+    progress_label="train",
+):
     """Train a model and return metrics."""
     model = build_fn()
     n_params = count_params(model)
+
+    callbacks = None
+    if fit_verbose == 0 and progress_every > 0:
+        callbacks = [EpochHeartbeat(progress_label, every=progress_every)]
 
     t0 = time.perf_counter()
     history = model.fit(
@@ -142,7 +204,8 @@ def run_trial(build_fn, X_train, y_train, X_test, y_test, epochs, batch_size, tr
         epochs=epochs,
         batch_size=batch_size,
         validation_data=(X_test, y_test),
-        verbose=0,
+        verbose=fit_verbose,
+        callbacks=callbacks,
     )
     wall_time = time.perf_counter() - t0
 
@@ -214,7 +277,14 @@ def _draw_arch_schematics(ax, arch_layers, colors):
 
         short = name.split("(")[0].strip()
         ax.text(
-            x_ctr, 0.95, short, ha="center", va="top", fontsize=8, fontweight="bold", color=color
+            x_ctr,
+            0.95,
+            short,
+            ha="center",
+            va="top",
+            fontsize=8,
+            fontweight="bold",
+            color=color,
         )
 
         prev_y = None
@@ -256,7 +326,9 @@ def _draw_arch_schematics(ax, arch_layers, colors):
             prev_y = yc
 
 
-def plot_results(all_results, intrinsic_dim, save_path, elapsed=None, input_dim=3072, n_classes=10):
+def plot_results(
+    all_results, intrinsic_dim, save_path, elapsed=None, input_dim=3072, n_classes=10
+):
     """Save a five-panel comparison figure with architecture schematics key.
 
     :param all_results: Dict mapping architecture name → list of fold result dicts.
@@ -328,7 +400,11 @@ def plot_results(all_results, intrinsic_dim, save_path, elapsed=None, input_dim=
         color = colors.get(name, "gray")
         ax_val.plot(ep, accs.mean(0), "-", label=name, linewidth=2, color=color)
         ax_val.fill_between(
-            ep, accs.mean(0) - accs.std(0), accs.mean(0) + accs.std(0), alpha=0.15, color=color
+            ep,
+            accs.mean(0) - accs.std(0),
+            accs.mean(0) + accs.std(0),
+            alpha=0.15,
+            color=color,
         )
     ax_val.set_xlabel("Epoch")
     ax_val.set_ylabel("Training Accuracy")
@@ -352,12 +428,16 @@ def plot_results(all_results, intrinsic_dim, save_path, elapsed=None, input_dim=
     ax_loss.set_xlabel("Epoch")
     ax_loss.set_ylabel("Training Loss")
     ax_loss.set_title("Training Loss")
-    ax_loss.legend(fontsize=7, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
+    ax_loss.legend(
+        fontsize=7, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0
+    )
     ax_loss.set_yscale("log")
     ax_loss.grid(True, alpha=0.3)
 
     # --- Final test accuracy bars ---
-    bars = ax_acc.bar(short_names, means, yerr=stds, color=bar_colors, alpha=0.8, capsize=5)
+    bars = ax_acc.bar(
+        short_names, means, yerr=stds, color=bar_colors, alpha=0.8, capsize=5
+    )
     for bar, m in zip(bars, means):
         ax_acc.text(
             bar.get_x() + bar.get_width() / 2,
@@ -403,6 +483,44 @@ def plot_results(all_results, intrinsic_dim, save_path, elapsed=None, input_dim=
 # ---------------------------------------------------------------------------
 
 
+def _ensure_cifar10():
+    """Download and verify CIFAR-10 before training starts."""
+    import urllib.request
+
+    cache_dir = (
+        Path.home()
+        / ".keras"
+        / "datasets"
+        / "cifar-10-batches-py-target"
+        / "cifar-10-batches-py"
+    )
+    expected = [
+        "data_batch_1",
+        "data_batch_2",
+        "data_batch_3",
+        "data_batch_4",
+        "data_batch_5",
+        "test_batch",
+    ]
+
+    if cache_dir.exists() and all((cache_dir / f).exists() for f in expected):
+        sizes = [f"{(cache_dir / f).stat().st_size // 1_048_576}MB" for f in expected]
+        print(f"CIFAR-10 cached at {cache_dir}")
+        print(f"  Batches: {', '.join(sizes)}")
+        return
+
+    print("CIFAR-10 not found — downloading via Keras...")
+    try:
+        keras.datasets.cifar10.load_data()
+        print("  Download complete.")
+    except Exception as e:
+        print(f"  Download failed: {e}")
+        print(
+            "  You can manually download from: https://www.cs.toronto.edu/~kriz/cifar.html"
+        )
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="CIFAR-10: Manifold-Informed Architecture vs Standard"
@@ -412,6 +530,19 @@ def main():
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument(
+        "--fit-verbose",
+        type=int,
+        default=0,
+        choices=[0, 1, 2],
+        help="Keras fit verbosity (0=silent, 1=progress bar, 2=one line per epoch)",
+    )
+    parser.add_argument(
+        "--progress-every",
+        type=int,
+        default=5,
+        help="When fit-verbose=0, print heartbeat every N epochs (set 0 to disable)",
+    )
+    parser.add_argument(
         "--tau", type=float, default=0.90, help="Variance threshold for intrinsic dim"
     )
     parser.add_argument(
@@ -420,7 +551,9 @@ def main():
         default=500,
         help="Points to sample for dimensionality discovery",
     )
-    parser.add_argument("--k-pca", type=int, default=50, help="Neighborhood size for local PCA")
+    parser.add_argument(
+        "--k-pca", type=int, default=50, help="Neighborhood size for local PCA"
+    )
     parser.add_argument(
         "--samples-per-class",
         type=int,
@@ -430,6 +563,8 @@ def main():
     parser.add_argument("--plot", action="store_true", default=True)
     args = parser.parse_args()
     t_start = time.perf_counter()
+
+    _ensure_cifar10()
 
     # -----------------------------------------------------------------------
     # Load data
@@ -486,19 +621,27 @@ def main():
     # Per-class dimensionality
     print(f"\nPer-class intrinsic dimensionality (τ={args.tau}):")
     class_dims = discover_per_class_dimensionality(
-        X_train, y_train, k=args.k_pca, tau=args.tau, n_samples_per_class=args.samples_per_class
+        X_train,
+        y_train,
+        k=args.k_pca,
+        tau=args.tau,
+        n_samples_per_class=args.samples_per_class,
     )
     for c in sorted(class_dims.keys()):
         cd = class_dims[c]
         label = CIFAR10_CLASSES[c] if c < len(CIFAR10_CLASSES) else str(c)
-        print(f"  {label:>12}: d = {cd['mean']:.1f} ± {cd['std']:.1f}  [{cd['min']}, {cd['max']}]")
+        print(
+            f"  {label:>12}: d = {cd['mean']:.1f} ± {cd['std']:.1f}  [{cd['min']}, {cd['max']}]"
+        )
 
     # Use max of per-class maxima as the bottleneck — accommodates the hardest sample
     global_dim = int(round(dim_report[args.tau]["mean"]))
     intrinsic_dim = max(cd["max"] for cd in class_dims.values())
     # Clamp d to n_classes — need at least that many dims to separate classes.
     d = max(intrinsic_dim, n_classes)
-    print(f"\n>> Global intrinsic dim (mean): {global_dim}  |  Max per-class max: {intrinsic_dim}")
+    print(
+        f"\n>> Global intrinsic dim (mean): {global_dim}  |  Max per-class max: {intrinsic_dim}"
+    )
     print(f"   Using d = {d} (max of local-PCA={intrinsic_dim}, n_classes={n_classes})")
     print(f"   d = {d / input_dim * 100:.1f}% of ambient dimensions")
 
@@ -608,6 +751,9 @@ def main():
                 epochs=args.epochs,
                 batch_size=args.batch_size,
                 trial=trial,
+                fit_verbose=args.fit_verbose,
+                progress_every=args.progress_every,
+                progress_label=f"{name} trial {trial + 1}/{args.trials}",
             )
 
             conv_str = (
@@ -669,7 +815,11 @@ def main():
     # Convergence
     row = f"{'Epochs to 40%':<25}"
     for name, results in all_results.items():
-        convs = [r["convergence_epoch"] for r in results if r["convergence_epoch"] is not None]
+        convs = [
+            r["convergence_epoch"]
+            for r in results
+            if r["convergence_epoch"] is not None
+        ]
         if convs:
             row += f"  {np.mean(convs):.1f} ± {np.std(convs):.1f} ({len(convs)}/{len(results)})  "
         else:
@@ -687,7 +837,9 @@ def main():
 
     # Winner
     print("-" * 70)
-    best_name = max(all_results, key=lambda n: np.mean([r["test_acc"] for r in all_results[n]]))
+    best_name = max(
+        all_results, key=lambda n: np.mean([r["test_acc"] for r in all_results[n]])
+    )
     best_acc = np.mean([r["test_acc"] for r in all_results[best_name]])
     std_name = "Standard (1024→512)"
     std_acc = np.mean([r["test_acc"] for r in all_results[std_name]])
@@ -702,10 +854,14 @@ def main():
         std_params = all_results[std_name][0]["n_params"]
         if best_params < std_params:
             reduction = 100 * (1 - best_params / std_params)
-            print(f"   With {reduction:.0f}% FEWER parameters ({best_params:,} vs {std_params:,})")
+            print(
+                f"   With {reduction:.0f}% FEWER parameters ({best_params:,} vs {std_params:,})"
+            )
         elif best_params > std_params:
             increase = 100 * (best_params / std_params - 1)
-            print(f"   With {increase:.0f}% more parameters ({best_params:,} vs {std_params:,})")
+            print(
+                f"   With {increase:.0f}% more parameters ({best_params:,} vs {std_params:,})"
+            )
     else:
         print(f">> Standard architecture wins: {std_acc:.4f}")
 
@@ -736,7 +892,9 @@ def main():
         "per_class_dims": {
             str(k): {
                 **v,
-                "class_name": CIFAR10_CLASSES[k] if k < len(CIFAR10_CLASSES) else str(k),
+                "class_name": (
+                    CIFAR10_CLASSES[k] if k < len(CIFAR10_CLASSES) else str(k)
+                ),
             }
             for k, v in class_dims.items()
         },
@@ -749,7 +907,9 @@ def main():
     print(f"\nResults saved to {results_path}")
 
     if args.plot:
-        plot_path = str(Path(__file__).resolve().parent / "cifar10_architecture_results.png")
+        plot_path = str(
+            Path(__file__).resolve().parent / "cifar10_architecture_results.png"
+        )
         plot_results(
             all_results,
             d,
