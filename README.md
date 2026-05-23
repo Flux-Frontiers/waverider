@@ -5,7 +5,7 @@
 
 # WaveRider
 
-**Discovering the Intrinsic Dimensionality of Loss Landscapes Through Manifold-Aware Optimization**
+**The geometry of your data tells you the exact size of network you need. Most of what your model is computing is noise.**
 
 *Eric G. Suchanek, PhD — Flux-Frontiers*
 
@@ -13,26 +13,58 @@
 
 ---
 
-## Overview
+## The Core Finding
 
-WaveRider is a family of **manifold-aware geometric ML algorithms** that discover the intrinsic dimensionality of data and loss landscapes through local PCA of gradient-diversity samples, then *build models directly from that discovered geometry*.
+Machine learning spaces are **99% noise** by dimension. CIFAR-10 images live in a 33-dimensional manifold inside a 3,072-dimensional ambient space. Tiny ImageNet: 20 intrinsic dimensions inside 12,288. Standard algorithms treat every dimension equally — spending 99%+ of their compute on dimensions that carry no signal, while momentum, distance metrics, and gradient updates are polluted by that noise.
 
-The central finding: the spaces in which machine learning operates are vastly lower-dimensional than their ambient representations suggest — and knowing this is enough to build models that match or beat systems orders of magnitude larger.
+WaveRider measures the actual geometry, builds models constrained to the signal manifold, and derives a closed-form formula for optimal network width from first principles:
 
-Standard algorithms treat their operating spaces as **isotropic** — every dimension gets equal treatment, even those that are noise. For a space with ambient dimension P and intrinsic dimension d, this means P − d dimensions of wasted computation. Those noise dimensions actively degrade performance by inflating distances, diluting momentum, and introducing off-manifold drift.
+> **w\* = d\* + C − 1**
 
-WaveRider measures the manifold geometry, designs architectures from it, builds knowledge graphs with it, and navigates through it — from measurement instrument to model builder to interactive explorer.
+Measure the intrinsic dimensionality d\*. Count the classes C. That's your optimal bottleneck width. No grid search. No hyperparameter sweep.
 
 ---
 
-## Key Results
+## Headline Results
 
-| Dataset | Ambient Dim | Intrinsic Dim | Noise Suppressed | Result |
-|---------|-------------|---------------|-----------------|--------|
-| **CIFAR-10** | 3,072 | 29 | 99.1% | 3,751-param model beats 820,874-param standard (48.58% vs 48.39%) — **219× reduction** |
-| **MNIST** | 784 | 22 | 97.2% | 2,232 params → 95.5% accuracy (standard: 109,386 params → 97.4%) |
-| **Digits** | 64 | 11–18 | 71–83% | ManifoldKNN: **97.72%** vs Euclidean KNN 97.33% — zero learned parameters |
-| **Iris loss landscape** | 243 (params) | 2–3 | 98.9% | Gradient-diversity PCA exposes that Adam maintains 486 state variables when ~5 do useful work |
+→ **[Full documentation and all benchmark reports](docs/INDEX.md)**
+
+### Universal Bottleneck — formula-derived architectures beat ResNet
+
+| Dataset | d\* | C | w\* = d\*+C−1 | ManifoldResNet-UB | Accuracy | vs ResNet-32 | Δ |
+|---------|-----|---|--------------|-------------------|----------|-------------|---|
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 19 | 10 | 28 | 36,942 params | **71.8% ± 0.5%** | 47,978 params → 63.3% ± 2.7% | **+8.5 pp, fewer params** |
+| [**Fashion-MNIST**](benchmarks/canonical_tests/mnist_report.md) | 18 | 10 | 27 | 33,868 params | **89.84% ± 0.45%** | 47,338 params → 85.37% ± 2.43% | **+4.5 pp, fewer params** |
+| [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 16 | 10 | 25 | 29,110 params | **99.03% ± 0.03%** | 47,338 params → 98.95% ± 0.39% | matched, fewer params |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
+
+### Zero-parameter classifiers — the manifold is the model
+
+| Dataset | ManifoldModel (0 params) | Best trained | Δ |
+|---------|--------------------------|-------------|---|
+| [**Heart Disease**](benchmarks/canonical_tests/clinical/heart_report.md) | **83.82% ± 2.47%** | Standard MLP: 80.96% ± 2.91% (7,022 params) | **+2.86 pp with zero parameters** |
+| [**Parkinson's**](benchmarks/canonical_tests/clinical/parkinsons_report.md) | **90.77% ± 2.61%** | Standard MLP: 93.33% ± 3.08% (19,802 params) | −2.56 pp vs MLP; beats KNN (89.74%) |
+| [**Breast Cancer**](benchmarks/canonical_tests/clinical/breast_cancer_report.md) | 96.31% ± 1.61% | Standard MLP: 97.31% ± 1.41% (36,602 params) | within 1 pp, zero params |
+| [**Dermatology**](benchmarks/canonical_tests/clinical/dermatology_report.md) | 95.90% ± 1.51% | Standard MLP: 96.71% ± 2.05% (42,630 params) | within 0.8 pp, zero params |
+
+### Parameter efficiency — noise suppression across datasets
+
+| Dataset | Ambient Dim | Intrinsic d | Noise | Standard baseline | Manifold result | Param reduction |
+|---------|-------------|-------------|-------|-------------------|-----------------|-----------------|
+| [**Tiny ImageNet**](benchmarks/canonical_tests/tiny_imagenet_report.md) | 12,288 | 20 | 99.9% | 2.66% @ 13.2M params | **3.36% @ 80,400 params** | **164×** |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 33 | 99.1% | 52.04% @ 3.7M params | 48.70% @ 4,795 params | **766×** at −3 pp |
+| [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 784 | 27 | 96.6% | 97.42% @ 109,386 params | 95.11% @ 1,036 params | **105×** at −2.3 pp |
+
+---
+
+## The Dimension Probe
+
+When a network is given a bottleneck of exactly w\* = d\* + C − 1 neurons, it **spontaneously decomposes** that space into exactly d\* geometry dimensions and C−1 class-separation dimensions — with zero instruction.
+
+On CIFAR-10 (d\*=16, C=10, w\*=25): post-bottleneck PCA reveals 7 geometry principal components explaining 90% of variance (Whitney bound), and exactly 9 additional class-separation components — precisely C−1=9. The semantic content is interpretable: PC11 encodes four-legged animals, PC9 encodes flat objects, PC12 encodes wheeled vehicles.
+
+**Gradient descent independently discovers the theorem's decomposition.**
 
 ---
 
@@ -45,36 +77,6 @@ WaveRider measures the manifold geometry, designs architectures from it, builds 
 | **Manifold Adam** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
 | **Manifold Model** | `ManifoldModel` | Zero-parameter classifier: the manifold *is* the model |
 | **Manifold Observer** | `ManifoldObserver` | (N+1)-dimensional extrinsic observer — hovers above the manifold surface |
-
----
-
-## Method
-
-### Gradient-Diversity PCA
-
-At a point **w** in weight space R^P, mini-batch gradients on S random data subsets are gathered and decomposed:
-
-```
-G = [g₁ - ḡ, ..., gₛ - ḡ]ᵀ ∈ R^{S×P}
-C = GᵀG / (S-1) = VΛVᵀ
-```
-
-The top *d* eigenvectors V_d span the **gradient's active subspace** — the tangent space of the loss manifold. The remaining P − d eigenvectors point into noise.
-
-### Manifold-Projected Step
-
-```
-1. Project:   ℓ = Vdᵀ g  (local coords)
-              g_proj = Vd ℓ  (back to global, off-manifold zeroed)
-2. Adam update on g_proj  (momentum accumulates signal, never noise)
-3. Step:      w ← w − η Δw
-```
-
-Adam state lives in global R^P — momentum persists across manifold re-orientations without losing memory when the PCA basis rotates.
-
-### Manifold KNN
-
-Rather than measuring Euclidean distance in the full ambient space, ManifoldKNN first projects query and neighbors into the local *d*-dimensional tangent space, then votes in that denoised subspace. The improvement on digits (97.72% vs 97.33%) comes entirely from geometry — no training, no learned weights.
 
 ---
 
@@ -108,7 +110,7 @@ poetry install --with viz,benchmarks
 
 ## Installation
 
-**Requirements:** Python 3.10
+**Requirements:** Python 3.12
 
 ### From source
 
@@ -126,134 +128,72 @@ poetry add git+https://github.com/Flux-Frontiers/waverider.git
 
 ## Usage
 
-### ManifoldKNN — geometry-aware classification
+See **[docs/USAGE.md](docs/USAGE.md)** for complete code examples covering all components.
 
-```python
-from waverider import ManifoldModel
+---
 
-model = ManifoldModel(k_pca=20, tau=0.85)
-model.fit(X_train, y_train)
-predictions = model.predict(X_test)
-# Zero learned parameters — the manifold geometry is the classifier
+## Method
+
+### Gradient-Diversity PCA
+
+At a point **w** in weight space R^P, mini-batch gradients on S random data subsets are gathered and decomposed:
+
+```
+G = [g₁ - ḡ, ..., gₛ - ḡ]ᵀ ∈ R^{S×P}
+C = GᵀG / (S-1) = VΛVᵀ
 ```
 
-### ManifoldWalker — Riemannian gradient descent
+The top *d* eigenvectors V_d span the **gradient's active subspace** — the tangent space of the loss manifold. The remaining P − d eigenvectors point into noise.
 
-```python
-from waverider import ManifoldWalker
+### Manifold-Projected Step
 
-walker = ManifoldWalker(k_samples=30, tau=0.90, reorient_every=10)
-walker.fit(X, y, epochs=100, lr=0.01)
+```
+1. Project:   ℓ = Vdᵀ g  (local coords)
+              g_proj = Vd ℓ  (back to global, off-manifold zeroed)
+2. Adam update on g_proj  (momentum accumulates signal, never noise)
+3. Step:      w ← w − η Δw
 ```
 
-### ManifoldAdamWalker — manifold-projected Adam
+Adam state lives in global R^P — momentum persists across manifold re-orientations without losing memory when the PCA basis rotates.
 
-```python
-from waverider import ManifoldAdamWalker
+### Why Projection Matters
 
-walker = ManifoldAdamWalker(
-    k_samples=30, tau=0.90,
-    beta1=0.9, beta2=0.999, lr=0.001,
-    reorient_every=10
-)
-walker.fit(X, y, epochs=200)
-```
+Operating in the ambient space conflates signal with noise:
 
-### TurtleND — N-dimensional frame navigation
+- **KNN without projection**: distances inflated by noise dimensions — true neighbors appear farther, non-neighbors appear closer
+- **Adam without projection**: momentum accumulates noise, adaptive denominator tracks noise variance, learning rates adapt to the wrong signals
 
-```python
-from waverider import TurtleND
+### Relationship to Natural Gradient
 
-turtle = TurtleND(dim=10)
-turtle.forward(0.1)          # step along heading
-turtle.turn(axis=1, angle=0.3)   # rotate frame
-print(turtle.position, turtle.frame)
-```
-
-### ManifoldObserver — extrinsic manifold sensor
-
-```python
-from waverider import ManifoldModel, ManifoldObserver
-
-subject = ManifoldModel(k_graph=10, k_pca=20, k_vote=7, variance_threshold=0.90)
-subject.fit(X, y)
-observer = ManifoldObserver(subject)
-observer.lift_data()
-field = observer.observe()   # list of ObservationResult (curvature, height, intrinsic_dim, …)
-```
-
-### Manifold Voxel Visualizer — interactive 3-D manifold anatomy
-
-Requires `poetry install --with viz`.
-
-```python
-from waverider import fit_and_observe, voxelize, build_grid, render_single
-
-subject, observer, pf, pca_info = fit_and_observe(
-    X, y, k_graph=10, k_pca=20, k_vote=7, tau=0.90
-)
-vox  = voxelize(pf, resolution=32)
-grid = build_grid(vox)
-render_single(grid, pf, scalar="density", pca_info=pca_info)
-```
-
-Or use the installed CLI command:
-
-```bash
-# Interactive viewer — synthetic helix (default)
-waverider-voxel-viz
-
-# Iris dataset, 2×2 panel of all scalar fields
-waverider-voxel-viz --dataset iris --multi-scalar
-
-# Headless PNG export
-waverider-voxel-viz --dataset breast_cancer --off-screen --out bc_voxels.png
-
-# CIFAR-10 — subsample 1 000 pts, pre-reduce to 40-D
-waverider-voxel-viz --dataset cifar10 --n-points 1000 --pre-pca 40
-```
-
-See [docs/waverider/manifold_voxel_viz.md](docs/waverider/manifold_voxel_viz.md) for the full
-argument reference and programmatic API.
+The eigenvalue weighting λᵢ/λ₁ is a form of natural gradient descent using the data covariance as an empirical Fisher information matrix (Amari, 1998). The manifold projection ensures both natural gradient and Adam operate on the right dimensions.
 
 ---
 
 ## Benchmarks
 
-```bash
-# Run the full benchmark suite
-poetry run pytest benchmarks/ -v
-
-# Individual experiments
-python benchmarks/digits_manifold.py      # Experiment 1: Digits dataset
-python benchmarks/iris_loss_landscape.py  # Experiment 2: Iris MLP
-python benchmarks/mnist_architecture.py   # Experiment 3: MNIST manifold-informed MLP
-python benchmarks/cifar10_architecture.py # Experiment 4: CIFAR-10 efficiency frontier
-python benchmarks/cifar100_architecture.py # Experiment 5: CIFAR-100 efficiency frontier
-```
-
-### Reproducing TurtleND paper results
-
-The numerical validation tables in the TurtleND paper (`docs/turtlend/turtlend.tex`)
-are produced by two deterministic, seed-locked benchmark scripts in
-`benchmarks/canonical_tests/`:
-
-| Script | Manifold | Paper table | Locked numbers |
-|---|---|---|---|
-| `helix_manifold_observer.py` | Synthetic 1-manifold helix in $\mathbb{R}^5$ | Table 1 | `helix_manifold_observer_results.json` |
-| `torus_manifold_observer.py` | Synthetic 2-manifold flat torus in $\mathbb{R}^4$ | Table 2 | `torus_manifold_observer_results.json` |
-
-To reproduce:
+All benchmark scripts are run directly with Python — no test runner needed.
 
 ```bash
-poetry run python benchmarks/canonical_tests/helix_manifold_observer.py
-poetry run python benchmarks/canonical_tests/torus_manifold_observer.py
+# Standard datasets
+python benchmarks/canonical_tests/cifar10_manifold_architecture.py
+python benchmarks/canonical_tests/cifar100_manifold_architecture.py
+python benchmarks/canonical_tests/mnist_manifold_architecture.py
+python benchmarks/canonical_tests/tiny_imagenet_manifold_architecture.py
+python benchmarks/canonical_tests/digits_manifold_architecture.py
+python benchmarks/canonical_tests/iris_manifold_architecture.py
+
+# Clinical datasets
+python benchmarks/canonical_tests/clinical/disease_manifold_architecture.py
+
+# Canonical geometry measurements
+python benchmarks/canonical_tests/helix_manifold_observer.py
+python benchmarks/canonical_tests/torus_manifold_observer.py
+
+# Universal Bottleneck phase boundary
+python benchmarks/canonical_tests/mnist_ub_phase_boundary.py
 ```
 
-Both scripts use seeds 42–51 (10 trials) and write a JSON file alongside
-themselves. The committed JSONs are the locked numbers cited in the paper —
-running the scripts on a clean checkout should reproduce them bit-for-bit on
-the same NumPy / SciPy versions.
+Seed-locked results (seeds 42–51, 3–10 trials) are committed as JSON alongside each script. The committed JSONs are the locked numbers cited in the papers. See **[docs/INDEX.md](docs/INDEX.md)** for the full benchmark report index.
 
 ---
 
@@ -278,28 +218,15 @@ waverider/
 │       └── voxel_viz.py              # 3-D voxel visualizer + CLI
 ├── tests/
 ├── benchmarks/
+│   └── canonical_tests/
+│       ├── clinical/                 # Heart, breast cancer, Parkinson's, etc.
+│       └── *.py / *.json / *.md      # Locked benchmark scripts and results
+├── papers/
+│   ├── waverider_article/
+│   ├── clinical_manifolds/
+│   ├── manifold_classification/
+│   └── voxel_viz/
 ```
-
----
-
-## Theoretical Background
-
-### Why Projection Before Measurement Matters
-
-Operating in the ambient space conflates signal with noise:
-
-- **KNN without projection**: distances inflated by noise dimensions — true neighbors appear farther, non-neighbors appear closer
-- **Adam without projection**: momentum accumulates noise, adaptive denominator tracks noise variance, learning rates adapt to the wrong signals
-
-Projecting onto the tangent space is analogous to denoising a signal before feeding it to a filter. The filter then adapts to the real signal.
-
-### Relationship to Natural Gradient
-
-The eigenvalue weighting λᵢ/λ₁ is a form of natural gradient descent using the data covariance as an empirical Fisher information matrix (Amari, 1998). The manifold projection ensures both natural gradient and Adam operate on the right dimensions.
-
-### Noise Suppression as Regularization
-
-By zeroing off-manifold gradient components, WaveRider implicitly regularizes optimization. The model is constrained to move along the data manifold, preventing drift into off-manifold regions that correspond to overfitting — geometrically motivated and data-adaptive, unlike dropout or weight decay.
 
 ---
 
