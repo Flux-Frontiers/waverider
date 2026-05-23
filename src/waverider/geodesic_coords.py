@@ -93,7 +93,7 @@ class GeodesicEncoder:
 
     # ── Fit ───────────────────────────────────────────────────────────────────
 
-    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> "GeodesicEncoder":
+    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> GeodesicEncoder:
         """Fit the encoder: discover manifold geometry and select anchors.
 
         :param X: Training data, shape (n_samples, n_features).

@@ -6,7 +6,6 @@ import pytest
 from waverider.manifold_model import ManifoldModel
 from waverider.manifold_observer import ManifoldObserver, ObservedGeometry
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

@@ -16,8 +16,8 @@ extract a closed-form decision boundary in intrinsic coordinate space.
 
 from __future__ import annotations
 
-import sys
 import json
+import sys
 import warnings
 from pathlib import Path
 
@@ -39,6 +39,7 @@ from waverider.manifold_model import ManifoldModel  # noqa: E402
 
 # ── Dataset loading ──────────────────────────────────────────────────────────
 
+
 def load_heart() -> tuple[np.ndarray, np.ndarray, list[str]]:
     """Load Cleveland Heart Disease from UCI ML Repository.
 
@@ -47,8 +48,8 @@ def load_heart() -> tuple[np.ndarray, np.ndarray, list[str]]:
 
     :return: X (303, 13) float32 standardized, y (303,) int, feature_names
     """
-    from ucimlrepo import fetch_ucirepo
     from sklearn.preprocessing import StandardScaler
+    from ucimlrepo import fetch_ucirepo
 
     repo = fetch_ucirepo(id=45)
     X_df = repo.data.features.copy()
@@ -76,15 +77,18 @@ def load_heart() -> tuple[np.ndarray, np.ndarray, list[str]]:
 
 # ── KAN helpers ──────────────────────────────────────────────────────────────
 
+
 def _make_dataset(
-    X_tr: np.ndarray, y_tr: np.ndarray,
-    X_te: np.ndarray, y_te: np.ndarray,
+    X_tr: np.ndarray,
+    y_tr: np.ndarray,
+    X_te: np.ndarray,
+    y_te: np.ndarray,
 ) -> dict:
     return {
         "train_input": torch.tensor(X_tr, dtype=torch.float32),
         "train_label": torch.tensor(y_tr, dtype=torch.float32).unsqueeze(1),
-        "test_input":  torch.tensor(X_te,  dtype=torch.float32),
-        "test_label":  torch.tensor(y_te,  dtype=torch.float32).unsqueeze(1),
+        "test_input": torch.tensor(X_te, dtype=torch.float32),
+        "test_label": torch.tensor(y_te, dtype=torch.float32).unsqueeze(1),
     }
 
 
@@ -140,7 +144,7 @@ def _kan_proba(model, X: np.ndarray) -> np.ndarray:
 
 # ── Cross-validation ─────────────────────────────────────────────────────────
 
-D_STAR = 9   # intrinsic dimensionality at τ=0.90 (established in prior benchmarks)
+D_STAR = 9  # intrinsic dimensionality at τ=0.90 (established in prior benchmarks)
 N_FOLDS = 5
 SEED = 42
 
@@ -148,9 +152,12 @@ SEED = 42
 def run_cv(X: np.ndarray, y: np.ndarray) -> dict:
     kf = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=SEED)
     results: dict[str, list] = {
-        "manifold_acc": [], "manifold_auc": [],
-        "kan_raw_acc":  [], "kan_raw_auc":  [],
-        "kan_pca_acc":  [], "kan_pca_auc":  [],
+        "manifold_acc": [],
+        "manifold_auc": [],
+        "kan_raw_acc": [],
+        "kan_raw_auc": [],
+        "kan_pca_acc": [],
+        "kan_pca_auc": [],
     }
 
     for fold, (tr_idx, te_idx) in enumerate(kf.split(X, y)):
@@ -167,7 +174,7 @@ def run_cv(X: np.ndarray, y: np.ndarray) -> dict:
         # ── KAN on raw 13-dim features ───────────────────────────────────────
         ds_raw = _make_dataset(X_tr, y_tr, X_te, y_te)
         kan_raw = _train_kan(ds_raw, n_in=X.shape[1])
-        raw_pred  = _kan_predict(kan_raw, X_te)
+        raw_pred = _kan_predict(kan_raw, X_te)
         raw_proba = _kan_proba(kan_raw, X_te)
         results["kan_raw_acc"].append(float(accuracy_score(y_te, raw_pred)))
         results["kan_raw_auc"].append(float(roc_auc_score(y_te, raw_proba)))
@@ -178,7 +185,7 @@ def run_cv(X: np.ndarray, y: np.ndarray) -> dict:
         X_te_pca = pca.transform(X_te).astype("float32")
         ds_pca = _make_dataset(X_tr_pca, y_tr, X_te_pca, y_te)
         kan_pca = _train_kan(ds_pca, n_in=D_STAR)
-        pca_pred  = _kan_predict(kan_pca, X_te_pca)
+        pca_pred = _kan_predict(kan_pca, X_te_pca)
         pca_proba = _kan_proba(kan_pca, X_te_pca)
         results["kan_pca_acc"].append(float(accuracy_score(y_te, pca_pred)))
         results["kan_pca_auc"].append(float(roc_auc_score(y_te, pca_proba)))
@@ -199,9 +206,9 @@ def print_results(results: dict) -> None:
     print(header)
     print("─" * len(header))
     rows = [
-        ("ManifoldModel",  "manifold_acc", "manifold_auc", "0"),
-        ("KAN-raw (13-D)", "kan_raw_acc",  "kan_raw_auc",  "learnable splines"),
-        ("KAN-pca9 (9-D)", "kan_pca_acc",  "kan_pca_auc",  "learnable splines"),
+        ("ManifoldModel", "manifold_acc", "manifold_auc", "0"),
+        ("KAN-raw (13-D)", "kan_raw_acc", "kan_raw_auc", "learnable splines"),
+        ("KAN-pca9 (9-D)", "kan_pca_acc", "kan_pca_auc", "learnable splines"),
     ]
     for label, acc_key, auc_key, params in rows:
         accs = results[acc_key]
@@ -213,15 +220,17 @@ def print_results(results: dict) -> None:
 
 # ── Symbolic regression on full dataset ─────────────────────────────────────
 
+
 def run_symbolic_regression(X: np.ndarray, y: np.ndarray, feature_names: list[str]) -> None:
     print("\n── Symbolic Regression (full dataset, PCA-9 coordinates) ─────────")
 
     import tempfile
+
     from kan import KAN
 
     pca_full = PCA(n_components=D_STAR, random_state=SEED)
     X_pca = pca_full.fit_transform(X).astype("float32")
-    pc_names = [f"PC{i+1}" for i in range(D_STAR)]
+    pc_names = [f"PC{i + 1}" for i in range(D_STAR)]
 
     ds_full = _make_dataset(X_pca, y, X_pca, y)
     # prune() needs a writable ckpt_path even with auto_save=True; use a temp dir
@@ -273,9 +282,12 @@ def run_symbolic_regression(X: np.ndarray, y: np.ndarray, feature_names: list[st
 
     # Save activation plot using correct API (folder=, not img_folder=)
     import tempfile
+
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+
     out_dir = _HERE.parent.parent.parent / "papers" / "clinical_manifolds"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "kan_heart_activations.png"
@@ -295,10 +307,11 @@ def run_symbolic_regression(X: np.ndarray, y: np.ndarray, feature_names: list[st
         loadings = np.abs(pca_full.components_[i])
         top3_idx = np.argsort(loadings)[::-1][:3]
         top3 = [(feature_names[j], float(loadings[j])) for j in top3_idx]
-        print(f"  PC{i+1}: " + ", ".join(f"{n}={v:.3f}" for n, v in top3))
+        print(f"  PC{i + 1}: " + ", ".join(f"{n}={v:.3f}" for n, v in top3))
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     print("═" * 60)

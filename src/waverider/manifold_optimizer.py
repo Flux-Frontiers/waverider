@@ -26,10 +26,10 @@ import os
 
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 
+import keras
 import numpy as np
 import tensorflow as tf
 from sklearn.decomposition import PCA as skPCA
-import keras
 
 
 def make_basis(pca: skPCA) -> np.ndarray:

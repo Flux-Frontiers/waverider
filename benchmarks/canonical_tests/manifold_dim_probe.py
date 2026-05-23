@@ -39,41 +39,26 @@ Author: Eric G. Suchanek, PhD
 
 import argparse
 import json
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from sklearn.decomposition import PCA as skPCA
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
 # TensorFlow / Metal setup  (must happen before import)
 # ---------------------------------------------------------------------------
-_USE_METAL = "--metal" in sys.argv
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-if not _USE_METAL:
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-_device_label = f"Metal GPU ({gpus[0].name})" if (_USE_METAL and gpus) else "CPU (forced)"
-print(f"TensorFlow {tf.__version__} | Device: {_device_label}")
+tf, _device_info = setup_tensorflow(gpu_flag="--metal")
+import numpy as np  # noqa: E402
+from sklearn.decomposition import PCA as skPCA  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 MACHINE_INFO = "M5 Max, MacBook Pro, 64GB RAM, 2TB SSD"
 
 DEVICE_INFO = {
     "tensorflow_version": tf.__version__,
-    "device_used": _device_label,
+    "device_used": _device_info["device_used"],
     "machine": MACHINE_INFO,
     "invocation": " ".join(sys.argv),
 }
@@ -285,7 +270,7 @@ def per_class_mean_activations(acts, labels, n_classes):
     """
     return np.array(
         [
-            acts[labels == c].mean(axis=0) if (labels == c).any() else np.zeros(acts.shape[1])
+            (acts[labels == c].mean(axis=0) if (labels == c).any() else np.zeros(acts.shape[1]))
             for c in range(n_classes)
         ]
     )
@@ -362,8 +347,8 @@ def plot_probe_results(
         import matplotlib
 
         matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
         import matplotlib.gridspec as gridspec
+        import matplotlib.pyplot as plt
         from matplotlib.colors import Normalize
     except ImportError:
         print("matplotlib not available — skipping plot")
@@ -408,8 +393,20 @@ def plot_probe_results(
     ax1_r.axhline(95, color="firebrick", linestyle=":", linewidth=1, label="95%")
     ax1_r.set_ylabel("Cumulative variance (%)", fontsize=9)
     ax1_r.legend(fontsize=8, loc="center right")
-    ax1.axvline(k_90 + 0.5, color="steelblue", linestyle="--", linewidth=1.5, label=f"k_90={k_90}")
-    ax1.axvline(k_95 + 0.5, color="firebrick", linestyle="--", linewidth=1.5, label=f"k_95={k_95}")
+    ax1.axvline(
+        k_90 + 0.5,
+        color="steelblue",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"k_90={k_90}",
+    )
+    ax1.axvline(
+        k_95 + 0.5,
+        color="firebrick",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"k_95={k_95}",
+    )
     ax1.set_xlabel("PC index (learned feature)")
     ax1.set_ylabel("Explained variance (%)")
     ax1.set_title(
@@ -429,7 +426,13 @@ def plot_probe_results(
     ax2.set_yticklabels(class_names, fontsize=9)
     ax2.set_xlabel("Learned feature dimension")
     ax2.set_title("Per-Class Mean Activation Heatmap\n(rows=classes, cols=feature dims)")
-    ax2.axvline(k_90 - 0.5, color="steelblue", linestyle="--", linewidth=1.5, label=f"k_90={k_90}")
+    ax2.axvline(
+        k_90 - 0.5,
+        color="steelblue",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"k_90={k_90}",
+    )
     ax2.legend(fontsize=8)
     fig.colorbar(im, ax=ax2, fraction=0.046, pad=0.04, label="Mean activation")
     for col in range(d_star):
@@ -589,7 +592,10 @@ def main():
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument(
-        "--tau", type=float, default=0.90, help="Variance threshold for intrinsic dim discovery"
+        "--tau",
+        type=float,
+        default=0.90,
+        help="Variance threshold for intrinsic dim discovery",
     )
     parser.add_argument("--discovery-samples", type=int, default=500)
     parser.add_argument("--k-pca", type=int, default=25)
@@ -837,15 +843,15 @@ def main():
                 "extra_mean_magnitude": float(extra_mean_mag),
                 "on_mean_magnitude": float(on_mean_mag),
                 "ratio": float(h1_ratio),
-                "verdict": "near-zero (self-suppressed)"
-                if h1_ratio < 0.1
-                else "non-trivial signal",
+                "verdict": (
+                    "near-zero (self-suppressed)" if h1_ratio < 0.1 else "non-trivial signal"
+                ),
             },
             "H2_uncertainty": {
                 "mean_extra_mag_correct": float(correct_extra),
                 "mean_extra_mag_wrong": float(wrong_extra),
                 "correlation_with_error": float(h2_corr),
-                "verdict": "encodes uncertainty" if h2_corr > 0.05 else "no uncertainty signal",
+                "verdict": ("encodes uncertainty" if h2_corr > 0.05 else "no uncertainty signal"),
             },
             "H3_interclass": {
                 "per_class_extra_magnitude": {

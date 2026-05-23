@@ -63,47 +63,30 @@ Usage
 import argparse
 import json
 import math
-import os
 import sys
 import time
 from pathlib import Path
 
-import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
 # TensorFlow setup
 # ---------------------------------------------------------------------------
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-# Force CPU — Metal GPU per-op sync overhead dominates for small MLPs
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": "CPU (forced)",
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
+tf, DEVICE_INFO = setup_tensorflow()
+import numpy as np  # noqa: E402
+from sklearn.neighbors import KNeighborsClassifier  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 STRATEGY = tf.distribute.OneDeviceStrategy("/CPU:0")
 
 import keras  # noqa: E402
 
+from waverider.manifold_model import ManifoldModel  # noqa: E402
+
 # ---------------------------------------------------------------------------
 # waverider import
 # ---------------------------------------------------------------------------
 
-from waverider.manifold_model import ManifoldModel  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -111,7 +94,6 @@ from waverider.dimensionality_discovery import (  # noqa: E402
     discover_dimensionality,
     discover_per_class_dimensionality,
 )
-
 
 # ---------------------------------------------------------------------------
 # Phase 2: Model Builders
@@ -359,7 +341,14 @@ def _draw_arch_schematics(ax, arch_layers, colors):
 
         short = name.split("(")[0].strip()
         ax.text(
-            x_ctr, 0.95, short, ha="center", va="top", fontsize=8, fontweight="bold", color=color
+            x_ctr,
+            0.95,
+            short,
+            ha="center",
+            va="top",
+            fontsize=8,
+            fontweight="bold",
+            color=color,
         )
 
         prev_y = None
@@ -459,7 +448,11 @@ def plot_results(all_results, intrinsic_dim, save_path, elapsed=None, input_dim=
         color = colors.get(name, "gray")
         ax_val.plot(ep, accs.mean(0), "-", label=name, linewidth=2, color=color)
         ax_val.fill_between(
-            ep, accs.mean(0) - accs.std(0), accs.mean(0) + accs.std(0), alpha=0.15, color=color
+            ep,
+            accs.mean(0) - accs.std(0),
+            accs.mean(0) + accs.std(0),
+            alpha=0.15,
+            color=color,
         )
     ax_val.set_xlabel("Epoch")
     ax_val.set_ylabel("Validation Accuracy")

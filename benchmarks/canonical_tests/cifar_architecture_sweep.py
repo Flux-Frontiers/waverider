@@ -67,42 +67,20 @@ License: Elastic 2.0
 import argparse
 import json
 import math
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
 # TensorFlow / Metal setup — must happen before importing tf
 # ---------------------------------------------------------------------------
-_USE_METAL = "--metal" in sys.argv
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-if not _USE_METAL:
-    # Force CPU — Metal GPU per-op sync overhead dominates for small MLPs
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-_device_label = f"Metal GPU ({gpus[0].name})" if (_USE_METAL and gpus) else "CPU (forced)"
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": _device_label,
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
-
+tf, DEVICE_INFO = setup_tensorflow(gpu_flag="--metal")
 import keras  # noqa: E402
+import numpy as np  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))

@@ -62,41 +62,20 @@ Usage
 import argparse
 import json
 import math
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from sklearn.decomposition import PCA as skPCA
-
 # ---------------------------------------------------------------------------
 # TensorFlow setup
 # ---------------------------------------------------------------------------
-_USE_METAL = "--metal" in sys.argv
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-if not _USE_METAL:
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-_device_label = f"Metal GPU ({gpus[0].name})" if (_USE_METAL and gpus) else "CPU (forced)"
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": _device_label,
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
-
+tf, DEVICE_INFO = setup_tensorflow(gpu_flag="--metal")
 import keras  # noqa: E402
+import numpy as np  # noqa: E402
+from sklearn.decomposition import PCA as skPCA  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
@@ -352,7 +331,7 @@ def build_resnet(input_dim, n_classes, lr=0.001, optimizer=None, spatial_shape=_
 
     model = keras.Model(inputs=inp, outputs=out)
     model.compile(
-        optimizer=optimizer if optimizer is not None else keras.optimizers.Adam(learning_rate=lr),
+        optimizer=(optimizer if optimizer is not None else keras.optimizers.Adam(learning_rate=lr)),
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
     )
@@ -485,7 +464,12 @@ def _draw_arch_schematics(ax, arch_layers, colors):
 
 
 def plot_results(
-    all_results, intrinsic_dim, save_path, elapsed=None, input_dim=_INPUT_DIM, n_classes=_N_CLASSES
+    all_results,
+    intrinsic_dim,
+    save_path,
+    elapsed=None,
+    input_dim=_INPUT_DIM,
+    n_classes=_N_CLASSES,
 ):
     """Save a six-panel comparison figure with architecture schematics key."""
     try:
@@ -535,7 +519,11 @@ def plot_results(
         f"ManifoldResNet-UB (w*={w_ub})": [input_dim, w_ub, w_ub, w_ub, n_classes],
         f"PCA({n_classes})→{n_classes}": [n_classes, n_classes, n_classes],
         f"PCA({n_classes}) linear→{n_classes}": [n_classes, n_classes],
-        f"PCA({n_classes}) Whitney(2d={2 * d})→{n_classes}": [n_classes, 2 * d, n_classes],
+        f"PCA({n_classes}) Whitney(2d={2 * d})→{n_classes}": [
+            n_classes,
+            2 * d,
+            n_classes,
+        ],
         f"Intrinsic Dim (PCA→{d}D→output)": [d, d, n_classes],
         "UB-PCA (PCA→d*→w*→C)": [d, w_ub, n_classes],
         f"UB-raw (→{w_ub}→{n_classes})": [input_dim, w_ub, n_classes],

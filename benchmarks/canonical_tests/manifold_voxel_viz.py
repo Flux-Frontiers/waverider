@@ -104,7 +104,6 @@ from waverider.dimensionality_discovery import (
 from waverider.manifold_model import ManifoldModel
 from waverider.manifold_observer import ManifoldObserver
 
-
 # ---------------------------------------------------------------------------
 # Datasets
 # ---------------------------------------------------------------------------

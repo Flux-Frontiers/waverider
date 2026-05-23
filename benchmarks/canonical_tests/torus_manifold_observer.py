@@ -67,7 +67,6 @@ from sklearn.model_selection import train_test_split
 from waverider.manifold_model import ManifoldModel
 from waverider.manifold_observer import ManifoldObserver
 
-
 # ---------------------------------------------------------------------------
 # Dataset
 # ---------------------------------------------------------------------------
@@ -325,9 +324,7 @@ def main() -> None:
 
     print("=" * 70)
     print("TORUS BENCHMARK: ManifoldObserver vs ManifoldModel subject")
-    print(
-        "2-manifold flat torus in 4D, embedded in 6D with σ={:.3f} noise".format(args.noise_sigma)
-    )
+    print(f"2-manifold flat torus in 4D, embedded in 6D with σ={args.noise_sigma:.3f} noise")
     print("=" * 70)
     print(
         f"n_total={args.n_total}  n_trials={args.n_trials}  τ={args.tau}  "
@@ -367,7 +364,7 @@ def main() -> None:
 
     print()
     print("=" * 70)
-    print("RESULTS (mean ± std over {} trials)".format(args.n_trials))
+    print(f"RESULTS (mean ± std over {args.n_trials} trials)")
     print("=" * 70)
     for k, v in agg.items():
         print(f"  {k:30s}  {v['mean']:.4f} ± {v['std']:.4f}")

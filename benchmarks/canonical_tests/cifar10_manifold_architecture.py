@@ -52,7 +52,6 @@ Usage
 import argparse
 import json
 import math
-import os
 import sys
 import time
 from datetime import datetime
@@ -61,37 +60,12 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 # TensorFlow setup — must come before numpy/sklearn
 # ---------------------------------------------------------------------------
-# sklearn.preprocessing imports pandas which imports pyarrow, loading libarrow.dylib.
-# Both libarrow and libtensorflow_framework export _AbslInternalPerThreadSemWait_lts_20250814
-# with WEAK_DEFINES.  With this flag, the FIRST dylib loaded wins the symbol table entry.
-# If Arrow loads first (via sklearn→pandas→pyarrow), TF's Mutex::Block ends up calling
-# Arrow's semwait implementation but with TF's TLS state → non-deterministic deadlock on
-# the first model.fit() call.  Loading TF first ensures TF's symbols are established before
-# Arrow arrives and its (second) weak definition is discarded.
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-# Force CPU — Metal GPU per-op sync overhead dominates for small MLPs
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-# isort: split — numpy/sklearn must follow tensorflow (see comment above)
-import numpy as np  # noqa: E402
-import tensorflow as tf  # noqa: E402
-from sklearn.preprocessing import StandardScaler  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": "CPU (forced)",
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
-
+tf, DEVICE_INFO = setup_tensorflow()
 import keras  # noqa: E402
+import numpy as np  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
@@ -326,9 +300,7 @@ def _draw_arch_schematics(ax, arch_layers, colors):
             prev_y = yc
 
 
-def plot_results(
-    all_results, intrinsic_dim, save_path, elapsed=None, input_dim=3072, n_classes=10
-):
+def plot_results(all_results, intrinsic_dim, save_path, elapsed=None, input_dim=3072, n_classes=10):
     """Save a five-panel comparison figure with architecture schematics key.
 
     :param all_results: Dict mapping architecture name → list of fold result dicts.
@@ -428,16 +400,12 @@ def plot_results(
     ax_loss.set_xlabel("Epoch")
     ax_loss.set_ylabel("Training Loss")
     ax_loss.set_title("Training Loss")
-    ax_loss.legend(
-        fontsize=7, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0
-    )
+    ax_loss.legend(fontsize=7, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
     ax_loss.set_yscale("log")
     ax_loss.grid(True, alpha=0.3)
 
     # --- Final test accuracy bars ---
-    bars = ax_acc.bar(
-        short_names, means, yerr=stds, color=bar_colors, alpha=0.8, capsize=5
-    )
+    bars = ax_acc.bar(short_names, means, yerr=stds, color=bar_colors, alpha=0.8, capsize=5)
     for bar, m in zip(bars, means):
         ax_acc.text(
             bar.get_x() + bar.get_width() / 2,
@@ -485,14 +453,9 @@ def plot_results(
 
 def _ensure_cifar10():
     """Download and verify CIFAR-10 before training starts."""
-    import urllib.request
 
     cache_dir = (
-        Path.home()
-        / ".keras"
-        / "datasets"
-        / "cifar-10-batches-py-target"
-        / "cifar-10-batches-py"
+        Path.home() / ".keras" / "datasets" / "cifar-10-batches-py-target" / "cifar-10-batches-py"
     )
     expected = [
         "data_batch_1",
@@ -515,9 +478,7 @@ def _ensure_cifar10():
         print("  Download complete.")
     except Exception as e:
         print(f"  Download failed: {e}")
-        print(
-            "  You can manually download from: https://www.cs.toronto.edu/~kriz/cifar.html"
-        )
+        print("  You can manually download from: https://www.cs.toronto.edu/~kriz/cifar.html")
         sys.exit(1)
 
 
@@ -551,9 +512,7 @@ def main():
         default=500,
         help="Points to sample for dimensionality discovery",
     )
-    parser.add_argument(
-        "--k-pca", type=int, default=50, help="Neighborhood size for local PCA"
-    )
+    parser.add_argument("--k-pca", type=int, default=50, help="Neighborhood size for local PCA")
     parser.add_argument(
         "--samples-per-class",
         type=int,
@@ -630,18 +589,14 @@ def main():
     for c in sorted(class_dims.keys()):
         cd = class_dims[c]
         label = CIFAR10_CLASSES[c] if c < len(CIFAR10_CLASSES) else str(c)
-        print(
-            f"  {label:>12}: d = {cd['mean']:.1f} ± {cd['std']:.1f}  [{cd['min']}, {cd['max']}]"
-        )
+        print(f"  {label:>12}: d = {cd['mean']:.1f} ± {cd['std']:.1f}  [{cd['min']}, {cd['max']}]")
 
     # Use max of per-class maxima as the bottleneck — accommodates the hardest sample
     global_dim = int(round(dim_report[args.tau]["mean"]))
     intrinsic_dim = max(cd["max"] for cd in class_dims.values())
     # Clamp d to n_classes — need at least that many dims to separate classes.
     d = max(intrinsic_dim, n_classes)
-    print(
-        f"\n>> Global intrinsic dim (mean): {global_dim}  |  Max per-class max: {intrinsic_dim}"
-    )
+    print(f"\n>> Global intrinsic dim (mean): {global_dim}  |  Max per-class max: {intrinsic_dim}")
     print(f"   Using d = {d} (max of local-PCA={intrinsic_dim}, n_classes={n_classes})")
     print(f"   d = {d / input_dim * 100:.1f}% of ambient dimensions")
 
@@ -815,11 +770,7 @@ def main():
     # Convergence
     row = f"{'Epochs to 40%':<25}"
     for name, results in all_results.items():
-        convs = [
-            r["convergence_epoch"]
-            for r in results
-            if r["convergence_epoch"] is not None
-        ]
+        convs = [r["convergence_epoch"] for r in results if r["convergence_epoch"] is not None]
         if convs:
             row += f"  {np.mean(convs):.1f} ± {np.std(convs):.1f} ({len(convs)}/{len(results)})  "
         else:
@@ -837,9 +788,7 @@ def main():
 
     # Winner
     print("-" * 70)
-    best_name = max(
-        all_results, key=lambda n: np.mean([r["test_acc"] for r in all_results[n]])
-    )
+    best_name = max(all_results, key=lambda n: np.mean([r["test_acc"] for r in all_results[n]]))
     best_acc = np.mean([r["test_acc"] for r in all_results[best_name]])
     std_name = "Standard (1024→512)"
     std_acc = np.mean([r["test_acc"] for r in all_results[std_name]])
@@ -854,14 +803,10 @@ def main():
         std_params = all_results[std_name][0]["n_params"]
         if best_params < std_params:
             reduction = 100 * (1 - best_params / std_params)
-            print(
-                f"   With {reduction:.0f}% FEWER parameters ({best_params:,} vs {std_params:,})"
-            )
+            print(f"   With {reduction:.0f}% FEWER parameters ({best_params:,} vs {std_params:,})")
         elif best_params > std_params:
             increase = 100 * (best_params / std_params - 1)
-            print(
-                f"   With {increase:.0f}% more parameters ({best_params:,} vs {std_params:,})"
-            )
+            print(f"   With {increase:.0f}% more parameters ({best_params:,} vs {std_params:,})")
     else:
         print(f">> Standard architecture wins: {std_acc:.4f}")
 
@@ -892,9 +837,7 @@ def main():
         "per_class_dims": {
             str(k): {
                 **v,
-                "class_name": (
-                    CIFAR10_CLASSES[k] if k < len(CIFAR10_CLASSES) else str(k)
-                ),
+                "class_name": (CIFAR10_CLASSES[k] if k < len(CIFAR10_CLASSES) else str(k)),
             }
             for k, v in class_dims.items()
         },
@@ -907,9 +850,7 @@ def main():
     print(f"\nResults saved to {results_path}")
 
     if args.plot:
-        plot_path = str(
-            Path(__file__).resolve().parent / "cifar10_architecture_results.png"
-        )
+        plot_path = str(Path(__file__).resolve().parent / "cifar10_architecture_results.png")
         plot_results(
             all_results,
             d,

@@ -52,7 +52,9 @@ class Turtle3D:
 
         self._name = name
         self._pen = _UP_
-        self._orientation = _ORIENTATION_INIT  # will be set to 1 or 2 later when used for residue building
+        self._orientation = (
+            _ORIENTATION_INIT  # will be set to 1 or 2 later when used for residue building
+        )
         self._recording = False
         self._tape = []
 
@@ -124,9 +126,9 @@ class Turtle3D:
 
     @Orientation.setter
     def Orientation(self, orientation):
-        assert (
-            orientation == ORIENT_BACKBONE or orientation == ORIENT_SIDECHAIN
-        ), f"Orientation must be {ORIENT_BACKBONE} or {ORIENT_SIDECHAIN}"
+        assert orientation == ORIENT_BACKBONE or orientation == ORIENT_SIDECHAIN, (
+            f"Orientation must be {ORIENT_BACKBONE} or {ORIENT_SIDECHAIN}"
+        )
         self._orientation = orientation
 
     @property
@@ -188,9 +190,7 @@ class Turtle3D:
                 self._position = x.get_array()
 
             elif len(x) != 3:
-                raise ValueError(
-                    "Turtle3D: x is not a vector list/tuple/array of 3 numbers"
-                )
+                raise ValueError("Turtle3D: x is not a vector list/tuple/array of 3 numbers")
             else:
                 self._position = numpy.array(x, "d")
         else:
@@ -467,9 +467,7 @@ class Turtle3D:
             return v
         return v / norm
 
-    def orient(
-        self, position: numpy.array, heading: numpy.array, left: numpy.array
-    ) -> None:
+    def orient(self, position: numpy.array, heading: numpy.array, left: numpy.array) -> None:
         """
         Orients the turtle with Position at p1, Heading at p2 and Left at p3
 
@@ -514,14 +512,12 @@ class Turtle3D:
         :type orientation: int
         """
 
-        assert (
-            self._orientation == 1 or self._orientation == 2
-        ), "orient_at_residue() requires Turtle3D to be #1 or #2"
+        assert self._orientation == 1 or self._orientation == 2, (
+            "orient_at_residue() requires Turtle3D to be #1 or #2"
+        )
 
         residue = chain[resnumb]
-        assert (
-            residue is not None
-        ), "get_backbone_from_sidechain() requires valid residue number"
+        assert residue is not None, "get_backbone_from_sidechain() requires valid residue number"
 
         # by this point I'm pretty confident I have coordinates
         # we pull the actual numpy.array from the coordinates since that's what the
@@ -563,9 +559,9 @@ class Turtle3D:
         Returns: None. Turtle internal state is modified
         """
 
-        assert (
-            orientation == 1 or orientation == 2
-        ), "orient_at_residue() requires Turtle3D to be #1 or #2"
+        assert orientation == 1 or orientation == 2, (
+            "orient_at_residue() requires Turtle3D to be #1 or #2"
+        )
 
         _n = n.copy()
         _ca = ca.copy()

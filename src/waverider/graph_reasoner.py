@@ -30,7 +30,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
-
 from proteusPy.turtleND import TurtleND
 
 __pdoc__ = {"__all__": True}

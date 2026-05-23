@@ -65,27 +65,23 @@ Last Revision: 2026-04-15 09:29:55
 import argparse
 import json
 import math
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from sklearn.decomposition import PCA as skPCA
-from sklearn.impute import SimpleImputer
-from sklearn.model_selection import StratifiedKFold
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
 # TensorFlow / CPU setup
 # ---------------------------------------------------------------------------
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-os.environ["CUDA_VISIBLE_DEVICES"] = ""  # CPU — small tabular MLPs are faster here
-
-import tensorflow as tf  # noqa: E402
+tf, DEVICE_INFO = setup_tensorflow()
+import numpy as np  # noqa: E402
+from sklearn.decomposition import PCA as skPCA  # noqa: E402
+from sklearn.impute import SimpleImputer  # noqa: E402
+from sklearn.model_selection import StratifiedKFold  # noqa: E402
+from sklearn.neighbors import KNeighborsClassifier  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 # Suppress retracing warnings: CV benchmarks rebuild models per fold intentionally.
 tf.get_logger().setLevel("ERROR")
@@ -96,12 +92,6 @@ for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
     except RuntimeError:
         pass
-
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": "CPU (forced)",
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
 
 import keras  # noqa: E402
 

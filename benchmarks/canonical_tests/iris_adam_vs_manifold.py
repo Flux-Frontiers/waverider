@@ -49,43 +49,14 @@ Usage
 
 import argparse
 import json
-import os
 import time
 from dataclasses import dataclass, field
 
 import numpy as np
 
-# ---------------------------------------------------------------------------
-# TensorFlow setup — detect Metal / GPU before anything else
-# ---------------------------------------------------------------------------
+from benchmarks.tf_setup import setup_tensorflow
 
-
-def _setup_tensorflow():
-    """Import and configure TensorFlow, forced to CPU."""
-    os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-    # Force CPU — Metal GPU per-op sync overhead dominates for small MLPs
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-    import tensorflow as tf
-
-    gpus = tf.config.list_physical_devices("GPU")
-    for gpu in gpus:
-        try:
-            tf.config.experimental.set_memory_growth(gpu, True)
-        except RuntimeError:
-            pass
-
-    device_info = {
-        "tensorflow_version": tf.__version__,
-        "device_used": "CPU (forced)",
-    }
-
-    print(f"TensorFlow {tf.__version__} | Device: {device_info['device_used']}")
-
-    return tf, device_info
-
-
-tf, DEVICE_INFO = _setup_tensorflow()
+tf, DEVICE_INFO = setup_tensorflow()
 
 # Now safe to import tf-dependent modules
 import keras  # noqa: E402

@@ -8,7 +8,6 @@ from waverider.dimensionality_discovery import (
     discover_per_class_dimensionality,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

@@ -45,42 +45,24 @@ Usage
 
 import argparse
 import json
-import os
 import time
 from dataclasses import dataclass, field
-
-import numpy as np
 
 # ---------------------------------------------------------------------------
 # TensorFlow setup
 # ---------------------------------------------------------------------------
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-# Force CPU — Metal GPU per-op sync overhead dominates for small MLPs
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": "CPU (forced)",
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
-
+tf, DEVICE_INFO = setup_tensorflow()
 import keras  # noqa: E402
+import numpy as np  # noqa: E402
+
+from waverider.manifold_walker import ManifoldAdamWalker  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Import ManifoldAdamWalker
 # ---------------------------------------------------------------------------
 
-from waverider.manifold_walker import ManifoldAdamWalker  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Data

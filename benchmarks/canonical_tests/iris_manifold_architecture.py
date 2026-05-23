@@ -30,40 +30,21 @@ Usage
 
 import argparse
 import json
-import os
 import sys
 import time
 from pathlib import Path
 
-import numpy as np
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
 # TensorFlow setup
 # ---------------------------------------------------------------------------
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-# Force CPU — Metal GPU per-op sync overhead dominates for small MLPs
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": "CPU (forced)",
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
-
+tf, DEVICE_INFO = setup_tensorflow()
 import keras  # noqa: E402
+import numpy as np  # noqa: E402
+from sklearn.datasets import load_iris  # noqa: E402
+from sklearn.model_selection import train_test_split  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -262,7 +243,11 @@ def plot_results(all_results, intrinsic_dim, save_path):
         color = colors[name]
         ax.plot(epochs, accs.mean(0), "-", label=name, linewidth=2, color=color)
         ax.fill_between(
-            epochs, accs.mean(0) - accs.std(0), accs.mean(0) + accs.std(0), alpha=0.15, color=color
+            epochs,
+            accs.mean(0) - accs.std(0),
+            accs.mean(0) + accs.std(0),
+            alpha=0.15,
+            color=color,
         )
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Validation Accuracy")
@@ -626,7 +611,10 @@ def main():
         "n_test": len(X_test),
         "dimensionality_report": {str(k): v for k, v in dim_report.items()},
         "per_class_dims": {
-            str(k): {**v, "class_name": IRIS_CLASSES[k] if k < len(IRIS_CLASSES) else str(k)}
+            str(k): {
+                **v,
+                "class_name": IRIS_CLASSES[k] if k < len(IRIS_CLASSES) else str(k),
+            }
             for k, v in class_dims.items()
         },
         "results": {name: results for name, results in all_results.items()},

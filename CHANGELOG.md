@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-05-23
+
+### Added
+- **`benchmarks/tf_setup.py`** — shared TensorFlow bootstrap module replacing
+  ~25 lines of duplicated setup boilerplate across all benchmark scripts.
+  Accepts `gpu_flag` and `argv` parameters so Metal GPU benchmarks can be
+  enabled with `--metal` without touching individual scripts.
+- **`__init__.py`** files in `benchmarks/`, `benchmarks/canonical_tests/`,
+  `benchmarks/canonical_tests/clinical/`, and `benchmarks/manifold_model/`
+  to enable package-style imports (`from benchmarks.tf_setup import …`).
+
+### Fixed
+- **macOS import-order deadlock** — all benchmark scripts now import `tensorflow`
+  before `numpy` / `sklearn` to prevent Arrow's `libarrow.dylib` from binding
+  TensorFlow's `_AbslInternalPerThreadSemWait_*` symbols first, which caused
+  non-deterministic deadlocks on the first `model.fit()` call on Apple Silicon.
+- **`manifold_optimizer`** — `import keras` reordered to precede numpy and
+  sklearn imports, consistent with the package-wide TF-first policy.
+- **`mnist_manifold_model`** — `tensorflow` promoted from deferred local import
+  inside `main()` to module-level, consistent with all other benchmark scripts.
+- **`mnist_ub_phase_boundary`** — `verbose=0` changed to `verbose=1` in
+  `model.fit()` so training progress is visible during long runs.
+
+### Changed
+- Reformatted long function-call argument lists across all canonical benchmark
+  scripts to Black's multi-line style (one argument per line, trailing comma).
+- Minor style fixes across source modules: comment alignment, forward-reference
+  type hints replaced with bare names, removed stray blank lines in tests.
+
 ## [0.7.0] - 2026-04-15
 
 Initial public release of the WaveRider geometric ML stack.

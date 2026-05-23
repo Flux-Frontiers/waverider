@@ -14,7 +14,6 @@ import pytest
 
 from waverider.manifold_model import ManifoldModel, NodeGeometry
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

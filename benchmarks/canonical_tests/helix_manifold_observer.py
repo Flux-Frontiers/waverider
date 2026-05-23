@@ -127,9 +127,7 @@ def run_trial(
     )
 
     t0 = time.perf_counter()
-    subject = ManifoldModel(
-        k_graph=k_graph, k_pca=k_pca, k_vote=k_vote, variance_threshold=tau
-    )
+    subject = ManifoldModel(k_graph=k_graph, k_pca=k_pca, k_vote=k_vote, variance_threshold=tau)
     subject.fit(X_train, y_train)
     fit_time = time.perf_counter() - t0
 
@@ -268,10 +266,7 @@ def make_plot(trials: list[dict], agg: dict, arrays: dict, out_path: Path) -> No
     ax3.set_xticklabels([str(t["seed"]) for t in trials], fontsize=7)
     ax3.set_xlabel("seed")
     ax3.set_ylabel("accuracy / agreement")
-    ax3.set_title(
-        "Observer ↔ Subject  "
-        f"(mean agr = {agg['agreement']['mean']:.3f})"
-    )
+    ax3.set_title(f"Observer ↔ Subject  (mean agr = {agg['agreement']['mean']:.3f})")
     ax3.legend(fontsize=7, loc="lower right")
 
     fig.tight_layout()
@@ -323,9 +318,7 @@ def main() -> None:
 
     print("=" * 70)
     print("HELIX BENCHMARK: ManifoldObserver vs ManifoldModel subject")
-    print("1-manifold in 3D, embedded in 5D with σ={:.3f} Gaussian noise".format(
-        args.noise_sigma
-    ))
+    print(f"1-manifold in 3D, embedded in 5D with σ={args.noise_sigma:.3f} Gaussian noise")
     print("=" * 70)
     print(
         f"n_total={args.n_total}  n_trials={args.n_trials}  τ={args.tau}  "
@@ -365,7 +358,7 @@ def main() -> None:
 
     print()
     print("=" * 70)
-    print("RESULTS (mean ± std over {} trials)".format(args.n_trials))
+    print(f"RESULTS (mean ± std over {args.n_trials} trials)")
     print("=" * 70)
     for k, v in agg.items():
         print(f"  {k:30s}  {v['mean']:.4f} ± {v['std']:.4f}")

@@ -97,7 +97,7 @@ class BackboneEmbedder:
     # sklearn-style API
     # ------------------------------------------------------------------
 
-    def fit(self, backbone_list: BackboneAngleList) -> "BackboneEmbedder":
+    def fit(self, backbone_list: BackboneAngleList) -> BackboneEmbedder:
         """Fit the embedder on *backbone_list*.
 
         For 'torus' and 'window' modes this is a no-op.  For 'discrete' mode
@@ -116,7 +116,7 @@ class BackboneEmbedder:
         self
         """
         if self.mode == "discrete":
-            torus = backbone_list.to_torus_array()          # (N, 4)
+            torus = backbone_list.to_torus_array()  # (N, 4)
             codes = backbone_list.to_combined_codes(self.n_bins)  # (N,)
             n_codes = self.n_bins * self.n_bins
             codebook = np.zeros((n_codes, self.embedding_dim), dtype=np.float32)
@@ -126,7 +126,7 @@ class BackboneEmbedder:
                 if mask.any():
                     # Project centroid of torus coords into embedding_dim via
                     # random linear projection (fixed seed per code).
-                    centroid = torus[mask].mean(axis=0)      # (4,)
+                    centroid = torus[mask].mean(axis=0)  # (4,)
                     # Expand 4D centroid to embedding_dim via random projection
                     rng = np.random.default_rng(seed=code)
                     proj = rng.standard_normal((4, self.embedding_dim)).astype(np.float32)
@@ -194,8 +194,8 @@ class BackboneEmbedder:
 
     def _embed_discrete(self, bal: BackboneAngleList) -> np.ndarray:
         """Return (N, embedding_dim) via codebook lookup."""
-        codes = bal.to_combined_codes(self.n_bins)   # (N,)
-        return self.codebook_[codes]                  # type: ignore[index]
+        codes = bal.to_combined_codes(self.n_bins)  # (N,)
+        return self.codebook_[codes]  # type: ignore[index]
 
     def _embed_window(self, bal: BackboneAngleList) -> np.ndarray:
         """Return (N, 4 * window_size) via sliding-window concatenation.
@@ -205,7 +205,7 @@ class BackboneEmbedder:
         Window size should be odd (e.g. 7) so the current residue sits in the
         exact centre.
         """
-        torus = bal.to_torus_array()         # (N, 4)
+        torus = bal.to_torus_array()  # (N, 4)
         n = len(torus)
         w = self.window_size
         half = w // 2
@@ -227,7 +227,7 @@ class BackboneEmbedder:
 
     def __repr__(self) -> str:
         if self.mode == "torus":
-            return f"BackboneEmbedder(mode='torus', output_dim=4)"
+            return "BackboneEmbedder(mode='torus', output_dim=4)"
         if self.mode == "discrete":
             fitted = "fitted" if self._fitted else "unfitted"
             return (

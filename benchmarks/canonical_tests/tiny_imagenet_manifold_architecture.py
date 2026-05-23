@@ -56,39 +56,18 @@ Usage
 
 import argparse
 import json
-import os
 import sys
 import time
 from pathlib import Path
 
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
 # TensorFlow setup
 # ---------------------------------------------------------------------------
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-# Default to CPU unless --gpu is passed (checked before TF import).
-_use_gpu = "--gpu" in sys.argv
-if not _use_gpu:
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-_device_label = "GPU" if (gpus and _use_gpu) else "CPU"
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": _device_label,
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
+tf, DEVICE_INFO = setup_tensorflow(gpu_flag="--gpu")
+import numpy as np  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
@@ -124,8 +103,9 @@ def load_tiny_imagenet():
     :returns: Tuple ((X_train, y_train), (X_val, y_val)) of float32 / int32
         arrays.  Images are NOT normalised here — caller handles scaling.
     """
-    import zipfile
     import urllib.request
+    import zipfile
+
     from PIL import Image
 
     cache_dir = _TINY_IMAGENET_CACHE

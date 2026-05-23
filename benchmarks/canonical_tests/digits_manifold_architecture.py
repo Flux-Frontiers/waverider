@@ -53,42 +53,23 @@ Usage
 import argparse
 import json
 import math
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from sklearn.datasets import load_digits
-from sklearn.decomposition import PCA as skPCA
-from sklearn.model_selection import StratifiedKFold
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
 # TensorFlow setup
 # ---------------------------------------------------------------------------
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-# Hide all GPUs — digits is too small to benefit from GPU kernel overhead.
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": "CPU (forced)",
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
-
+tf, DEVICE_INFO = setup_tensorflow()
+import numpy as np  # noqa: E402
+from sklearn.datasets import load_digits  # noqa: E402
+from sklearn.decomposition import PCA as skPCA  # noqa: E402
+from sklearn.model_selection import StratifiedKFold  # noqa: E402
+from sklearn.neighbors import KNeighborsClassifier  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # waverider imports
@@ -122,7 +103,15 @@ def count_params(model):
 
 
 def run_fold(
-    build_fn, X_train, y_train, X_test, y_test, epochs, batch_size, fold, is_sklearn=False
+    build_fn,
+    X_train,
+    y_train,
+    X_test,
+    y_test,
+    epochs,
+    batch_size,
+    fold,
+    is_sklearn=False,
 ):
     """Run one CV fold — works for both Keras models and sklearn classifiers.
 
@@ -240,7 +229,14 @@ def _draw_arch_schematics(ax, arch_layers, colors):
 
         short = name.split("(")[0].strip()
         ax.text(
-            x_ctr, 0.95, short, ha="center", va="top", fontsize=7, fontweight="bold", color=color
+            x_ctr,
+            0.95,
+            short,
+            ha="center",
+            va="top",
+            fontsize=7,
+            fontweight="bold",
+            color=color,
         )
 
         prev_y = None

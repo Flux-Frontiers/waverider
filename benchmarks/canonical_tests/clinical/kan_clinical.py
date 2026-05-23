@@ -381,7 +381,7 @@ def run_symbolic(X, y, d_star, n_classes, pc_names, class_names, out_dir: Path):
                 try:
                     result = model.suggest_symbolic(layer_idx, i, j, topk=1, verbose=False)
                     best_name, _, best_r2, _ = result
-                    if isinstance(best_r2, (list, tuple)):
+                    if isinstance(best_r2, list | tuple):
                         best_name, best_r2 = best_name[0], float(best_r2[0])
                     else:
                         best_name, best_r2 = str(best_name), float(best_r2)
@@ -442,7 +442,13 @@ def run_symbolic(X, y, d_star, n_classes, pc_names, class_names, out_dir: Path):
         out_vars = [class_names[1]] if n_classes == 2 else list(class_names)
         # Scale label size down for wide networks; 0.4 works for binary, less for multiclass
         varscale = min(0.8, 4.0 / max(d_star, n_classes))
-        model.plot(folder=_plot_tmp, beta=3, in_vars=pc_names, out_vars=out_vars, varscale=varscale)
+        model.plot(
+            folder=_plot_tmp,
+            beta=3,
+            in_vars=pc_names,
+            out_vars=out_vars,
+            varscale=varscale,
+        )
         plot_path = out_dir / "activations.png"
         plt.savefig(plot_path, dpi=150, bbox_inches="tight")
         plt.close("all")

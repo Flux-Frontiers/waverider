@@ -41,44 +41,20 @@ Usage
 
 import argparse
 import json
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-
 # ---------------------------------------------------------------------------
 # TensorFlow setup
 # ---------------------------------------------------------------------------
-# Check for --metal before importing TensorFlow (env vars must be set first).
-_USE_METAL = "--metal" in sys.argv
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-if not _USE_METAL:
-    # Force CPU — Metal GPU per-op sync overhead dominates for small dense nets.
-    # Pass --metal to allow TF-Metal for Conv2D-heavy architectures.
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
-import tensorflow as tf  # noqa: E402
-
-gpus = tf.config.list_physical_devices("GPU")
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
-
-_device_label = f"Metal GPU ({gpus[0].name})" if (_USE_METAL and gpus) else "CPU (forced)"
-DEVICE_INFO = {
-    "tensorflow_version": tf.__version__,
-    "device_used": _device_label,
-}
-print(f"TensorFlow {tf.__version__} | Device: {DEVICE_INFO['device_used']}")
-
+tf, DEVICE_INFO = setup_tensorflow(gpu_flag="--metal")
 import keras  # noqa: E402
+import numpy as np  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
@@ -167,7 +143,7 @@ def run_trial(build_fn, X_train, y_train, X_test, y_test, epochs, batch_size, tr
         y_train,
         epochs=epochs,
         batch_size=batch_size,
-        verbose=0,
+        verbose=1,
     )
     wall_time = time.perf_counter() - t0
 

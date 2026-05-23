@@ -42,24 +42,26 @@ Usage
 
 import argparse
 import json
-import os
 import time
 
-import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
+from benchmarks.tf_setup import setup_tensorflow
 
 # ---------------------------------------------------------------------------
 # TensorFlow (dataset loading only)
 # ---------------------------------------------------------------------------
 
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+
+tf, _DEVICE_INFO = setup_tensorflow(tf_log_level="3")
+import numpy as np  # noqa: E402
+from sklearn.neighbors import KNeighborsClassifier  # noqa: E402
+from sklearn.preprocessing import StandardScaler  # noqa: E402
+
+from waverider.manifold_model import ManifoldModel  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Bootstrap ManifoldModel imports
 # ---------------------------------------------------------------------------
 
-from waverider.manifold_model import ManifoldModel  # noqa: E402
 
 DIGIT_NAMES = [str(i) for i in range(10)]
 
@@ -94,7 +96,10 @@ def main():
         description="MNIST: ManifoldModel — The Ultimate Test on Real Data"
     )
     parser.add_argument(
-        "--n-train", type=int, default=5000, help="Training subsample size (default 5000)"
+        "--n-train",
+        type=int,
+        default=5000,
+        help="Training subsample size (default 5000)",
     )
     parser.add_argument(
         "--n-test", type=int, default=2000, help="Test subsample size (default 2000)"
@@ -103,7 +108,10 @@ def main():
     parser.add_argument("--k-pca", type=int, default=50, help="PCA neighborhood size")
     parser.add_argument("--k-vote", type=int, default=7, help="Voting neighbors for prediction")
     parser.add_argument(
-        "--manifold-weight", type=float, default=0.8, help="Manifold vs Euclidean distance blend"
+        "--manifold-weight",
+        type=float,
+        default=0.8,
+        help="Manifold vs Euclidean distance blend",
     )
     args = parser.parse_args()
 
@@ -113,8 +121,6 @@ def main():
     print("=" * 70)
 
     # Load MNIST
-    import tensorflow as tf
-
     tf.get_logger().setLevel("ERROR")
     (X_train_full, y_train_full), (X_test_full, y_test_full) = tf.keras.datasets.mnist.load_data()
 
@@ -248,7 +254,8 @@ def main():
 
     # Use the best-performing model's tau (refit on subsample)
     best_tau = max(
-        (t for t in tau_values), key=lambda t: results[f"ManifoldModel (tau={t})"]["accuracy"]
+        (t for t in tau_values),
+        key=lambda t: results[f"ManifoldModel (tau={t})"]["accuracy"],
     )
     print(f"\nUsing best tau={best_tau}")
 
