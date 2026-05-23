@@ -36,8 +36,8 @@ build-backend = "poetry.core.masonry.api"
 name = "waverider"
 version = "0.7.0"
 description = "Manifold-aware geometric ML stack: TurtleND, ManifoldWalker, ManifoldModel, ManifoldObserver"
-authors = ["Eric G. Suchanek, PhD <suchanek@mac.com>"]
-license = "CC-BY-4.0"
+authors = ["Eric G. Suchanek, PhD <suchanek@flux-frontiers.com>"]
+license = "Elastic2.0"
 readme = "README.md"
 homepage = "https://github.com/Flux-Frontiers/waverider"
 repository = "https://github.com/Flux-Frontiers/waverider"
@@ -51,13 +51,12 @@ tensorflow = "2.21.0"
 tf-keras = ">=2.16.0"
 onnx = ">=1.21.0"
 onnxruntime = ">=1.24.4"
-doc-kg    = { version = ">=0.14.0",  optional = true }
-pycode-kg = { version = ">=0.19.0",  optional = true }
-ftree-kg  = { version = ">=0.8.0",   optional = true }
+doc-kg    = { version = ">=0.15.3",  optional = true }
+pycode-kg = { version = ">=0.19.2",  optional = true }
 proteuspy = { version = ">=0.100.0", optional = true }
 
 [tool.poetry.extras]
-kg = ["pycode-kg", "ftree-kg", "doc-kg", "proteuspy"]
+kg = ["pycode-kg", "doc-kg", "proteuspy"]
 
 [tool.poetry.group.kgdeps]
 optional = true
