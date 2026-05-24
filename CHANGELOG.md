@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **`--plot-only` flag** — all canonical benchmark scripts (CIFAR-10, CIFAR-100, CIFAR-100+ResNet, Digits, MNIST, Iris, Iris Adam-vs-Manifold, Iris ManifoldAdamWalker, Clinical/Disease, Tiny ImageNet, ResNet) now accept `--plot-only` to regenerate the results figure from an existing JSON file without re-running training. Enables fast figure-tweak cycles after long runs.
+
 ### Changed
 - **`mnist_ub_phase_boundary`** — replaced `verbose=1` with a `_ThrottledProgbar`
   callback that redraws the Keras progress bar every 5% of steps per epoch,
@@ -16,9 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   98.98% ± 0.18% (within 0.3 pp of ResNet, 38% fewer params). Version badge
   updated to 0.7.1. CIFAR-10 parameter-efficiency row updated (d\*=34, 724×,
   49.12% @ 5,076 params).
-- **`cifar10_report.md`** — refreshed with 60-epoch / 5-trial Tesla run:
-  d\*=34 (truck class drives the ceiling), 724× parameter reduction,
-  PCA+MLP achieves 95.1% of standard accuracy (49.12% vs 51.67%).
+- **`cifar10_report.md` → `cifar10_analysis.md`** — renamed; refreshed with
+  60-epoch / 5-trial / batch-512 results: d\*=34 (truck class drives the
+  ceiling), 724× parameter reduction, PCA+MLP achieves 95.1% of standard
+  accuracy (49.12% vs 51.67%). Added analysis: 43pp train–test gap in Standard
+  MLP reveals memorization; ManifoldAdam on overparameterized arch regresses
+  5.4pp vs vanilla Adam; cold-init projection layer identified as root cause for
+  Manifold/Wide-Manifold underperformance vs PCA+MLP.
+- **`docs/waverider/waverider.md`** — Finding 8 table refreshed with 60-epoch /
+  5-trial numbers (d\*=34); analysis section expanded with overparameterization
+  diagnosis and PCA warm-start recommendation.
+- **`papers/manifold_classification/DATA.md`** — CIFAR-10 section updated with
+  60-epoch / batch-512 results, prior-run row archived for comparison, analysis
+  notes added for ManifoldAdam gradient-projection pathology and cold-init fix.
+- **Plot layout** — all canonical benchmark scripts: figure height increased,
+  bottom-row grid-spec ratio raised to 1.2, `hspace` increased to 0.55; x-axis
+  tick labels rotated from 30° to 45° with `ha="right"` alignment to prevent
+  label overlap in accuracy and parameter-count bar charts.
 
 ### Benchmarks
 - **UB phase boundary — MNIST** (60 epochs, 4 trials): ResNet 99.27% ± 0.12%

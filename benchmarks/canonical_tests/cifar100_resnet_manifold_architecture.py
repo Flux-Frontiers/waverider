@@ -466,8 +466,8 @@ def plot_results(
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     elapsed_str = f"  |  total run time: {elapsed:.0f}s" if elapsed is not None else ""
 
-    fig = plt.figure(figsize=(16, 16))
-    gs = fig.add_gridspec(4, 2, height_ratios=[1, 1, 0.6, 0.85], hspace=0.42, wspace=0.3)
+    fig = plt.figure(figsize=(16, 17))
+    gs = fig.add_gridspec(4, 2, height_ratios=[1, 1, 0.6, 1.2], hspace=0.55, wspace=0.3)
     ax_val = fig.add_subplot(gs[0, 0])
     ax_loss = fig.add_subplot(gs[0, 1])
     ax_acc = fig.add_subplot(gs[1, 0])
@@ -543,7 +543,9 @@ def plot_results(
     ax_acc.set_ylabel("Test Accuracy")
     ax_acc.set_title("Final Test Accuracy")
     ax_acc.set_ylim(0, float(max(means)) * 1.25)
-    ax_acc.tick_params(axis="x", labelsize=7, rotation=30)
+    ax_acc.tick_params(axis="x", labelsize=7, rotation=45)
+    for label in ax_acc.get_xticklabels():
+        label.set_ha("right")
     ax_acc.grid(True, alpha=0.3, axis="y")
 
     # --- Parameter count bars ---
@@ -561,7 +563,9 @@ def plot_results(
     ax_par.set_ylabel("Parameters")
     ax_par.set_title("Parameter Count (lower is better at same accuracy)")
     ax_par.set_yscale("log")
-    ax_par.tick_params(axis="x", labelsize=7, rotation=30)
+    ax_par.tick_params(axis="x", labelsize=7, rotation=45)
+    for label in ax_par.get_xticklabels():
+        label.set_ha("right")
     ax_par.grid(True, alpha=0.3, axis="y")
 
     # --- Mean wall time per architecture ---

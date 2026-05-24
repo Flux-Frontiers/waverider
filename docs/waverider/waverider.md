@@ -291,19 +291,21 @@ The pattern is intuitive: rigid objects with uniform backgrounds (ships, airplan
 
 #### Finding 8: The Bottleneck Tradeoff — Compression vs. Spatial Information
 
-| Architecture | Parameters | Test Accuracy (3 trials) | Acc/Kparam |
+| Architecture | Parameters | Test Accuracy (5 trials) | Acc/Kparam |
 |---|---|---|---|
-| Standard (1024→512) | 3,676,682 | 52.04 ± 0.33% | 0.0001 |
-| **PCA→33D + MLP (2d→d)** | **4,795** | **48.70 ± 0.18%** | **0.1016** |
-| Intrinsic Dim (PCA→33D→output) | 1,462 | 46.51 ± 0.36% | 0.3181 |
-| Manifold + ManifoldAdam (d=33) | 101,749 | 46.97 ± 0.23% | 0.0046 |
-| Manifold (d=33) | 101,749 | 46.25 ± 0.05% | 0.0045 |
-| Wide Manifold (d+1, d=33) | 104,832 | 46.23 ± 0.21% | 0.0044 |
-| ManifoldAdam (1024→512) | 3,676,682 | 46.15 ± 0.40% | 0.0001 |
+| Standard (1024→512) | 3,676,682 | 51.67 ± 0.75% | 0.0001 |
+| **PCA→34D + MLP (2d→d)** | **5,076** | **49.12 ± 0.46%** | **0.0968** |
+| Manifold + ManifoldAdam (d=34) | 104,832 | 47.31 ± 0.35% | 0.0045 |
+| Intrinsic Dim (PCA→34D→output) | 1,540 | 46.75 ± 0.51% | 0.3036 |
+| ManifoldAdam (1024→512, proj→34D) | 3,676,682 | 46.23 ± 0.94% | 0.0001 |
+| Manifold (d=34) | 104,832 | 45.85 ± 0.26% | 0.0044 |
+| Wide Manifold (d+1, d=34) | 107,915 | 45.58 ± 0.38% | 0.0042 |
 
-The results reveal a striking pattern: **PCA→33D achieves 48.70% accuracy with 766x fewer parameters** than the standard architecture (4,795 vs 3,676,682) — only 3.3 percentage points below Standard despite using 99.9% fewer parameters. The manifold discovery correctly identifies that only 33 of 3,072 dimensions carry classification signal.
+The results reveal a striking pattern: **PCA→34D achieves 49.12% accuracy with 724× fewer parameters** than the standard architecture (5,076 vs 3,676,682) — only 2.6 percentage points below Standard despite using 99.9% fewer parameters. The manifold discovery correctly identifies that only 34 of 3,072 dimensions carry classification signal.
 
-The Intrinsic Dim model (PCA→33D→output, linear readout, 1,462 params) achieves 46.51% — **2,513× more parameter-efficient than Standard**. ManifoldAdam applied to the full 1024→512 baseline shows no benefit over plain Adam at this scale, confirming that gradient projection alone cannot compensate for overparameterization. The manifold-bottleneck architectures (Manifold, Wide Manifold) require far fewer parameters but underperform the PCA-preprocessed models, consistent with the principle that PCA provides an optimal linear projection while learned bottlenecks face a harder optimization problem.
+The Intrinsic Dim model (PCA→34D→output, linear readout, 1,540 params) achieves 46.75% — **2,387× more parameter-efficient than Standard**. ManifoldAdam applied to the full 1024→512 baseline shows no benefit; at 46.23% it actually regresses 5.4 pp below vanilla Adam, because projecting gradients onto the 34-dimensional manifold at overparameterized scale discards gradient components that are genuinely discriminative. ManifoldAdam is best applied at architectures already bottlenecked near d.
+
+The manifold-bottleneck architectures (Manifold, Wide Manifold) underperform the PCA-preprocessed models by 3–4 pp despite carrying 20× more parameters. The cause is cold initialization: the projection layer starts from random weights and must jointly learn projection and classification, while PCA supplies an optimal linear basis before training begins. Warm-starting the projection from PCA weights is the natural fix. Additionally, the Standard architecture reaches ~95% training accuracy against 51.67% validation — a 43 pp gap — so its margin over manifold models reflects memorization rather than superior generalization; early stopping at validation peak would reveal a smaller true gap.
 
 #### Finding 9: The Efficiency Frontier
 

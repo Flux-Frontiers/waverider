@@ -806,7 +806,9 @@ def plot_results(all_results, meta, intrinsic_dim, save_path, elapsed=None):
     ax_acc.set_ylabel("Mean CV Test Accuracy")
     ax_acc.set_title("Final Test Accuracy (mean ± std)")
     ax_acc.set_ylim(0, min(1.0, float(max(means)) * 1.22))
-    ax_acc.tick_params(axis="x", labelsize=7, rotation=30)
+    ax_acc.tick_params(axis="x", labelsize=7, rotation=45)
+    for label in ax_acc.get_xticklabels():
+        label.set_ha("right")
     ax_acc.grid(True, alpha=0.3, axis="y")
 
     # ---- AUC bars (binary) or parameter efficiency (multi-class) ----
@@ -832,7 +834,9 @@ def plot_results(all_results, meta, intrinsic_dim, save_path, elapsed=None):
         ax_auc.set_title("AUC-ROC (binary classification, mean ± std)")
         ax_auc.set_ylim(0.5, 1.05)
         ax_auc.axhline(0.5, color="gray", linestyle="--", linewidth=1, label="random")
-        ax_auc.tick_params(axis="x", labelsize=7, rotation=30)
+        ax_auc.tick_params(axis="x", labelsize=7, rotation=45)
+        for label in ax_auc.get_xticklabels():
+            label.set_ha("right")
         ax_auc.grid(True, alpha=0.3, axis="y")
     else:
         eff = []
@@ -852,7 +856,9 @@ def plot_results(all_results, meta, intrinsic_dim, save_path, elapsed=None):
             )
         ax_auc.set_ylabel("Accuracy / Kparam")
         ax_auc.set_title("Parameter Efficiency (acc per 1K params)")
-        ax_auc.tick_params(axis="x", labelsize=7, rotation=30)
+        ax_auc.tick_params(axis="x", labelsize=7, rotation=45)
+        for label in ax_auc.get_xticklabels():
+            label.set_ha("right")
         ax_auc.grid(True, alpha=0.3, axis="y")
 
     # ---- parameter bars ----
@@ -872,7 +878,9 @@ def plot_results(all_results, meta, intrinsic_dim, save_path, elapsed=None):
     ax_par.set_ylabel("Parameters")
     ax_par.set_title("Parameter Count (log scale)")
     ax_par.set_yscale("log")
-    ax_par.tick_params(axis="x", labelsize=7, rotation=30)
+    ax_par.tick_params(axis="x", labelsize=7, rotation=45)
+    for label in ax_par.get_xticklabels():
+        label.set_ha("right")
     ax_par.grid(True, alpha=0.3, axis="y")
 
     # ---- architecture schematics ----
@@ -922,11 +930,35 @@ def main():
     )
     parser.add_argument("--plot", action="store_true", default=True)
     parser.add_argument(
+        "--plot-only",
+        action="store_true",
+        help="Regenerate figure from existing results JSON without running any training",
+    )
+    parser.add_argument(
         "--all",
         action="store_true",
         help="Run all datasets sequentially (ignores --dataset)",
     )
     args = parser.parse_args()
+
+    if args.plot_only:
+        out_stem = f"{args.dataset}_disease_architecture_results"
+        out_dir = Path(__file__).resolve().parent
+        json_path = out_dir / f"{out_stem}.json"
+        png_path = str(out_dir / f"{out_stem}.png")
+        if not json_path.exists():
+            print(f"No results file found: {json_path}")
+            sys.exit(1)
+        with open(json_path) as f:
+            saved = json.load(f)
+        plot_results(
+            saved["results"],
+            saved["meta"],
+            saved["intrinsic_dim"],
+            png_path,
+            elapsed=saved.get("elapsed_s"),
+        )
+        sys.exit(0)
 
     if args.all:
         import copy

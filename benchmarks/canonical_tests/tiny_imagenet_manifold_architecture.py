@@ -402,6 +402,9 @@ def plot_results(all_results, intrinsic_dim, input_dim, save_path, elapsed=None)
     ax.set_ylabel("Validation Accuracy")
     ax.set_title("Final Validation Accuracy")
     ax.grid(True, alpha=0.3, axis="y")
+    ax.tick_params(axis="x", rotation=45)
+    for label in ax.get_xticklabels():
+        label.set_ha("right")
 
     # Parameter counts
     ax = axes[1, 1]
@@ -420,6 +423,9 @@ def plot_results(all_results, intrinsic_dim, input_dim, save_path, elapsed=None)
     ax.set_title("Parameter Count (lower is better at same accuracy)")
     ax.set_yscale("log")
     ax.grid(True, alpha=0.3, axis="y")
+    ax.tick_params(axis="x", rotation=45)
+    for label in ax.get_xticklabels():
+        label.set_ha("right")
 
     plt.tight_layout()
     plt.savefig(save_path, dpi=150, bbox_inches="tight")
@@ -464,8 +470,33 @@ def main():
         help="Prefix for output files (default: tiny_imagenet)",
     )
     parser.add_argument("--plot", action="store_true", default=True)
+    parser.add_argument(
+        "--plot-only",
+        action="store_true",
+        help="Regenerate figure from existing results JSON without running any training",
+    )
     args = parser.parse_args()
     t_start = time.perf_counter()
+
+    _results_path = (
+        Path(__file__).resolve().parent / f"{args.output_prefix}_architecture_results.json"
+    )
+
+    if args.plot_only:
+        if not _results_path.exists():
+            print(f"No results file found: {_results_path}")
+            sys.exit(1)
+        with open(_results_path) as f:
+            saved = json.load(f)
+        _plot_path = str(_results_path).replace(".json", ".png")
+        plot_results(
+            saved["results"],
+            saved["d"],
+            saved["input_dim"],
+            _plot_path,
+            elapsed=saved.get("elapsed_s"),
+        )
+        sys.exit(0)
 
     # -----------------------------------------------------------------------
     # Load data

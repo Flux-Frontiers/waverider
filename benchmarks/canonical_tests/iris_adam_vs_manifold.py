@@ -49,8 +49,10 @@ Usage
 
 import argparse
 import json
+import sys
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 
@@ -752,6 +754,9 @@ def plot_results(
                 fontweight="bold",
             )
     ax.grid(True, alpha=0.3, axis="y")
+    ax.tick_params(axis="x", rotation=45)
+    for label in ax.get_xticklabels():
+        label.set_ha("right")
 
     # --- Wall time comparison ---
     ax = axes[1, 1]
@@ -775,6 +780,9 @@ def plot_results(
             fontweight="bold",
         )
     ax.grid(True, alpha=0.3, axis="y")
+    ax.tick_params(axis="x", rotation=45)
+    for label in ax.get_xticklabels():
+        label.set_ha("right")
 
     plt.tight_layout()
     save_path = save_path or "benchmarks/iris_benchmark_results.png"
@@ -906,6 +914,11 @@ def main():
     parser.add_argument("--trials", type=int, default=10, help="Number of trials")
     parser.add_argument("--lr", type=float, default=0.01, help="Learning rate")
     parser.add_argument("--plot", action="store_true", default=True, help="Generate plots")
+    parser.add_argument(
+        "--plot-only",
+        action="store_true",
+        help="Regenerate figure from existing results JSON without running any training",
+    )
     parser.add_argument("--k", type=int, default=30, help="ManifoldWalker neighborhood size")
     parser.add_argument(
         "--variance-threshold",
@@ -932,6 +945,35 @@ def main():
         help="Epochs between neighborhood resampling",
     )
     args = parser.parse_args()
+
+    results_path = Path(__file__).resolve().parent / "iris_benchmark_results.json"
+    plot_path = str(results_path.with_suffix(".png"))
+
+    if args.plot_only:
+        if not results_path.exists():
+            print(f"No results file found: {results_path}")
+            sys.exit(1)
+        with open(results_path) as f:
+            saved = json.load(f)
+
+        class _R:
+            pass
+
+        def _to_obj(d):
+            r = _R()
+            for k, v in d.items():
+                setattr(r, k, v)
+            return r
+
+        adam_results = [_to_obj(d) for d in saved["adam"]]
+        manifold_results = [_to_obj(d) for d in saved["manifold_walker"]]
+        manifold_adam_results = (
+            [_to_obj(d) for d in saved["manifold_adam"]]
+            if "manifold_adam" in saved
+            else None
+        )
+        plot_results(adam_results, manifold_results, manifold_adam_results, save_path=plot_path)
+        sys.exit(0)
 
     print("\nLoading Iris dataset...")
     X_train, y_train, X_test, y_test = load_iris()

@@ -71,6 +71,16 @@ d\* = 34 set by truck (max per-class maximum). Ordering is biologically sensible
 - **Manifold compression:** 3,072D → 34D (99.1% of ambient dimensions are noise)
 - Intrinsic Dim head (1,540 params) achieves 46.75% — **2,387× reduction** at −4.9 pp
 
+## Analysis
+
+**Standard overfits, not generalizes.** Training accuracy reaches ~95% while validation plateaus at ~51.67% — a 43 pp train/val gap. The Standard architecture's lead over manifold models reflects brute-force memorization, not superior generalization. Early stopping would expose this: Standard likely peaks around epoch 10–15 before the divergence takes hold.
+
+**Learned manifold projection underperforms precomputed PCA.** Manifold and Wide Manifold (~104K params) trail PCA→34D + MLP (5K params) by 3–4 pp despite carrying 20× more parameters. The root cause is cold initialization: the manifold projection layer starts from random weights and must simultaneously learn a good projection and a good classifier, while PCA gives the network an optimal linear projection before training begins. Warm-starting the projection layer from PCA weights is the direct fix.
+
+**ManifoldAdam is counterproductive at full scale.** Applying ManifoldAdam to the full Standard architecture (3.67M params) yields 46.23% — a 5.4 pp regression from vanilla Adam on the same architecture. At this overparameterized scale, projecting gradients onto the 34-dimensional manifold discards gradient components that are actually discriminative. ManifoldAdam is better suited to architectures already bottlenecked near d.
+
+**Next experiments:** (1) Early stopping at val-peak for all architectures; (2) PCA warm-start for Manifold/Wide Manifold projection layers; (3) ManifoldAdam applied only at the bottleneck layer, not the full network.
+
 ## Result Figure
 
 ![CIFAR10 Results](cifar10_architecture_results.png)

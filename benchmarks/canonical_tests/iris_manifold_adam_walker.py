@@ -45,8 +45,10 @@ Usage
 
 import argparse
 import json
+import sys
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # TensorFlow setup
@@ -475,6 +477,9 @@ def plot_results(adam_results, maw_results, save_path=None):
                 fontweight="bold",
             )
     ax.grid(True, alpha=0.3, axis="y")
+    ax.tick_params(axis="x", rotation=45)
+    for label in ax.get_xticklabels():
+        label.set_ha("right")
 
     # Test accuracy comparison
     ax = axes[1, 1]
@@ -499,6 +504,9 @@ def plot_results(adam_results, maw_results, save_path=None):
         )
     ax.grid(True, alpha=0.3, axis="y")
     ax.set_ylim(0.8, 1.05)
+    ax.tick_params(axis="x", rotation=45)
+    for label in ax.get_xticklabels():
+        label.set_ha("right")
 
     plt.tight_layout()
     save_path = save_path or "benchmarks/iris_maw_results.png"
@@ -646,7 +654,36 @@ def main():
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
     parser.add_argument("--plot", action="store_true", default=True)
+    parser.add_argument(
+        "--plot-only",
+        action="store_true",
+        help="Regenerate figure from existing results JSON without running any training",
+    )
     args = parser.parse_args()
+
+    results_path = Path(__file__).resolve().parent / "iris_maw_results.json"
+    plot_path = str(results_path.with_suffix(".png"))
+
+    if args.plot_only:
+        if not results_path.exists():
+            print(f"No results file found: {results_path}")
+            sys.exit(1)
+        with open(results_path) as f:
+            saved = json.load(f)
+
+        class _R:
+            pass
+
+        def _to_obj(d):
+            r = _R()
+            for k, v in d.items():
+                setattr(r, k, v)
+            return r
+
+        adam_results = [_to_obj(d) for d in saved["adam"]]
+        maw_results = [_to_obj(d) for d in saved["manifold_adam_walker"]]
+        plot_results(adam_results, maw_results, save_path=plot_path)
+        sys.exit(0)
 
     print("\nLoading Iris dataset...")
     X_train, y_train, X_test, y_test = load_iris()

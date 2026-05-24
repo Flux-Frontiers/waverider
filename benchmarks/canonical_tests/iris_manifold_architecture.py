@@ -297,6 +297,9 @@ def plot_results(all_results, intrinsic_dim, save_path):
     ax.set_title("Final Test Accuracy")
     ax.grid(True, alpha=0.3, axis="y")
     ax.set_ylim(0.7, 1.05)
+    ax.tick_params(axis="x", rotation=45)
+    for label in ax.get_xticklabels():
+        label.set_ha("right")
 
     # Parameter count (log scale)
     ax = axes[1, 1]
@@ -315,6 +318,9 @@ def plot_results(all_results, intrinsic_dim, save_path):
     ax.set_title("Parameter Count (lower is better at same accuracy)")
     ax.set_yscale("log")
     ax.grid(True, alpha=0.3, axis="y")
+    ax.tick_params(axis="x", rotation=45)
+    for label in ax.get_xticklabels():
+        label.set_ha("right")
 
     plt.tight_layout()
     plt.savefig(save_path, dpi=150, bbox_inches="tight")
@@ -337,7 +343,24 @@ def main():
     parser.add_argument("--test-size", type=float, default=0.2)
     parser.add_argument("--k-pca", type=int, default=10)
     parser.add_argument("--plot", action="store_true", default=True)
+    parser.add_argument(
+        "--plot-only",
+        action="store_true",
+        help="Regenerate figure from existing results JSON without running any training",
+    )
     args = parser.parse_args()
+
+    results_path = Path(__file__).resolve().parent / "iris_architecture_results.json"
+    plot_path = str(results_path.with_suffix(".png"))
+
+    if args.plot_only:
+        if not results_path.exists():
+            print(f"No results file found: {results_path}")
+            sys.exit(1)
+        with open(results_path) as f:
+            saved = json.load(f)
+        plot_results(saved["results"], saved["intrinsic_dim"], plot_path)
+        sys.exit(0)
 
     # -----------------------------------------------------------------------
     # Load data

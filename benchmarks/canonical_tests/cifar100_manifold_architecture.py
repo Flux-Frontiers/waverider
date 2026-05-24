@@ -376,8 +376,8 @@ def plot_results(
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     elapsed_str = f"  |  run time: {elapsed:.0f}s" if elapsed is not None else ""
 
-    fig = plt.figure(figsize=(16, 16))
-    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.85], hspace=0.38, wspace=0.3)
+    fig = plt.figure(figsize=(16, 17))
+    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 1.2], hspace=0.55, wspace=0.3)
     ax_val = fig.add_subplot(gs[0, 0])
     ax_loss = fig.add_subplot(gs[0, 1])
     ax_acc = fig.add_subplot(gs[1, 0])
@@ -452,7 +452,9 @@ def plot_results(
     ax_acc.set_ylabel("Test Accuracy")
     ax_acc.set_title("Final Test Accuracy")
     ax_acc.set_ylim(0, float(max(means)) * 1.25)
-    ax_acc.tick_params(axis="x", labelsize=7, rotation=30)
+    ax_acc.tick_params(axis="x", labelsize=7, rotation=45)
+    for label in ax_acc.get_xticklabels():
+        label.set_ha("right")
     ax_acc.grid(True, alpha=0.3, axis="y")
 
     # --- Parameter count bars ---
@@ -470,7 +472,9 @@ def plot_results(
     ax_par.set_ylabel("Parameters")
     ax_par.set_title("Parameter Count (lower is better at same accuracy)")
     ax_par.set_yscale("log")
-    ax_par.tick_params(axis="x", labelsize=7, rotation=30)
+    ax_par.tick_params(axis="x", labelsize=7, rotation=45)
+    for label in ax_par.get_xticklabels():
+        label.set_ha("right")
     ax_par.grid(True, alpha=0.3, axis="y")
 
     # --- Architecture schematics ---
@@ -511,8 +515,32 @@ def main():
         help="Samples per class for per-class dimensionality (default 10 for speed)",
     )
     parser.add_argument("--plot", action="store_true", default=True)
+    parser.add_argument(
+        "--plot-only",
+        action="store_true",
+        help="Regenerate figure from existing results JSON without running any training",
+    )
     args = parser.parse_args()
     t_start = time.perf_counter()
+
+    results_path = Path(__file__).resolve().parent / "cifar100_architecture_results.json"
+    plot_path = str(results_path.with_suffix(".png"))
+
+    if args.plot_only:
+        if not results_path.exists():
+            print(f"No results file found: {results_path}")
+            sys.exit(1)
+        with open(results_path) as f:
+            saved = json.load(f)
+        plot_results(
+            saved["results"],
+            saved["d"],
+            plot_path,
+            elapsed=saved.get("elapsed_s"),
+            input_dim=saved["input_dim"],
+            n_classes=saved["n_classes"],
+        )
+        sys.exit(0)
 
     # -----------------------------------------------------------------------
     # Load data

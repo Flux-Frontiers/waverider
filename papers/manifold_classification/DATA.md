@@ -41,24 +41,33 @@
 
 ## CIFAR-10 (input=3072, classes=10, tau=0.9)
 - d*=34 (per-class-max at tau=0.9), global_dim=29
-- All results: 5 trials, 50 epochs, batch=256, Adam lr=0.001
-- Script: benchmarks/canonical_tests/cifar_architecture_sweep.py --dataset cifar10
+- All results: 5 trials, 60 epochs, batch=512, Adam lr=0.001
+- Script: benchmarks/canonical_tests/cifar10_manifold_architecture.py
 
 | Architecture | Accuracy | Std | Params |
 |---|---|---|---|
-| Standard MLP (1024→512→out) | 50.99% | 0.41% | 3,676,682 |
-| PCA→34D + MLP-wide (4d→2d) | 48.88% | 0.50% | 14,766 |
-| PCA→34D + MLP (2d→d) | 48.74% | 0.43% | 5,076 |
-| UB-PCA (PCA→d*→w*→C, w*=43) | 48.02% | 0.19% | 1,945 |
-| Intrinsic Dim PCA→34D→out | 47.18% | 0.19% | 1,540 |
-| Manifold (2d→d, d=34) | 46.41% | 0.73% | 104,832 |
+| Standard MLP (1024→512→out) | 51.67% | 0.75% | 3,676,682 |
+| PCA→34D + MLP (2d→d) | 49.12% | 0.46% | 5,076 |
+| Manifold + ManifoldAdam (d=34) | 47.31% | 0.35% | 104,832 |
+| Intrinsic Dim PCA→34D→out | 46.75% | 0.51% | 1,540 |
+| ManifoldAdam (1024→512, proj→34D) | 46.23% | 0.94% | 3,676,682 |
+| Manifold (2d→d, d=34) | 45.85% | 0.26% | 104,832 |
+| Wide Manifold (d+1, d=34) | 45.58% | 0.38% | 107,915 |
 
-Intrinsic Dim vs Standard: −3.81pp at 2,387× parameter reduction
-Best below 2K params: UB-PCA at 48.02%
+PCA+MLP vs Standard: −2.6pp at 724× parameter reduction
+Intrinsic Dim vs Standard: −4.9pp at 2,387× parameter reduction
 
 Per-class dims (tau=0.9):
-- airplane: 26.3, automobile: 31.5, bird: 28.9, cat: 29.0
-- deer: 29.0, dog: 28.1, frog: 32.1, horse: 29.9, ship: 29.2, truck: 31.1
+- airplane: 26.5, automobile: 30.8, bird: 27.7, cat: 27.8
+- deer: 29.2, dog: 28.4, frog: 31.6, horse: 31.1, ship: 25.6, truck: 31.4
+
+Analysis:
+- Standard achieves ~95% train vs 51.67% test (43pp gap) — performance is memorization, not generalization; early stopping likely peaks ~ep 10–15
+- Manifold/Wide Manifold (~104K params) trail PCA+MLP (5K) by 3–4pp: cold projection initialization forces joint learning of projection + classifier vs PCA's optimal precomputed basis; PCA warm-start is the direct fix
+- ManifoldAdam on full Standard arch: 46.23% — 5.4pp *worse* than vanilla Adam; gradient projection onto 34D manifold discards discriminative signal at overparameterized scale
+- Next: early stopping at val-peak; PCA warm-start for projection layers; ManifoldAdam applied only at bottleneck
+
+Prior run (50 epochs, batch=256): Standard 50.99%, PCA+MLP (2d→d) 48.74%, Intrinsic Dim 47.18%, Manifold 46.41%
 
 ## CIFAR-100 (input=3072, classes=100, tau=0.9)
 - d=100 (set to max(intrinsic_dim=35, n_classes=100)), global_dim=27
