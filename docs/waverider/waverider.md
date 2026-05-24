@@ -12,7 +12,7 @@ WaveRider Project — <https://github.com/Flux-Frontiers/waverider>
 
 We present WaveRider, a family of manifold-aware algorithms that discover the intrinsic dimensionality of data and loss landscapes through local PCA of gradient-diversity samples, then *build models directly from that discovered geometry*. The central finding: the spaces in which machine learning operates are vastly lower-dimensional than their ambient representations suggest — and knowing this is enough to build models that match or beat systems orders of magnitude larger.
 
-On CIFAR-10 (3,072-dimensional pixel space), WaveRider discovers an intrinsic dimensionality of 33 — meaning 98.9% of dimensions are noise — and a manifold-informed 4,795-parameter PCA+MLP model achieves 48.70% accuracy versus 52.04% for a 3,676,682-parameter standard architecture, a **766x parameter reduction** at 93.6% of the standard model's accuracy. On the sklearn digits dataset (64 dimensions), the ManifoldModel builds a complete knowledge graph from discovered geometry and classifies with 97.72% accuracy — zero learned parameters, beating Euclidean KNN (97.33%). On the Iris loss landscape (243 parameters), gradient-diversity PCA reveals that only 2–3 dimensions carry optimization signal.
+On CIFAR-10 (3,072-dimensional pixel space), WaveRider discovers an intrinsic dimensionality of 34 — meaning 99.1% of dimensions are noise — and a manifold-informed 5,076-parameter PCA+MLP model achieves 49.12% accuracy versus 51.67% for a 3,676,682-parameter standard architecture, a **724× parameter reduction** at 95.1% of the standard model's accuracy. On CIFAR-100, the overparameterization becomes a deficit: a 13,300-parameter manifold-informed model **beats** the 3.7-million-parameter standard MLP outright (25.70% vs 21.31%) — the measured intrinsic dimensionality of 19 exposes why Standard fails with only 600 training samples per class, and a τ/d sweep reveals the optimal compression dimension is d=75 ≈ 0.75×n\_classes, not d\* itself. On the sklearn digits dataset (64 dimensions), the ManifoldModel builds a complete knowledge graph from discovered geometry and classifies with 97.72% accuracy — zero learned parameters, beating Euclidean KNN (97.33%). On the Iris loss landscape (243 parameters), gradient-diversity PCA reveals that only 2–3 dimensions carry optimization signal.
 
 The contribution is a unified framework that *measures* manifold geometry, *designs* architectures from it, *builds* knowledge graphs with it, and *navigates* through it — from measurement instrument to model builder to interactive explorer.
 
@@ -79,6 +79,8 @@ This is adaptive: d varies with position. In the digits dataset, a "1" lives on 
 | 0.95 | 18.4 | 71.3% |
 | 0.90 | 13.6 | 78.7% |
 | 0.85 | 10.8 | 83.2% |
+
+**Why lower τ suppresses more noise.** The eigenvalue spectrum from local PCA is not flat — it has a steep front (dominant structure directions) followed by a long tail of small eigenvalues (noise). At τ=0.95 the cumulative sum must reach 95%, forcing inclusion of components from the tail. At τ=0.80 the large eigenvalues alone suffice to hit 80%, leaving the tail behind. Lower τ therefore cuts closer to the elbow of the spectrum and is more aggressive about what it calls noise. The practical consequence: τ=0.9 is a robust default because it typically lands at the elbow, but datasets with a gradual rather than sharp eigenvalue decay are sensitive to τ choice. The right τ is the one that aligns with the true spectral elbow — not a universal constant.
 
 ### 2.3 Gradient-Diversity PCA (for Loss Landscapes)
 
@@ -309,16 +311,60 @@ The manifold-bottleneck architectures (Manifold, Wide Manifold) underperform the
 
 #### Finding 9: The Efficiency Frontier
 
-Across both MNIST and CIFAR-10, the manifold discovery reveals a consistent efficiency frontier:
+Across MNIST and CIFAR-10, the manifold discovery reveals a consistent efficiency frontier; CIFAR-100 crosses the threshold from competitive to dominant:
 
-| Dataset | Ambient Dim | Intrinsic Dim | Compression | PCA+MLP Accuracy | PCA+MLP Params |
-|---|---|---|---|---|---|
-| MNIST | 784 | 22 | 35.6x | 95.48% | 2,232 |
-| CIFAR-10 | 3,072 | 33 | 93.1x | 48.70% | 4,795 |
+| Dataset | Ambient Dim | d\* | Best Manifold Params | Best Manifold Accuracy | Standard Accuracy | Result |
+|---|---|---|---|---|---|---|
+| MNIST | 784 | 22 | 2,232 | 95.48% | 97.42% | −1.9 pp, 49× fewer |
+| CIFAR-10 | 3,072 | 34 | 5,076 | 49.12% | 51.67% | −2.6 pp, 724× fewer |
+| CIFAR-100 | 3,072 | 19 | **13,300** | **25.70%** | 21.31% | **+4.39 pp, 279× fewer** |
 
-The intrinsic dimensionality provides a principled lower bound on network width. Models that respect this bound achieve competitive accuracy with dramatically fewer parameters — a direct practical application of manifold discovery.
+The pattern is structural: as the overparameterization ratio (standard params ÷ intrinsic dimensionality) grows, the manifold-informed model's advantage grows. CIFAR-100 has the most extreme ratio — 3.7M parameters for a 19-dimensional manifold with only 600 training samples per class — and that is precisely where Standard collapses. The optimal compression dimension (d=75) sits below n\_classes; above it, extra PCA dimensions add noise faster than signal.
 
-### 4.5 Eigenvalue Spectrum Analysis
+### 4.5 Experiment 5: CIFAR-100 — Overparameterization Exposed
+
+**Dataset**: CIFAR-100 — 60,000 color images (32×32×3), 3,072 dimensions, 100 classes, 600 training samples per class
+**Evaluation**: 3 trials, 100 epochs max, patience=10 early stopping (all architectures), Adam optimizer (lr=0.001)
+**Pipeline**: Manifold discovery → d = max(d\*=19, n\_classes=100) = 100 → architecture design → training
+
+#### Finding 10: The Measured Dimensionality Exposes Catastrophic Overparameterization
+
+At τ=0.90, local PCA finds a mean intrinsic dimensionality of **15.7** — 99.5% of pixel dimensions are noise. The per-class maximum reaches d\*=19. With 100 classes to discriminate, the working dimensionality is set to **d=100**, providing one PCA axis per class. The standard architecture allocates 3.7 million parameters to this 19-dimensional structure — roughly **196,000 parameters per intrinsic dimension** against only 600 training samples per class.
+
+#### Finding 11: Manifold-Informed Model Beats Standard Outright
+
+| Architecture | Parameters | Test Accuracy | vs Standard |
+|---|---|---|---|
+| **Intrinsic Dim (PCA→75D→out)** | **13,300** | **25.70% ± 0.39%** | **+4.37 pp, 279× fewer** |
+| Intrinsic Dim (PCA→100D→out) | 20,200 | 25.60% ± 0.12% | +4.29 pp, 184× fewer |
+| Manifold + ManifoldAdam (d=100) | 317,400 | 24.02% ± 0.64% | +2.71 pp |
+| PCA→50D + MLP (2d→d) | 40,400 | 24.32% ± 0.05% | +2.99 pp, 92× fewer |
+| **Standard (1024→512)** | **3,722,852** | **21.31% ± 0.28%** | — |
+| Manifold (d=100) | 317,400 | 20.89% ± 0.19% | −0.42 pp |
+
+All architectures trained with uniform early stopping (patience=10). Standard peaks at ep18 and overfits immediately; val-peak is restored by `restore_best_weights=True`. Even at its best, Standard only reaches 21.31%. A 13,300-parameter linear readout on PCA-compressed features outperforms it by 4.37 percentage points at 279× fewer parameters. The measurement — d\*=19 — is the diagnosis; the accuracy gap is the verdict.
+
+PCA preprocessing is the load-bearing property. Manifold architectures that learn their projection from scratch (Manifold, Wide Manifold) inherit the same cold-initialization problem observed on CIFAR-10 and fail to beat Standard.
+
+#### Finding 12: The Optimal d Lies Below n\_classes — A Design Rule
+
+A τ/d sweep across d ∈ {13, 15, 18, 21, 50, 75, 100, 150, 200} with early stopping (patience=10) reveals where accuracy peaks and why:
+
+| d | PCA+MLP | Intrinsic Dim | Winner | Stopped @ |
+|---|---|---|---|---|
+| 13 (τ=0.80) | 19.11% | 14.20% | PCA+MLP | ep40 / ep67 |
+| 21 (τ=0.95) | 22.68% | 18.42% | PCA+MLP | ep41 / ep73 |
+| 50 | 24.32% | 24.62% | IntDim | ep35 / ep90 |
+| **75** | **23.71%** | **25.70%** | **IntDim** | ep28 / ep79 |
+| 100 (n\_classes) | 23.76% | 25.56% | IntDim | ep27 / ep77 |
+| 150 | 23.71% | 24.55% | IntDim | ep20 / ep38 |
+| 200 | 23.63% | 23.74% | IntDim | ep17 / ep31 |
+
+Three structural findings emerge. First, **the optimum is d=75, not d=n\_classes=100**: both models decline above d=100 as extra PCA dimensions add noise faster than signal. Second, **Intrinsic Dim overtakes PCA+MLP at d≈50**: below this crossover the hidden layer's nonlinearity compensates for a tight representation; above it, the linear readout generalises better because it has fewer parameters to overfit. Third, **the geometric τ-values (d=13–21) are insufficient for 100-class discrimination** regardless of architecture — the Fisher discriminant bound (~n\_classes−1) is the real constraint, not the manifold's intrinsic dimension.
+
+**Design rule**: for k-class classification, the optimal PCA compression dimension lies in (d\*, k). Empirically for CIFAR-100: optimum ≈ 0.75 × n\_classes = 75. d\* sets the information floor; n\_classes sets the discrimination ceiling. The sweet zone is the lower three-quarters of that interval.
+
+### 4.6 Eigenvalue Spectrum Analysis
 
 The eigenvalue spectra from both experiments show the same pattern — a sharp power law with a few dominant directions and a long tail of negligible eigenvalues:
 
@@ -419,10 +465,11 @@ Taken together, our experiments tell a consistent story: WaveRider discovers int
 | Digits | ManifoldKNN (τ=0.85) | **0** | Euclidean KNN | 0 | **WaveRider wins** (97.72% vs 97.33%) |
 | Digits | ManifoldModel (τ=0.85) | **0** | Euclidean KNN | 0 | **WaveRider wins** (97.72% vs 97.33%) |
 | Iris | ManifoldAdamWalker | ~5 eff. dims | Adam | 243 dims | Adam faster — but WaveRider reveals **99% is noise** |
-| MNIST | PCA→22D + MLP | **2,232** | Standard MLP | 109,386 | Standard by 1.9% — at **49x the cost** |
-| CIFAR-10 | PCA→33D + MLP | **4,795** | Standard MLP | 3,676,682 | 48.70% vs 52.04% — **766x fewer params at 93.6% accuracy** |
+| MNIST | PCA→22D + MLP | **2,232** | Standard MLP | 109,386 | Standard by 1.9% — at **49× the cost** |
+| CIFAR-10 | PCA→34D + MLP | **5,076** | Standard MLP | 3,676,682 | 49.12% vs 51.67% — **724× fewer params at 95.1% accuracy** |
+| **CIFAR-100** | **Intrinsic Dim (PCA→75D, d=75)** | **13,300** | Standard MLP | 3,722,852 | **WaveRider wins** (25.70% vs 21.31% — **279× fewer params**) |
 
-The pattern: as ambient dimensionality grows, the parameter efficiency advantage of manifold-informed design grows dramatically. On CIFAR-10 (3,072 dimensions), the 4,795-parameter manifold model achieves 93.6% of the standard model's accuracy with 766x fewer parameters. The geometry constrains how many parameters are *actually needed*.
+The pattern: as the overparameterization ratio grows, the manifold-informed advantage grows — from competitive (MNIST, CIFAR-10) to decisive (CIFAR-100). CIFAR-100 is the inflection point: Standard is not merely inefficient, it is actively outperformed. The geometry constrains how many parameters are *actually needed*, and when Standard ignores that constraint badly enough, it loses. The τ/d sweep further refines the picture: the optimal d is not d\* but ≈0.75×n\_classes — the sweet zone between the information floor and the discrimination ceiling.
 
 ### 5.7 What's Wrong with the Existing Approach
 

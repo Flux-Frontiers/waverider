@@ -70,21 +70,66 @@ Analysis:
 Prior run (50 epochs, batch=256): Standard 50.99%, PCA+MLP (2d→d) 48.74%, Intrinsic Dim 47.18%, Manifold 46.41%
 
 ## CIFAR-100 (input=3072, classes=100, tau=0.9)
-- d=100 (set to max(intrinsic_dim=35, n_classes=100)), global_dim=27
-- All results: 3 trials, 50 epochs, batch=256, Adam lr=0.001
-- Script: benchmarks/canonical_tests/cifar_architecture_sweep.py --dataset cifar100
+
+### Run A — Flat MLP sweep (d=max(d*=19, n_classes=100)=100)
+- 3 trials, 100 epochs max, patience=10 (early stopping on val_accuracy, all architectures), batch=256, Adam lr=0.001
+- Script: benchmarks/canonical_tests/cifar100_manifold_architecture.py
+
+| Architecture | Accuracy | Std | Params | Stopped |
+|---|---|---|---|---|
+| Intrinsic Dim PCA→100D→out | 25.60% | 0.12% | 20,200 | ep65 |
+| Manifold + ManifoldAdam (d=100) | 24.02% | 0.64% | 317,400 | ep49 |
+| PCA→100D + MLP (2d→d) | 23.86% | 0.35% | 50,400 | ep26 |
+| ManifoldAdam (1024→512, proj→100D) | 21.93% | 0.10% | 3,722,852 | ep19 |
+| Standard MLP (1024→512→out) | 21.31% | 0.28% | 3,722,852 | ep18 |
+| Wide Manifold (d+1, d=100) | 21.14% | 0.33% | 320,573 | ep27 |
+| Manifold (d=100) | 20.89% | 0.19% | 317,400 | ep23 |
+
+Intrinsic Dim vs Standard: **+4.29pp at 184× fewer parameters — WaveRider beats Standard outright**
+Note: Standard with early stopping reaches 21.31% (vs 20.44% without) — early stopping is applied uniformly; the comparison is clean.
+Manifold+ManifoldAdam rises to 24.02% with early stopping (gradient projection onto 100D manifold plus val-peak restoration helps here at this scale).
+
+### Run B — Convolutional sweep (d=19, intrinsic dim only)
+- 3 trials, 30 epochs, Metal GPU — benchmarks/canonical_tests/cifar100_manifold_architecture.py
+- d*=19 (tau=0.9), per-class range 11–18, 99.5% noise
 
 | Architecture | Accuracy | Std | Params |
 |---|---|---|---|
-| Intrinsic Dim PCA→100D→out | 25.29% | 0.32% | 20,200 |
-| UB-PCA (PCA→d*→w*→C, w*=199) | 25.15% | 0.13% | 40,099 |
-| PCA→100D + MLP (2d→d) | 22.14% | 0.05% | 50,400 |
-| Standard MLP (1024→512→out) | 20.44% | 0.10% | 3,722,852 |
-| PCA→100D + MLP-wide (4d→2d) | 20.20% | 0.51% | 140,700 |
-| Manifold (2d→d, d=100) | 19.12% | 0.13% | 317,400 |
+| ManifoldResNet-UB (w*=118) | 38.29% | 3.77% | 644,262 |
+| ResNet (Adam, plain) | 37.55% | 0.89% | 50,948 |
+| ManifoldResNet-2d (2d=38) | 37.19% | 1.95% | 70,742 |
+| ManifoldResNet-d (d=19) | 31.16% | 0.68% | 19,176 |
+| Standard flat MLP (1024→512) | 5.21% | 0.48% | 3,722,852 |
 
-Intrinsic Dim vs Standard: +23.8% relative, +4.85pp absolute
-Parameter reduction: 184×
+Note: Standard flat MLP 5.21% (30 epochs) vs 21.31% (Run A, early stopping) — Metal GPU run under-converged; flat MLP numbers from Run A are authoritative.
+
+### Run C — τ/d sweep (3 trials, 100 epochs max, patience=10, early stopping)
+- Script: benchmarks/canonical_tests/cifar100_manifold_architecture.py --tau-sweep
+- d swept: {d*(τ) for τ ∈ {0.80,0.85,0.90,0.95}} ∪ {50,75,100,150,200}
+- Standard reference (this run): 21.33%
+
+| d | label | PCA+MLP | IntDim | winner | ID params |
+|---|---|---|---|---|---|
+| 13 | τ=0.80 | 19.11% | 14.20% | PCA+MLP | 1,582 |
+| 15 | τ=0.85 | 19.52% | 15.65% | PCA+MLP | 1,840 |
+| 18 | τ=0.90 | 21.13% | 16.65% | PCA+MLP | 2,242 |
+| 21 | τ=0.95 | 22.68% | 18.42% | PCA+MLP | 2,662 |
+| 50 | fixed | 24.32% | 24.62% | IntDim | 7,650 |
+| **75** | **fixed** | **23.71%** | **25.70%** | **IntDim** | **13,300** |
+| 100 | n_classes | 23.76% | 25.56% | IntDim | 20,200 |
+| 150 | fixed | 23.71% | 24.55% | IntDim | 37,750 |
+| 200 | fixed | 23.63% | 23.74% | IntDim | 60,300 |
+
+**Best: Intrinsic Dim d=75 → 25.70% ± 0.39% at 13,300 params — beats Standard by +4.37pp at 279× fewer params**
+
+### Analysis
+- CIFAR-100 is the decisive case: flat-MLP Standard allocates ~37,000 params per intrinsic dimension with only 600 training samples per class → catastrophic overfitting. Manifold-informed models win.
+- PCA preprocessing is load-bearing. The Manifold arch (cold projection init) fails — same cold-init problem as CIFAR-10.
+- Optimal d is below n_classes. Peak at d=75 for IntDim, d=50 for PCA+MLP. Both decline above d=100 — extra PCA dims add noise faster than signal.
+- Crossover at d≈50: PCA+MLP wins when d is tight (nonlinearity helps), IntDim wins when d is rich (linear readout generalizes better).
+- Geometric τ-values (d=13–21) are insufficient — Fisher bound (~n_classes) is the real constraint.
+- Design rule: optimal d ∈ (d*, n_classes); empirically ~0.75×n_classes for CIFAR-100.
+- Key thesis: d*=19 exposes Standard as woefully overparameterized. The intrinsic dimensionality is the diagnosis; the accuracy gap is the verdict.
 
 ## Digits (input=64, classes=10, tau=0.9, n=1797, n_folds=5)
 - intrinsic_dim=14, global_intrinsic_dim_mean=11

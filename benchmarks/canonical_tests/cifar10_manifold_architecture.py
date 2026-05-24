@@ -525,7 +525,7 @@ def main():
         default=10,
         help="Samples per class for per-class dimensionality (default 10 for speed)",
     )
-    parser.add_argument("--plot", action="store_true", default=True)
+    parser.add_argument("--plot", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument(
         "--plot-only",
         action="store_true",

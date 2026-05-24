@@ -2,7 +2,8 @@
 
 Keeps startup behavior consistent across benchmarks:
 - set TF log level early
-- optionally force CPU unless an explicit GPU flag is present
+- default to CPU (avoids per-op GPU sync overhead on small MLPs); pass
+  gpu_flag or use --gpu / --metal to opt in
 - initialize memory growth for detected GPUs
 - print a standard device banner
 """
@@ -22,19 +23,24 @@ def setup_tensorflow(
 ):
     """Configure and import TensorFlow for benchmark scripts.
 
-    :param gpu_flag: Optional CLI flag that enables GPU/Metal when present
-        (example: "--metal" or "--gpu"). If absent or not provided, CPU is forced.
+    CPU is the default device. Pass ``gpu_flag`` (e.g. ``"--gpu"`` or
+    ``"--metal"``) and include that flag in argv to opt in to GPU execution.
+
+    :param gpu_flag: CLI flag that enables GPU/Metal when present in argv.
     :param argv: Optional argv iterable. Defaults to sys.argv.
     :param tf_log_level: Value for TF_CPP_MIN_LOG_LEVEL.
     :returns: Tuple (tf_module, device_info_dict).
     """
     args = list(sys.argv if argv is None else argv)
-    use_gpu = bool(gpu_flag and gpu_flag in args)
+
+    # --gpu / --metal anywhere in argv always opts in regardless of gpu_flag param
+    explicit_gpu = "--gpu" in args or "--metal" in args
+    use_gpu = explicit_gpu or bool(gpu_flag and gpu_flag in args)
 
     os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", str(tf_log_level))
     if not use_gpu:
-        # Keep benchmark behavior deterministic and avoid per-op GPU sync overhead
-        # on smaller models unless explicitly requested.
+        # CPU default: avoids per-op Metal/CUDA sync overhead on small MLPs;
+        # Accelerate/AMX path is faster than Metal for these model sizes.
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
     import tensorflow as tf  # noqa: PLC0415
@@ -48,14 +54,11 @@ def setup_tensorflow(
 
     if use_gpu and gpus:
         gpu_name = gpus[0].name
-        if gpu_flag == "--metal":
-            device_used = f"Metal GPU ({gpu_name})"
-        else:
-            device_used = f"GPU ({gpu_name})"
+        device_used = f"Metal GPU ({gpu_name})" if "--metal" in args else f"GPU ({gpu_name})"
     elif use_gpu and not gpus:
-        device_used = "CPU (requested GPU, none detected)"
+        device_used = "CPU (no GPU detected)"
     else:
-        device_used = "CPU (forced)"
+        device_used = "CPU"
 
     device_info = {
         "tensorflow_version": tf.__version__,

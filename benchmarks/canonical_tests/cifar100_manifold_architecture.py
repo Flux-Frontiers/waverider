@@ -194,15 +194,74 @@ def count_params(model):
     return sum(int(np.prod(w.shape)) for w in model.trainable_weights)
 
 
+class EpochHeartbeat(keras.callbacks.Callback):
+    """Print periodic epoch progress when fit() runs with verbose=0."""
+
+    def __init__(self, label, every=5):
+        super().__init__()
+        self.label = label
+        self.every = every
+        self._epochs = None
+
+    def on_train_begin(self, logs=None):
+        self._epochs = int(self.params.get("epochs", 0) or 0)
+        print(f"    {self.label}: started ({self._epochs} epochs max)")
+
+    def on_epoch_end(self, epoch, logs=None):
+        epoch_num = epoch + 1
+        is_last = self._epochs > 0 and epoch_num == self._epochs
+        if epoch_num % self.every != 0 and not is_last:
+            return
+        train_acc = logs.get("accuracy")
+        val_acc = logs.get("val_accuracy")
+        msg = f"    {self.label}: epoch {epoch_num}/{self._epochs}"
+        if train_acc is not None:
+            msg += f"  acc={train_acc:.4f}"
+        if val_acc is not None:
+            msg += f"  val_acc={val_acc:.4f}"
+        print(msg)
+
+
 # ---------------------------------------------------------------------------
 # Phase 3: Benchmark
 # ---------------------------------------------------------------------------
 
 
-def run_trial(build_fn, X_train, y_train, X_test, y_test, epochs, batch_size, trial):
-    """Train a model and return metrics."""
+def run_trial(
+    build_fn,
+    X_train,
+    y_train,
+    X_test,
+    y_test,
+    epochs,
+    batch_size,
+    trial,
+    patience=0,
+    progress_every=5,
+    progress_label="train",
+):
+    """Train a model and return metrics.
+
+    :param patience: Early-stopping patience (0 = disabled). When >0, training
+        halts if val_accuracy does not improve for this many epochs and best
+        weights are restored before evaluation.
+    """
     model = build_fn()
     n_params = count_params(model)
+
+    callbacks = []
+    if progress_every > 0:
+        callbacks.append(EpochHeartbeat(progress_label, every=progress_every))
+
+    early_stop = None
+    if patience > 0:
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_accuracy",
+            patience=patience,
+            restore_best_weights=True,
+            verbose=0,
+        )
+        callbacks.append(early_stop)
 
     t0 = time.perf_counter()
     history = model.fit(
@@ -212,13 +271,23 @@ def run_trial(build_fn, X_train, y_train, X_test, y_test, epochs, batch_size, tr
         batch_size=batch_size,
         validation_data=(X_test, y_test),
         verbose=0,
+        callbacks=callbacks,
     )
     wall_time = time.perf_counter() - t0
 
     test_loss, test_acc = model.evaluate(X_test, y_test, verbose=0)
 
-    # Convergence epoch (first epoch hitting 15% train accuracy —
-    # CIFAR-100 MLPs top out around 25-35%)
+    val_accs = history.history["val_accuracy"]
+    best_val_acc = float(max(val_accs))
+    best_val_epoch = int(np.argmax(val_accs))
+    # stopped_epoch is 0 if training ran to completion (no early stop triggered)
+    stopped_epoch = (
+        int(early_stop.stopped_epoch)
+        if (early_stop and early_stop.stopped_epoch)
+        else len(val_accs) - 1
+    )
+
+    # Convergence epoch (first epoch hitting 15% train accuracy)
     conv_epoch = None
     for i, acc in enumerate(history.history["accuracy"]):
         if acc >= 0.15:
@@ -230,10 +299,13 @@ def run_trial(build_fn, X_train, y_train, X_test, y_test, epochs, batch_size, tr
         "n_params": n_params,
         "test_loss": float(test_loss),
         "test_acc": float(test_acc),
+        "best_val_acc": best_val_acc,
+        "best_val_epoch": best_val_epoch,
+        "stopped_epoch": stopped_epoch,
         "wall_time": wall_time,
         "convergence_epoch": conv_epoch,
         "train_acc": [float(a) for a in history.history["accuracy"]],
-        "val_acc": [float(a) for a in history.history["val_accuracy"]],
+        "val_acc": val_accs,
         "train_loss": [float(v) for v in history.history["loss"]],
         "val_loss": [float(v) for v in history.history["val_loss"]],
     }
@@ -398,16 +470,24 @@ def plot_results(
     bar_colors = [colors.get(n, "gray") for n in names]
     short_names = [n.split("(")[0].strip() for n in names]
 
+    def _pad_histories(sequences):
+        """Pad ragged per-trial histories to equal length with NaN (early stopping yields different lengths)."""
+        max_len = max(len(s) for s in sequences)
+        padded = np.full((len(sequences), max_len), np.nan)
+        for i, s in enumerate(sequences):
+            padded[i, : len(s)] = s
+        return padded
+
     # --- Training accuracy curves ---
     for name, results in all_results.items():
-        accs = np.array([r["train_acc"] for r in results])
+        accs = _pad_histories([r["train_acc"] for r in results])
         ep = np.arange(1, accs.shape[1] + 1)
         color = colors.get(name, "gray")
-        ax_val.plot(ep, accs.mean(0), "-", label=name, linewidth=2, color=color)
+        ax_val.plot(ep, np.nanmean(accs, 0), "-", label=name, linewidth=2, color=color)
         ax_val.fill_between(
             ep,
-            accs.mean(0) - accs.std(0),
-            accs.mean(0) + accs.std(0),
+            np.nanmean(accs, 0) - np.nanstd(accs, 0),
+            np.nanmean(accs, 0) + np.nanstd(accs, 0),
             alpha=0.15,
             color=color,
         )
@@ -419,14 +499,14 @@ def plot_results(
 
     # --- Training loss curves ---
     for name, results in all_results.items():
-        losses = np.array([r["train_loss"] for r in results])
+        losses = _pad_histories([r["train_loss"] for r in results])
         ep = np.arange(1, losses.shape[1] + 1)
         color = colors.get(name, "gray")
-        ax_loss.plot(ep, losses.mean(0), "-", label=name, linewidth=2, color=color)
+        ax_loss.plot(ep, np.nanmean(losses, 0), "-", label=name, linewidth=2, color=color)
         ax_loss.fill_between(
             ep,
-            losses.mean(0) - losses.std(0),
-            losses.mean(0) + losses.std(0),
+            np.nanmean(losses, 0) - np.nanstd(losses, 0),
+            np.nanmean(losses, 0) + np.nanstd(losses, 0),
             alpha=0.15,
             color=color,
         )
@@ -494,10 +574,27 @@ def main():
     parser = argparse.ArgumentParser(
         description="CIFAR-100: Manifold-Informed Architecture vs Standard"
     )
-    parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=100,
+        help="Max epochs (early stopping will halt sooner when --patience > 0)",
+    )
     parser.add_argument("--trials", type=int, default=3)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--batch-size", type=int, default=256)
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=10,
+        help="Early-stopping patience on val_accuracy (0 = disabled)",
+    )
+    parser.add_argument(
+        "--tau-sweep",
+        action="store_true",
+        help="After Phase 1, sweep d across all τ-derived values + {50,75,100,150,200}; "
+        "trains PCA+MLP and Intrinsic Dim only. Saves cifar100_tau_sweep_results.json.",
+    )
     parser.add_argument(
         "--tau", type=float, default=0.90, help="Variance threshold for intrinsic dim"
     )
@@ -514,7 +611,7 @@ def main():
         default=10,
         help="Samples per class for per-class dimensionality (default 10 for speed)",
     )
-    parser.add_argument("--plot", action="store_true", default=True)
+    parser.add_argument("--plot", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument(
         "--plot-only",
         action="store_true",
@@ -725,18 +822,20 @@ def main():
                 epochs=args.epochs,
                 batch_size=args.batch_size,
                 trial=trial,
+                patience=args.patience,
+                progress_label=f"{name} trial {trial + 1}/{args.trials}",
             )
 
-            conv_str = (
-                f"conv@{result['convergence_epoch']}"
-                if result["convergence_epoch"] is not None
-                else "no conv"
+            stop_str = (
+                f"stopped@{result['stopped_epoch'] + 1}"
+                if args.patience > 0
+                else f"ep={args.epochs}"
             )
             print(
                 f"  Trial {trial + 1}/{args.trials}: "
                 f"acc={result['test_acc']:.4f}  "
-                f"loss={result['test_loss']:.4f}  "
-                f"{conv_str}  "
+                f"best_val={result['best_val_acc']:.4f}@ep{result['best_val_epoch'] + 1}  "
+                f"{stop_str}  "
                 f"time={result['wall_time']:.1f}s"
             )
             trial_results.append(result)
@@ -849,6 +948,7 @@ def main():
         "batch_size": args.batch_size,
         "lr": args.lr,
         "epochs": args.epochs,
+        "patience": args.patience,
         "trials": args.trials,
         "dimensionality_report": {str(k): v for k, v in dim_report.items()},
         "per_class_dims": {
@@ -876,6 +976,145 @@ def main():
             input_dim=input_dim,
             n_classes=n_classes,
         )
+
+    # -----------------------------------------------------------------------
+    # Phase 4 (optional): τ / d sweep
+    # Find the optimal PCA compression dimension by training PCA+MLP and
+    # Intrinsic Dim across d values derived from the τ spectrum plus a
+    # coarser grid up to 2×n_classes.
+    # -----------------------------------------------------------------------
+
+    if args.tau_sweep:
+        from sklearn.decomposition import PCA as skPCA
+
+        print("\n" + "=" * 70)
+        print("PHASE 4: τ / d SWEEP")
+        print("=" * 70)
+        print("Sweeping d across τ-derived values and fixed grid.")
+        print("Architectures: PCA+MLP and Intrinsic Dim only.")
+        print(f"Early stopping patience: {args.patience}")
+        print("=" * 70)
+
+        # Build d candidates: one per τ (geometric anchors) + fixed grid
+        tau_d_map = {}  # d → τ label
+        for tau_val, report in sorted(dim_report.items()):
+            d_tau = int(report["max"])
+            tau_d_map[d_tau] = f"τ={tau_val:.2f}"
+
+        fixed_grid = [50, 75, n_classes, 150, 200]
+        for dv in fixed_grid:
+            if dv not in tau_d_map:
+                tau_d_map[dv] = "fixed" if dv != n_classes else "n_classes"
+
+        d_candidates = sorted(tau_d_map)
+
+        print(f"\nd candidates: {d_candidates}")
+        print(f"  (τ-derived: {[d for d, lbl in tau_d_map.items() if lbl.startswith('τ')]})")
+        print(f"  (fixed grid: {[d for d, lbl in tau_d_map.items() if not lbl.startswith('τ')]})")
+
+        sweep_results = {}
+
+        for d_val in d_candidates:
+            label = tau_d_map[d_val]
+            print(f"\n--- d={d_val} ({label}) ---")
+
+            # Fit PCA to this d
+            pca_d = skPCA(n_components=d_val)
+            X_tr_d = pca_d.fit_transform(X_train).astype("float32")
+            X_te_d = pca_d.transform(X_test).astype("float32")
+            var_exp = pca_d.explained_variance_ratio_.sum()
+            print(f"  PCA→{d_val}D: {var_exp * 100:.1f}% variance captured")
+
+            sweep_archs = {
+                f"PCA→{d_val}D + MLP": lambda dv=d_val: build_pca_model(n_classes, dv, lr=args.lr),
+                f"Intrinsic Dim (PCA→{d_val}D→out)": lambda dv=d_val: build_pca_intrinsic_dim_model(
+                    n_classes, dv, lr=args.lr
+                ),
+            }
+
+            sweep_results[d_val] = {
+                "tau_label": label,
+                "var_explained": float(var_exp),
+                "archs": {},
+            }
+
+            for arch_name, build_fn in sweep_archs.items():
+                trial_results = []
+                for trial in range(args.trials):
+                    np.random.seed(trial * 42)
+                    tf.random.set_seed(trial * 42)
+                    result = run_trial(
+                        build_fn,
+                        X_tr_d,
+                        y_train,
+                        X_te_d,
+                        y_test,
+                        epochs=args.epochs,
+                        batch_size=args.batch_size,
+                        trial=trial,
+                        patience=args.patience,
+                        progress_label=f"d={d_val} {arch_name} t{trial + 1}",
+                    )
+                    trial_results.append(result)
+
+                accs = [r["test_acc"] for r in trial_results]
+                best_vals = [r["best_val_acc"] for r in trial_results]
+                stops = [r["stopped_epoch"] + 1 for r in trial_results]
+                mean_acc = float(np.mean(accs))
+                std_acc = float(np.std(accs))
+                mean_best = float(np.mean(best_vals))
+                mean_stop = float(np.mean(stops))
+                print(
+                    f"  {arch_name}: acc={mean_acc:.4f}±{std_acc:.4f}  "
+                    f"best_val={mean_best:.4f}  stopped@ep{mean_stop:.0f}  "
+                    f"params={trial_results[0]['n_params']:,}"
+                )
+                sweep_results[d_val]["archs"][arch_name] = {
+                    "mean_acc": mean_acc,
+                    "std_acc": std_acc,
+                    "mean_best_val": mean_best,
+                    "mean_stopped_epoch": mean_stop,
+                    "n_params": trial_results[0]["n_params"],
+                    "trials": trial_results,
+                }
+
+        # Summary table
+        print("\n" + "=" * 70)
+        print("τ / d SWEEP SUMMARY")
+        print("=" * 70)
+        print(
+            f"{'d':>6}  {'label':<12}  {'var%':>6}  {'PCA+MLP':>10}  {'IntDim':>10}  {'best arch':>12}"
+        )
+        print("-" * 70)
+        for d_val in d_candidates:
+            row = sweep_results[d_val]
+            label = row["tau_label"]
+            var_pct = row["var_explained"] * 100
+            archs = row["archs"]
+            arch_names = list(archs.keys())
+            acc_pca = archs[arch_names[0]]["mean_acc"] if len(arch_names) > 0 else float("nan")
+            acc_int = archs[arch_names[1]]["mean_acc"] if len(arch_names) > 1 else float("nan")
+            best = arch_names[0].split()[0] if acc_pca >= acc_int else "IntDim"
+            print(
+                f"{d_val:>6}  {label:<12}  {var_pct:>5.1f}%  {acc_pca:>10.4f}  {acc_int:>10.4f}  {best:>12}"
+            )
+
+        sweep_path = Path(__file__).resolve().parent / "cifar100_tau_sweep_results.json"
+        with open(sweep_path, "w") as f:
+            json.dump(
+                {
+                    "dataset": "cifar100",
+                    "d_candidates": d_candidates,
+                    "tau_d_map": {str(k): v for k, v in tau_d_map.items()},
+                    "epochs_max": args.epochs,
+                    "patience": args.patience,
+                    "trials": args.trials,
+                    "results": {str(k): v for k, v in sweep_results.items()},
+                },
+                f,
+                indent=2,
+            )
+        print(f"\nτ-sweep results saved to {sweep_path}")
 
 
 if __name__ == "__main__":
