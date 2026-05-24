@@ -94,6 +94,28 @@ def count_params(model):
     return sum(int(np.prod(w.shape)) for w in model.trainable_weights)
 
 
+class _ThrottledProgbar(keras.callbacks.Callback):
+    """Keras-style progress bar that redraws every 5% of steps per epoch."""
+
+    def on_epoch_begin(self, epoch, logs=None):
+        self._progbar = None
+        self._stride = None
+        self._steps = None
+
+    def on_train_batch_end(self, batch, logs=None):
+        if self._progbar is None:
+            self._steps = self.params.get("steps") or 1
+            self._stride = max(1, self._steps // 20)
+            self._progbar = keras.utils.Progbar(self._steps, unit_name="step")
+        seen = batch + 1
+        if seen % self._stride == 0 or seen == self._steps:
+            self._progbar.update(seen, list((logs or {}).items()))
+
+    def on_epoch_end(self, epoch, logs=None):
+        if self._progbar is not None and self._steps is not None:
+            self._progbar.update(self._steps, list((logs or {}).items()), finalize=True)
+
+
 def _build_resnet_baseline(input_dim, n_classes, lr=0.001):
     """Conventional small ResNet with 32 filters (Adam optimizer).
 
@@ -143,7 +165,8 @@ def run_trial(build_fn, X_train, y_train, X_test, y_test, epochs, batch_size, tr
         y_train,
         epochs=epochs,
         batch_size=batch_size,
-        verbose=1,
+        verbose=0,
+        callbacks=[_ThrottledProgbar()],
     )
     wall_time = time.perf_counter() - t0
 

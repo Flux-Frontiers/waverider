@@ -1,6 +1,6 @@
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
+[![Version](https://img.shields.io/badge/version-0.7.1-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 
 # WaveRider
@@ -34,8 +34,8 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 | Dataset | d\* | C | w\* = d\*+C−1 | ManifoldResNet-UB | Accuracy | vs ResNet-32 | Δ |
 |---------|-----|---|--------------|-------------------|----------|-------------|---|
 | [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 19 | 10 | 28 | 36,942 params | **71.8% ± 0.5%** | 47,978 params → 63.3% ± 2.7% | **+8.5 pp, fewer params** |
-| [**Fashion-MNIST**](benchmarks/canonical_tests/mnist_report.md) | 18 | 10 | 27 | 33,868 params | **89.84% ± 0.45%** | 47,338 params → 85.37% ± 2.43% | **+4.5 pp, fewer params** |
-| [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 16 | 10 | 25 | 29,110 params | **99.03% ± 0.03%** | 47,338 params → 98.95% ± 0.39% | matched, fewer params |
+| [**Fashion-MNIST**](benchmarks/canonical_tests/mnist_report.md) | 18 | 10 | 27 | 33,868 params | **88.38% ± 0.32%** | 47,338 params → 82.85% ± 2.25% | **+5.5 pp, fewer params** |
+| [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 16 | 10 | 25 | 29,110 params | **98.98% ± 0.18%** | 47,338 params → 99.27% ± 0.12% | within 0.3 pp, fewer params |
 | [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
 
 ### Zero-parameter classifiers — the manifold is the model
@@ -53,7 +53,7 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 |---------|-------------|-------------|-------|-------------------|-----------------|-----------------|
 | [**Tiny ImageNet**](benchmarks/canonical_tests/tiny_imagenet_report.md) | 12,288 | 20 | 99.9% | 2.66% @ 13.2M params | **3.36% @ 80,400 params** | **164×** |
 | [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
-| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 33 | 99.1% | 52.04% @ 3.7M params | 48.70% @ 4,795 params | **766×** at −3 pp |
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 34 | 99.1% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
 | [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 784 | 27 | 96.6% | 97.42% @ 109,386 params | 95.11% @ 1,036 params | **105×** at −2.3 pp |
 
 ---

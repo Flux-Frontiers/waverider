@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **`mnist_ub_phase_boundary`** — replaced `verbose=1` with a `_ThrottledProgbar`
+  callback that redraws the Keras progress bar every 5% of steps per epoch,
+  reducing terminal I/O overhead on long runs without losing live feedback.
+- **README** — UB table updated with 60-epoch / 4-trial results: Fashion-MNIST
+  UB+Drop 88.38% ± 0.32% (+5.5 pp over ResNet, fewer params); MNIST UB+Drop
+  98.98% ± 0.18% (within 0.3 pp of ResNet, 38% fewer params). Version badge
+  updated to 0.7.1. CIFAR-10 parameter-efficiency row updated (d\*=34, 724×,
+  49.12% @ 5,076 params).
+- **`cifar10_report.md`** — refreshed with 60-epoch / 5-trial Tesla run:
+  d\*=34 (truck class drives the ceiling), 724× parameter reduction,
+  PCA+MLP achieves 95.1% of standard accuracy (49.12% vs 51.67%).
+
+### Benchmarks
+- **UB phase boundary — MNIST** (60 epochs, 4 trials): ResNet 99.27% ± 0.12%
+  (47,338 params); UB+Drop 98.98% ± 0.18% (29,110 params) — matched at 38%
+  fewer params. Whitney-dominated regime (C=10 ≤ d\*=16) confirmed.
+- **UB phase boundary — Fashion-MNIST** (60 epochs, 4 trials): UB+Drop wins
+  at 88.38% ± 0.32% vs ResNet 82.85% ± 2.25% — **+5.5 pp with 38% fewer
+  params**. UB theorem prediction confirmed on the harder dataset.
+
 ## [0.7.1] - 2026-05-23
 
 ### Added

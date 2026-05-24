@@ -1,12 +1,8 @@
 # Manifold-Informed Architecture Benchmark — CIFAR10
 
-**Generated:** 2026-04-14 21:43:29
-**Machine:** Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD
-**Repository:** waverider @ `4b8002e` (--abbrev-re
-4b8002ee9a2e3d56a219d7dab695a80b8efd1e07)
-**Commit:** 2026-04-14 20:51:52 -0400 — add: cifar10 results
-**Python:** 3.12.13  |  **TensorFlow:** 2.21.0  |  **Device:** CPU (forced)
-**Host:** Turing  |  **OS:** macOS-26.4-arm64-arm-64bit
+**Generated:** 2026-05-24
+**Machine:** Apple Mac Mini (Tesla)
+**Python:** 3.12  |  **TensorFlow:** 2.21.0  |  **Device:** CPU (forced)
 
 ---
 
@@ -14,13 +10,13 @@
 
 | Parameter | Value |
 |---|---|
-| Dataset | CIFAR10 |
+| Dataset | CIFAR-10 |
 | Input dimensionality | 3,072 |
 | Classes | 10 |
-| Intrinsic dim (d) | 33 |
+| Intrinsic dim (d\*) | 34 |
 | Variance threshold (τ) | 0.9 |
-| Epochs | 50 |
-| Trials | 3 |
+| Epochs | 60 |
+| Trials | 5 |
 | Batch size | 512 |
 | Learning rate | 0.001 |
 
@@ -28,45 +24,52 @@
 
 Local PCA over the training set, k=50 neighbors.
 
-| τ | Mean d | Std | Min | Max | Noise % |
-|---|---|---|---|---|---|
-| 0.95 | 36.0 | 1.6 | 29 | 40 | 98.8% |
-| 0.90 | 28.8 | 1.7 | 22 | 33 | 99.1% |
-| 0.85 | 23.7 | 1.7 | 17 | 28 | 99.2% |
-| 0.80 | 19.7 | 1.6 | 13 | 24 | 99.4% |
+| τ | Mean d | Std | Min | Max |
+|---|---|---|---|---|
+| 0.95 | 36.0 | 1.8 | 24 | 40 |
+| 0.90 | 28.8 | 1.9 | 18 | 33 |
+| 0.85 | 23.6 | 1.9 | 14 | 28 |
+| 0.80 | 19.6 | 1.8 | 11 | 24 |
+
+At τ=0.9, mean intrinsic dim = 28.8 → **99.1% of ambient dimensions are noise**.
 
 ### Per-Class Intrinsic Dimensionality
 
 | Class | Mean d | Std | Min | Max |
 |---|---|---|---|---|
-| automobile | 31.9 | 0.9 | 30 | 33 |
-| frog | 31.6 | 1.2 | 29 | 33 |
-| truck | 31.4 | 1.3 | 29 | 33 |
-| horse | 30.7 | 1.0 | 29 | 32 |
-| deer | 29.5 | 1.0 | 28 | 31 |
-| cat | 29.1 | 0.8 | 28 | 31 |
-| dog | 28.7 | 1.1 | 27 | 30 |
-| bird | 28.0 | 2.4 | 23 | 30 |
-| airplane | 25.9 | 1.1 | 24 | 28 |
-| ship | 25.3 | 1.7 | 24 | 29 |
+| truck | 31.4 | 1.6 | 28 | 34 |
+| frog | 31.6 | 1.8 | 28 | 33 |
+| automobile | 30.8 | 2.2 | 25 | 33 |
+| horse | 31.1 | 0.8 | 30 | 33 |
+| deer | 29.2 | 1.5 | 28 | 32 |
+| bird | 27.7 | 2.1 | 25 | 31 |
+| dog | 28.4 | 0.8 | 27 | 30 |
+| cat | 27.8 | 1.0 | 26 | 29 |
+| airplane | 26.5 | 1.2 | 25 | 29 |
+| ship | 25.6 | 1.6 | 22 | 27 |
+
+d\* = 34 set by truck (max per-class maximum). Ordering is biologically sensible: complex articulated objects (truck, frog, horse) have higher intrinsic dimensionality than rigid simple shapes (ship, airplane).
 
 ## Architecture Comparison
 
 | Architecture | Params | Test Acc (mean ± std) | Test Loss | Acc/Kparam |
 |---|---|---|---|---|
-| Standard (1024→512) | 3,676,682 | 0.5204 ± 0.0033 | 4.0487 | 0.0001 |
-| Wide Manifold (d+1, d=33) | 104,832 | 0.4623 ± 0.0021 | 1.6255 | 0.0044 |
-| Manifold (d=33) | 101,749 | 0.4625 ± 0.0005 | 1.6351 | 0.0045 |
-| Manifold + ManifoldAdam (d=33) | 101,749 | 0.4697 ± 0.0023 | 1.5020 | 0.0046 |
-| ManifoldAdam (1024→512, proj→33D) | 3,676,682 | 0.4615 ± 0.0040 | 2.8986 | 0.0001 |
-| PCA→33D + MLP (2d→d) | 4,795 | 0.4870 ± 0.0018 | 1.4540 | 0.1016 |
-| Intrinsic Dim (PCA→33D→output) | 1,462 | 0.4651 ± 0.0036 | 1.5068 | 0.3181 |
+| Standard (1024→512) | 3,676,682 | 0.5167 ± 0.0075 | 4.4642 | 0.0001 |
+| Wide Manifold (d+1, d=34) | 107,915 | 0.4558 ± 0.0038 | 1.6858 | 0.0042 |
+| Manifold (d=34) | 104,832 | 0.4585 ± 0.0026 | 1.6821 | 0.0044 |
+| Manifold + ManifoldAdam (d=34) | 104,832 | 0.4731 ± 0.0035 | 1.4881 | 0.0045 |
+| ManifoldAdam (1024→512, proj→34D) | 3,676,682 | 0.4623 ± 0.0094 | 3.3072 | 0.0001 |
+| PCA→34D + MLP (2d→d) | 5,076 | 0.4912 ± 0.0046 | 1.4503 | 0.0968 |
+| Intrinsic Dim (PCA→34D→output) | 1,540 | 0.4675 ± 0.0051 | 1.4954 | 0.3036 |
 
 ## Key Findings
 
-- **Best architecture:** Standard (1024→512)
-  — test accuracy 0.5204 ± 0.0033
-- **Manifold compression:** 3,072D → 33D (98.9% of ambient dimensions are noise)
+- **Best architecture:** Standard (1024→512) — 51.67% ± 0.75%
+- **Best manifold architecture:** PCA→34D + MLP — **49.12% ± 0.46%** at **5,076 parameters**
+- **Parameter reduction:** 3,676,682 → 5,076 = **724×** fewer parameters
+- **Performance ratio:** 49.12 / 51.67 = **95.1% of standard** (−2.6 pp)
+- **Manifold compression:** 3,072D → 34D (99.1% of ambient dimensions are noise)
+- Intrinsic Dim head (1,540 params) achieves 46.75% — **2,387× reduction** at −4.9 pp
 
 ## Result Figure
 
