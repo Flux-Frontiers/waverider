@@ -34,7 +34,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "waverider"
-version = "0.8.0"
+version = "0.8.1"
 description = "Manifold-aware geometric ML stack: TurtleND, ManifoldWalker, ManifoldModel, ManifoldObserver"
 authors = ["Eric G. Suchanek, PhD <suchanek@flux-frontiers.com>"]
 license = "Elastic2.0"
