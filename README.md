@@ -1,7 +1,10 @@
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/version-0.7.1-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
+<!-- [![DOI](https://zenodo.org/badge/TODO.svg)](https://zenodo.org/badge/latestdoi/TODO) -->
+<!-- TODO: replace TODO with the GitHub repo ID after enabling the Zenodo integration -->
+
 
 # WaveRider
 
@@ -237,6 +240,28 @@ waverider/
 - Ghorbani, B. et al. (2019). *An Investigation into Neural Net Optimization via Hessian Eigenvalue Density.* ICML.
 - Amari, S. (1998). *Natural Gradient Works Efficiently in Learning.* Neural Computation.
 - Kingma, D. & Ba, J. (2015). *Adam: A Method for Stochastic Optimization.* ICLR.
+
+---
+
+## Citation
+
+If you use WaveRider in your research or project, please cite it. Citation metadata is also provided machine-readably in [CITATION.cff](CITATION.cff).
+
+<!-- [![DOI](https://zenodo.org/badge/TODO.svg)](https://zenodo.org/badge/latestdoi/TODO) -->
+
+> Suchanek, E. G. (2026). *WaveRider: Manifold-Aware Geometric Machine Learning* (Version 0.8.0) [Software]. Flux-Frontiers. https://github.com/Flux-Frontiers/waverider
+
+```bibtex
+@software{suchanek_waverider,
+  author    = {Suchanek, Eric G.},
+  title     = {{WaveRider}: Manifold-Aware Geometric Machine Learning},
+  version   = {0.8.0},
+  year      = {2026},
+  publisher = {Flux-Frontiers},
+  url       = {https://github.com/Flux-Frontiers/waverider},
+  note      = {DOI pending Zenodo activation}
+}
+```
 
 ---
 

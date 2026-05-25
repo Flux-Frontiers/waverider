@@ -65,12 +65,8 @@ papers/clinical_manifolds/kan_*/sp_*.png
 .pycodekg/graph.sqlite*
 .pycodekg/models
 
-# DocKG generated artifacts — same pattern as CodeKG; snapshots will be tracked once added
-.dockg/lancedb/
-.dockg/lancedb-*
-.dockg/graph.sqlite
-.dockg/graph.sqlite*
-.dockg/models
+# DocKG — entire directory is generated/local
+.dockg/
 
 # AgentKG — conversational memory graph; local/transient, not versioned
 .agentkg/
