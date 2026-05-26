@@ -87,5 +87,14 @@ benchmarks/data/
 # Model checkpoints — large binaries, regenerable
 benchmarks/**/*.ckpt
 
-# Paper PDFs are regenerable from .tex source — exclude to avoid LFS bloat
-papers/**/*.pdf
+# Paper LaTeX build artifacts — regenerable from .tex source. Final PDFs are
+# tracked so README/CHANGELOG links resolve on github.com without a build step.
+papers/**/*.aux
+papers/**/*.bbl
+papers/**/*.blg
+papers/**/*.fdb_latexmk
+papers/**/*.fls
+papers/**/*.log
+papers/**/*.out
+papers/**/*.synctex.gz
+papers/**/*.toc

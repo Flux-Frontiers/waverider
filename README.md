@@ -11,7 +11,7 @@
 
 *Eric G. Suchanek, PhD — Flux-Frontiers*
 
-[Technical Paper (PDF)](docs/waverider/waverider.md)
+[Technical Paper (PDF)](papers/waverider_article/waverider_jmlr.pdf)
 
 ---
 
