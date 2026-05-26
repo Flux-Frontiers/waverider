@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`UniversalEmbedder` (`src/waverider/universal_embedder.py`)** — geometry-grounded, modality-agnostic dimensionality reducer with the same `fit` / `transform` / `fit_transform` surface as `sklearn.decomposition.PCA`. Discovers d\* from local manifold geometry (`ManifoldModel` under the hood) and then auto-selects a coordinate strategy via the **Manifold Linearity Index** `MLI = global_d_at_τ / d*`:
+  - `MLI ≤ mli_threshold` (default 3.0) → **`"pca"`** strategy: global linear projection sized to d\* (lossless rotation, optimal for near-linear data — most tabular/image datasets).
+  - `MLI > mli_threshold` → **`"turtle"`** strategy: BFS Procrustes-transported TurtleND frames + k-means++ anchors, with class-balanced anchor selection when `y` is supplied (optimal for genuinely curved manifolds — proteins, molecular conformations).
+  - Explicit modes `"pca"` / `"turtle"` / `"tangent"` (raw sign-corrected PCA frames, no Procrustes transport) bypass auto-selection. All strategies output `(n, d*)` or `(n, n_components)` float32 arrays. Exposes `d_star`, `strategy`, `mli`, and a `manifold_summary` dict for downstream logging.
+- **`tests/test_universal_embedder.py`** — 362 lines covering construction/repr, mode validation, shape & dtype invariants across all four modes, MLI dispatch behaviour on swiss-roll vs linear vs tabular fixtures, and the sklearn-PCA drop-in contract.
 - **`CIFAR10_CLAIM_VERIFICATION.md`** — audit report verifying the README's CIFAR-10 "+8.5 pp over ResNet" claim against the raw JSON. Confirms the number is reproducible from [`resnet_manifold_architecture_results.json`](benchmarks/canonical_tests/resnet_manifold_architecture_results.json) (4 trials × 60 epochs): ManifoldResNet-UB+Drop reaches 71.83% ± 0.60% at 36,942 params vs ResNet baseline 63.26% ± 3.09% at 47,978 params (+8.57 pp at 23% fewer parameters). Includes a "What 'Matched' Means" section spelling out that the two architectures share topology, residual primitive, optimizer, and training schedule — differing only in filter width (32 → w\*=28) and added dropout=0.3.
 - **`AGENT_BRIEF_CIFAR10_CLAIM.md`** — the verification request that triggered the audit; kept in-tree as a traceable provenance record alongside the report it produced.
 - **`README.md` — Manifold Voxel Visualizer section** — new dedicated section under the Algorithms table with the visualizer's hero figure, CLI examples (helix / iris / cifar10 / breast_cancer / off-screen), per-voxel scalar-field inventory (`density`, `curvature`, `height`, `intrinsic_dim`, `class_vote`), built-in dataset catalogue, and links to the CLI+API reference, USAGE examples, and method paper. Algorithms table gets a new `Voxel Visualizer` row pointing at `waverider.voxel_viz` / `waverider-voxel-viz`.
@@ -20,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dead links to `cifar10_report.md` / `cifar100_report.md` (which never existed in markdown form) redirected to the existing `cifar10_report.pdf` / `cifar100_report.pdf`.
 - **`README.md` — file tree** refreshed to list `docs/INDEX.md`, `docs/USAGE.md`, and the `waverider-voxel-viz` CLI alongside `voxel_viz.py`.
 - **`pyproject.toml`** — section-header comment retitled `CodeKG / DocKG index configuration` → `PyCodeKG / DocKG index configuration` to match the renamed package.
+- **Version bump 0.8.1 → 0.9.0** (`pyproject.toml`, `src/waverider/__init__.py`) — minor bump for the new `UniversalEmbedder` public API surface. `__init__.py` now imports and re-exports `UniversalEmbedder`; module-header docstring lists it alongside the other core components and gains an explicit `License: Elastic 2.0` line.
 
 ### Removed
 

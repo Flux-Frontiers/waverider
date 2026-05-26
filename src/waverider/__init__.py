@@ -8,9 +8,11 @@
 #   ManifoldModel    — Zero-parameter geometric classifier
 #   ManifoldObserver — (N+1)-dimensional extrinsic observer
 #   GeodesicEncoder  — Ambient → geodesic distance coordinates (Phase 1: Riemannian KAN)
+#   UniversalEmbedder — Manifold-grounded drop-in for PCA in benchmark pipelines
 #
 # Author: Eric G. Suchanek, PhD
 # Affiliation: Flux-Frontiers
+# License: Elastic 2.0
 # "The only way I know to predict the future is to write it." — EGS
 
 from .backbone_angles import BackboneAngleList, BackboneResidue, quantize_angle
@@ -21,6 +23,7 @@ from .manifold_model import ManifoldModel
 from .manifold_observer import ManifoldObserver
 from .manifold_walker import ManifoldWalker
 from .turtleND import TurtleND
+from .universal_embedder import UniversalEmbedder
 from .voxel_viz import (
     CMAP_MAP,
     PCAInfo,
@@ -33,7 +36,7 @@ from .voxel_viz import (
     voxelize,
 )
 
-__version__ = "0.8.1"
+__version__ = "0.9.0"
 __all__ = [
     # Protein backbone
     "BackboneResidue",
@@ -48,6 +51,7 @@ __all__ = [
     "ManifoldModel",
     "ManifoldObserver",
     "GeodesicEncoder",
+    "UniversalEmbedder",
     # voxel visualizer
     "PointField",
     "PCAInfo",
