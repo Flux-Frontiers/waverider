@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.9.0] - 2026-05-26
+
+### Added
 - **`UniversalEmbedder` (`src/waverider/universal_embedder.py`)** — geometry-grounded, modality-agnostic dimensionality reducer with the same `fit` / `transform` / `fit_transform` surface as `sklearn.decomposition.PCA`. Discovers d\* from local manifold geometry (`ManifoldModel` under the hood) and then auto-selects a coordinate strategy via the **Manifold Linearity Index** `MLI = global_d_at_τ / d*`:
   - `MLI ≤ mli_threshold` (default 3.0) → **`"pca"`** strategy: global linear projection sized to d\* (lossless rotation, optimal for near-linear data — most tabular/image datasets).
   - `MLI > mli_threshold` → **`"turtle"`** strategy: BFS Procrustes-transported TurtleND frames + k-means++ anchors, with class-balanced anchor selection when `y` is supplied (optimal for genuinely curved manifolds — proteins, molecular conformations).
