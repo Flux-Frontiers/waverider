@@ -2,7 +2,7 @@
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
 [![Version](https://img.shields.io/badge/version-0.9.0-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-[![DOI](https://zenodo.org/badge/1234120398.svg)](https://zenodo.org/badge/latestdoi/1234120398)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20383651.svg)](https://doi.org/10.5281/zenodo.20383651)
 
 
 # WaveRider
@@ -274,7 +274,7 @@ waverider/
 
 If you use WaveRider in your research or project, please cite it. Citation metadata is also provided machine-readably in [CITATION.cff](CITATION.cff).
 
-[![DOI](https://zenodo.org/badge/1234120398.svg)](https://zenodo.org/badge/latestdoi/1234120398)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20383651.svg)](https://doi.org/10.5281/zenodo.20383651)
 
 > Suchanek, E. G. (2026). *WaveRider: Manifold-Aware Geometric Machine Learning* (Version 0.9.0) [Software]. Flux-Frontiers. https://doi.org/10.5281/zenodo.20383651
 
