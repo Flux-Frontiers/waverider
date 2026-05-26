@@ -33,12 +33,14 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 
 ### Universal Bottleneck — formula-derived architectures beat ResNet
 
-| Dataset | d\* | C | w\* = d\*+C−1 | ManifoldResNet-UB | Accuracy | vs ResNet-32 | Δ |
-|---------|-----|---|--------------|-------------------|----------|-------------|---|
-| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 19 | 10 | 28 | 36,942 params | **71.8% ± 0.5%** | 47,978 params → 63.3% ± 2.7% | **+8.5 pp, fewer params** |
-| [**Fashion-MNIST**](benchmarks/canonical_tests/mnist_report.md) | 18 | 10 | 27 | 33,868 params | **88.38% ± 0.32%** | 47,338 params → 82.85% ± 2.25% | **+5.5 pp, fewer params** |
-| [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 16 | 10 | 25 | 29,110 params | **98.98% ± 0.18%** | 47,338 params → 99.27% ± 0.12% | within 0.3 pp, fewer params |
-| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
+| Dataset | d\* | C | w\* = d\*+C−1 | ManifoldResNet-UB+Drop | Accuracy | vs ResNet-32 | Δ |
+|---------|-----|---|--------------|------------------------|----------|-------------|---|
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.pdf) | 19 | 10 | 28 | 36,942 params | **71.83% ± 0.60%** | 47,978 params → 63.26% ± 3.09% | **+8.57 pp, 23% fewer params** |
+| [**Fashion-MNIST**](benchmarks/canonical_tests/mnist_report.md) | 18 | 10 | 27 | 33,868 params | **88.38% ± 0.37%** | 47,338 params → 82.85% ± 2.60% | **+5.53 pp, 28% fewer params** |
+| [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 16 | 10 | 25 | 29,110 params | **98.98% ± 0.21%** | 47,338 params → 99.27% ± 0.13% | within 0.3 pp, 38% fewer params |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.pdf) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
+
+*UB+Drop = w\* filters with dropout=0.3; bare UB (no dropout) underperforms — dropout is the regularizer that lets the formula-derived width generalize. See [resnet_manifold_architecture_results.json](benchmarks/canonical_tests/resnet_manifold_architecture_results.json) (CIFAR-10) and [mnist_ub_phase_boundary_*_results.json](benchmarks/canonical_tests/) (MNIST/Fashion-MNIST) for raw trial data.*
 
 ### Zero-parameter classifiers — the manifold is the model
 
@@ -54,8 +56,8 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 | Dataset | Ambient Dim | Intrinsic d | Noise | Standard baseline | Manifold result | Param reduction |
 |---------|-------------|-------------|-------|-------------------|-----------------|-----------------|
 | [**Tiny ImageNet**](benchmarks/canonical_tests/tiny_imagenet_report.md) | 12,288 | 20 | 99.9% | 2.66% @ 13.2M params | **3.36% @ 80,400 params** | **164×** |
-| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
-| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 34 | 99.1% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.pdf) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.pdf) | 3,072 | 34 | 99.1% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
 | [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 784 | 27 | 96.6% | 97.42% @ 109,386 params | 95.11% @ 1,036 params | **105×** at −2.3 pp |
 
 ---
@@ -72,13 +74,37 @@ On CIFAR-10 (d\*=16, C=10, w\*=25): post-bottleneck PCA reveals 7 geometry princ
 
 ## Algorithms
 
-| Component | Class | Description |
-|-----------|-------|-------------|
+| Component | Class / Module | Description |
+|-----------|----------------|-------------|
 | **TurtleND** | `TurtleND` | N-dimensional position + orthonormal frame (navigation primitive) |
 | **Manifold Walker** | `ManifoldWalker` | Riemannian gradient descent in discovered tangent space |
 | **Manifold Adam** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
 | **Manifold Model** | `ManifoldModel` | Zero-parameter classifier: the manifold *is* the model |
 | **Manifold Observer** | `ManifoldObserver` | (N+1)-dimensional extrinsic observer — hovers above the manifold surface |
+| **Voxel Visualizer** | `waverider.voxel_viz` / `waverider-voxel-viz` | Projects the observer's geometric fields into 3-D, voxelises them, and renders interactive orthogonal slice planes in PyVista — a live cross-sectional anatomy of the manifold |
+
+---
+
+## Manifold Voxel Visualizer
+
+High-dimensional manifolds are invisible. The `ManifoldObserver` measures curvature, height above the tangent plane, local intrinsic dimensionality, and class-vote at every node — but those fields live in N-dimensional space. The **Voxel Visualizer** projects them into a 3-D PCA subspace, rasterises onto a uniform voxel grid, and hands the result to PyVista so you can drag three orthogonal slice planes through the volume in real time.
+
+![Manifold Voxel Visualizer — pipeline, scalar fields, datasets, controls](docs/waverider/manifold_voxel_viz.png)
+
+```bash
+poetry install --with viz                          # PyVista + SciPy + Streamlit
+waverider-voxel-viz                                # default: helix
+waverider-voxel-viz --dataset iris --multi-scalar  # density / curvature / height / class_vote in a 2×2 grid
+waverider-voxel-viz --dataset cifar10 --n-points 1000 --pre-pca 40
+waverider-voxel-viz --dataset breast_cancer --off-screen --out bc_voxels.png
+```
+
+**Scalar fields per voxel:** `density`, `curvature`, `height`, `intrinsic_dim`, `class_vote`.
+**Built-in datasets:** synthetic (helix, swiss_roll, torus), tabular (iris, wine, breast_cancer, digits), large (mnist, cifar10, cifar100), or `--dataset load --X-file X.npy --y-file y.npy` for your own.
+
+- **Full CLI + API reference:** [docs/waverider/manifold_voxel_viz.md](docs/waverider/manifold_voxel_viz.md)
+- **Worked code examples:** [docs/USAGE.md § Voxel Visualizer](docs/USAGE.md#manifold-voxel-visualizer--interactive-3-d-manifold-anatomy)
+- **Method paper:** [papers/voxel_viz/voxel_viz.pdf](papers/voxel_viz/voxel_viz.pdf)
 
 ---
 
@@ -206,9 +232,11 @@ waverider/
 ├── pyproject.toml
 ├── README.md
 ├── docs/
+│   ├── INDEX.md                      # Full documentation index
+│   ├── USAGE.md                      # Code examples for all components
 │   └── waverider/
 │       ├── waverider.md              # Technical paper
-│       └── manifold_voxel_viz.md     # Voxel visualizer reference
+│       └── manifold_voxel_viz.md     # Voxel visualizer CLI + API reference
 ├── src/
 │   └── waverider/
 │       ├── __init__.py
@@ -217,7 +245,7 @@ waverider/
 │       ├── manifold_walker.py        # Riemannian gradient descent
 │       ├── manifold_observer.py      # (N+1)-dim extrinsic observer
 │       ├── manifold_model.py         # Zero-parameter manifold classifier
-│       └── voxel_viz.py              # 3-D voxel visualizer + CLI
+│       └── voxel_viz.py              # 3-D voxel visualizer + waverider-voxel-viz CLI
 ├── tests/
 ├── benchmarks/
 │   └── canonical_tests/

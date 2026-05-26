@@ -8,8 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`CIFAR10_CLAIM_VERIFICATION.md`** — audit report verifying the README's CIFAR-10 "+8.5 pp over ResNet" claim against the raw JSON. Confirms the number is reproducible from [`resnet_manifold_architecture_results.json`](benchmarks/canonical_tests/resnet_manifold_architecture_results.json) (4 trials × 60 epochs): ManifoldResNet-UB+Drop reaches 71.83% ± 0.60% at 36,942 params vs ResNet baseline 63.26% ± 3.09% at 47,978 params (+8.57 pp at 23% fewer parameters). Includes a "What 'Matched' Means" section spelling out that the two architectures share topology, residual primitive, optimizer, and training schedule — differing only in filter width (32 → w\*=28) and added dropout=0.3.
+- **`AGENT_BRIEF_CIFAR10_CLAIM.md`** — the verification request that triggered the audit; kept in-tree as a traceable provenance record alongside the report it produced.
+- **`README.md` — Manifold Voxel Visualizer section** — new dedicated section under the Algorithms table with the visualizer's hero figure, CLI examples (helix / iris / cifar10 / breast_cancer / off-screen), per-voxel scalar-field inventory (`density`, `curvature`, `height`, `intrinsic_dim`, `class_vote`), built-in dataset catalogue, and links to the CLI+API reference, USAGE examples, and method paper. Algorithms table gets a new `Voxel Visualizer` row pointing at `waverider.voxel_viz` / `waverider-voxel-viz`.
 
 ### Changed
+- **`README.md` — UB headline table**:
+  - Column header renamed `ManifoldResNet-UB` → `ManifoldResNet-UB+Drop` to honestly attribute the headline numbers to the dropout variant (bare UB without dropout underperforms — verified per-dataset against the JSONs).
+  - Per-row stats re-aligned to JSON-computed values (sample std over 4 trials), e.g. CIFAR-10 `71.8% ± 0.5%` → `71.83% ± 0.60%`; ResNet baseline `63.3% ± 2.7%` → `63.26% ± 3.09%`; Fashion-MNIST and MNIST rows likewise re-synced. Δ-column now also states the parameter savings as a percentage (23% / 28% / 38% fewer than the matched ResNet baseline).
+  - New footnote under the table points readers to the raw `resnet_manifold_architecture_results.json` (CIFAR-10) and `mnist_ub_phase_boundary_*_results.json` (MNIST/Fashion-MNIST) so a cloning reviewer can recompute the means and stds directly.
+  - Dead links to `cifar10_report.md` / `cifar100_report.md` (which never existed in markdown form) redirected to the existing `cifar10_report.pdf` / `cifar100_report.pdf`.
+- **`README.md` — file tree** refreshed to list `docs/INDEX.md`, `docs/USAGE.md`, and the `waverider-voxel-viz` CLI alongside `voxel_viz.py`.
+- **`pyproject.toml`** — section-header comment retitled `CodeKG / DocKG index configuration` → `PyCodeKG / DocKG index configuration` to match the renamed package.
 
 ### Removed
 

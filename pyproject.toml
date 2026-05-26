@@ -150,7 +150,7 @@ enable = [
 ]
 
 # ---------------------------------------------------------------------------
-# CodeKG / DocKG index configuration
+# PyCodeKG / DocKG index configuration
 # ---------------------------------------------------------------------------
 [tool.pycodekg]
 # Directories to include in the knowledge graph build and analysis.
