@@ -31,9 +31,10 @@ Four experiments
          have lower local d* than coil.
 
   Exp 4  Latent space voxel visualisation
-         Feed the GeodesicEncoder output into the existing WaveRider voxel
-         visualizer (fit_and_observe → voxelize → build_grid → render_multi).
-         Saves a 2×2 multi-scalar PNG (density / curvature / height / class).
+         Feed the embedded coordinates from Exp 2 (window-7) directly into
+         the WaveRider voxel visualizer (fit_and_observe → voxelize →
+         build_grid → render_multi).  Saves a 2×2 multi-scalar PNG
+         (density / curvature / height / class).
 
 Usage
 -----
@@ -109,6 +110,7 @@ sys.path.insert(0, str(_ROOT / "src"))
 from waverider.backbone_angles import BackboneAngleList  # noqa: E402
 from waverider.backbone_embedder import BackboneEmbedder  # noqa: E402
 from waverider.backbone_manifold import fit_backbone_manifold  # noqa: E402
+from waverider.manifold_model import ManifoldModel  # noqa: E402
 
 try:
     from proteusPy.backbone_loader import BackboneLoader
@@ -184,12 +186,26 @@ _PARSER.add_argument(
     help="Reclassify unknown (U) secondary structure as coil (C) before fitting",
 )
 _PARSER.add_argument(
+    "--remap-u-rama",
+    action="store_true",
+    help=(
+        "Reclassify unknown (U) residues by Ramachandran angle-box geometry "
+        "(H/L/P/E/C) rather than lumping all into coil. "
+        "Mutually exclusive with --remap-u-to-coil; this flag takes precedence."
+    ),
+)
+_PARSER.add_argument(
     "--sample-n",
     type=int,
     default=None,
     help="Stratified subsample to N residues by SS class before fitting",
 )
 _PARSER.add_argument("--skip-viz", action="store_true", help="Skip voxel visualisation")
+_PARSER.add_argument(
+    "--viz-only",
+    action="store_true",
+    help="Load saved grid/point-field from --out-dir and open interactive visualiser; skip all experiments",
+)
 _PARSER.add_argument(
     "--report", type=Path, default=None, help="Write a Markdown summary report to this path"
 )
@@ -247,6 +263,24 @@ def _accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return float((y_true == y_pred).mean())
 
 
+def _stratified_split_idx(
+    y: np.ndarray, test_frac: float = 0.20, seed: int = 42
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return (train_idx, test_idx) with class-proportional split."""
+    import random as _random
+
+    rng = _random.Random(seed)
+    train_idx: list[int] = []
+    test_idx: list[int] = []
+    for cls in np.unique(y):
+        cls_idx = np.where(y == cls)[0].tolist()
+        rng.shuffle(cls_idx)
+        n_test = max(1, round(len(cls_idx) * test_frac))
+        test_idx.extend(cls_idx[:n_test])
+        train_idx.extend(cls_idx[n_test:])
+    return np.array(train_idx), np.array(test_idx)
+
+
 # ---------------------------------------------------------------------------
 # Exp 1 – Synthetic baseline
 # ---------------------------------------------------------------------------
@@ -283,7 +317,13 @@ def exp1_synthetic_baseline(n: int, seed: int) -> BackboneAngleList:
 
 
 def exp2_embedding_modes(bal: BackboneAngleList) -> dict:
-    """Fit ManifoldModel for each embedding mode; report classification accuracy."""
+    """Fit ManifoldModel for each embedding mode; report held-out test accuracy.
+
+    Uses a stratified 80/20 train/test split of the embedded data.  The full
+    dataset is used for d* discovery (better statistics); a fresh ManifoldModel
+    is then fit on the train split and evaluated on the held-out test split so
+    that reported accuracy reflects genuine generalisation, not training recall.
+    """
     _hr("Exp 2: Embedding mode comparison")
 
     rows = {}
@@ -296,6 +336,7 @@ def exp2_embedding_modes(bal: BackboneAngleList) -> dict:
 
     for label, emb in modes:
         t0 = time.perf_counter()
+        # Full-data fit: d* discovery + geometry (result.X_embedded used by Exp 3/4)
         result = fit_backbone_manifold(
             bal,
             emb,
@@ -305,15 +346,31 @@ def exp2_embedding_modes(bal: BackboneAngleList) -> dict:
             n_dim_samples=200,
             verbose=False,
         )
-        elapsed = time.perf_counter() - t0
 
-        y_pred = result.model.predict(result.X_embedded)
-        acc = _accuracy(result.y, y_pred)
+        # Stratified 80/20 split of the embedded matrix
+        train_idx, test_idx = _stratified_split_idx(result.y, test_frac=0.20, seed=42)
+        X_train = result.X_embedded[train_idx]
+        X_test = result.X_embedded[test_idx]
+        y_train = result.y[train_idx]
+        y_test = result.y[test_idx]
+
+        # Scale k_pca with ambient dimension so local PCA is overdetermined.
+        # Rule: k_pca = max(50, 3 × d_ambient), capped at train set size − 1.
         d_ambient = result.X_embedded.shape[1]
+        k_pca_clf = min(len(X_train) - 1, max(50, 3 * d_ambient))
+
+        # Fresh ManifoldModel fit on train only, evaluated on held-out test
+        clf = ManifoldModel(k_graph=10, k_pca=k_pca_clf, variance_threshold=0.90)
+        clf.fit(X_train, y_train)
+        acc = _accuracy(y_test, clf.predict(X_test))
+
+        elapsed = time.perf_counter() - t0
         print(
             f"  {label:10s} | d_ambient={d_ambient:3d}"
             f" | d*={result.d_star}"
-            f" | acc={acc:.3f}"
+            f" | k_pca={k_pca_clf}"
+            f" | test_acc={acc:.4f}"
+            f" | train={len(train_idx):,}  test={len(test_idx):,}"
             f" | {elapsed:.1f}s"
         )
         rows[label] = {
@@ -321,6 +378,9 @@ def exp2_embedding_modes(bal: BackboneAngleList) -> dict:
             "d_ambient": d_ambient,
             "d_star": result.d_star,
             "acc": acc,
+            "k_pca_clf": k_pca_clf,
+            "n_train": len(train_idx),
+            "n_test": len(test_idx),
             "elapsed": elapsed,
         }
 
@@ -381,27 +441,37 @@ def exp4_voxel_viz(result, out_dir: Path, off_screen: bool) -> None:
     y = result.y
 
     print(f"  Fitting voxel geometry (n={len(X)}, d={X.shape[1]})…")
-    obs_result = fit_and_observe(X, y, k_graph=10, k_pca=30, tau=0.90)
-    points_3d = obs_result["points_3d"]  # (N, 3) PCA projection
-    obs_geo = obs_result["observed"]  # ObservedGeometry
+    _, _, point_field, _ = fit_and_observe(X, y, k_graph=10, k_pca=30, k_vote=5, tau=0.90)
 
     print("  Voxelising…")
-    grids = voxelize(points_3d, obs_geo, resolution=32)
+    grids = voxelize(point_field, resolution=32)
     grid = build_grid(grids)
 
     png_path = out_dir / "backbone_manifold_voxels.png"
     print(f"  Rendering → {png_path}")
 
-    ss_class_labels = [_SS_NAMES.get(i, f"class-{i}") for i in sorted(set(y.tolist()))]
     render_multi(
         grid,
-        scalars=["density", "curvature", "height", "class_vote"],
-        off_screen=off_screen or True,  # always save PNG; user can re-run interactively
-        out=str(png_path),
-        title="Protein Backbone Latent-Space Manifold",
-        class_labels=ss_class_labels,
+        point_field,
+        off_screen=off_screen,
+        out_path=png_path,
     )
     print(f"  Saved: {png_path}")
+
+    grid_path = out_dir / "backbone_manifold_grid.vti"
+    pf_path = out_dir / "backbone_manifold_pointfield.npz"
+    grid.save(str(grid_path))
+    np.savez(
+        pf_path,
+        X3=point_field.X3,
+        density_w=point_field.density_w,
+        curvature=point_field.curvature,
+        height=point_field.height,
+        intrinsic_dim=point_field.intrinsic_dim,
+        labels=point_field.labels,
+    )
+    print(f"  Saved: {grid_path}")
+    print(f"  Saved: {pf_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -526,13 +596,14 @@ def _write_report(
         "| Parameter | Value |",
         "|---|---|",
         f"| Data source | {data_source} |",
-        f"| Remap U→C | {getattr(args, 'remap_u_to_coil', False)} |",
+        f"| U remap | {'Ramachandran geometry (--remap-u-rama)' if getattr(args, 'remap_u_rama', False) else 'U→C (--remap-u-to-coil)' if getattr(args, 'remap_u_to_coil', False) else 'none'} |",
         f"| Sample N | {getattr(args, 'sample_n', None) or 'all'} |",
         f"| Max files | {getattr(args, 'max_files', None) or 'all'} |",
         "| k_pca | 30 |",
         "| k_graph | 10 |",
         "| Variance threshold (τ) | 0.90 |",
         "| Dim samples | 200 |",
+        "| Eval split | 80% train / 20% test (stratified) |",
         f"| Random seed | {args.seed} |",
         f"| Total wall time | {total_elapsed:.1f}s |",
         "",
@@ -546,14 +617,20 @@ def _write_report(
         "",
         "## Exp 2: Embedding Mode Comparison",
         "",
-        "| Mode | d_ambient | d* | Accuracy | Time (s) |",
-        "|---|---|---|---|---|",
+        "Accuracy is held-out **test** accuracy (stratified 80/20 split; ManifoldModel fit on train only).",
+        "",
+        "| Mode | d_ambient | d* | k_pca | Test Acc | Train N | Test N | Time (s) |",
+        "|---|---|---|---|---|---|---|---|",
     ]
 
     for label, row in mode_rows.items():
+        n_tr = f"{row['n_train']:,}" if "n_train" in row else "—"
+        n_te = f"{row['n_test']:,}" if "n_test" in row else "—"
+        k_pca = row.get("k_pca_clf", "—")
         lines.append(
             f"| {label} | {row['d_ambient']} | {row['d_star']} "
-            f"| {row['acc']:.4f} | {row['elapsed']:.1f} |"
+            f"| {k_pca} | {row['acc']:.4f} | {n_tr} | {n_te} "
+            f"| {row['elapsed']:.1f} |"
         )
 
     lines += [
@@ -604,6 +681,37 @@ def main() -> None:
     print("=" * 62)
     print("  WaveRider — Protein Backbone Latent-Space Discovery")
     print("=" * 62)
+
+    # ---- Viz-only: load saved artifacts and open interactive window ----
+    if args.viz_only:
+        try:
+            import pyvista as pv  # noqa: PLC0415
+
+            from waverider.voxel_viz import PointField, render_multi  # noqa: PLC0415
+        except ImportError as exc:
+            raise SystemExit(f"--viz-only requires pyvista: {exc}")
+        grid_path = args.out_dir / "backbone_manifold_grid.vti"
+        pf_path = args.out_dir / "backbone_manifold_pointfield.npz"
+        if not grid_path.exists() or not pf_path.exists():
+            raise SystemExit(
+                f"Saved artifacts not found in {args.out_dir}.\n"
+                "Run without --viz-only first to generate them."
+            )
+        _hr("Viz-only: loading saved artifacts")
+        grid = pv.read(str(grid_path))
+        d = np.load(pf_path)
+        point_field = PointField(
+            X3=d["X3"],
+            density_w=d["density_w"],
+            curvature=d["curvature"],
+            height=d["height"],
+            intrinsic_dim=d["intrinsic_dim"],
+            labels=d["labels"],
+        )
+        print(f"  Grid : {grid_path}")
+        print(f"  Field: {pf_path}  ({len(point_field.X3):,} points)")
+        render_multi(grid, point_field, off_screen=False)
+        return
 
     # ---- Check cache and exit ----
     if args.check_cache:
@@ -660,6 +768,13 @@ def main() -> None:
             )
         _hr(f"Cache: {args.cache_file.name}")
         residues = BackboneLoader.load_cache(args.cache_file)
+        if args.max_residues and len(residues) > args.max_residues:
+            import random
+
+            rng = random.Random(args.seed)
+            rng.shuffle(residues)
+            residues = residues[: args.max_residues]
+            print(f"  Capped to {args.max_residues:,} residues (--max-residues)")
         bal = BackboneAngleList.from_proteuspy(residues, name=args.cache_file.stem)
         print(bal)
         bal = bal.valid()
@@ -670,8 +785,15 @@ def main() -> None:
     else:
         bal = exp1_synthetic_baseline(args.n, args.seed)
 
-    # ---- Remap U → C ----
-    if args.remap_u_to_coil:
+    # ---- Remap U residues ----
+    if args.remap_u_rama:
+        n_u = sum(1 for r in bal.residues if r.secondary_structure == "U")
+        bal = bal.remap_u_by_ramachandran()
+        n_still_u = sum(1 for r in bal.residues if r.secondary_structure == "U")
+        print(
+            f"  Ramachandran remap: {n_u:,} U → geometry  ({n_still_u:,} remain U — NaN angles)  {bal}"
+        )
+    elif args.remap_u_to_coil:
         n_remapped = sum(1 for r in bal.residues if r.secondary_structure == "U")
         for r in bal.residues:
             if r.secondary_structure == "U":
