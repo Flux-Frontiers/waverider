@@ -23,6 +23,7 @@ Author: Eric G. Suchanek, PhD
 
 from __future__ import annotations
 
+import copy
 import math
 import os
 from collections import defaultdict
@@ -66,6 +67,57 @@ RAMA_REGIONS: dict[str, tuple[float, float, float, float]] = {
 }
 
 _OMEGA_TRANS = 180.0  # degrees; standard trans peptide bond
+
+# Standard 20 amino acids, alphabetical by 3-letter code.
+# GLY is index 7, PRO is index 14 — the two Ramachandran outliers.
+_AA20 = [
+    "ALA",
+    "ARG",
+    "ASN",
+    "ASP",
+    "CYS",
+    "GLN",
+    "GLU",
+    "GLY",
+    "HIS",
+    "ILE",
+    "LEU",
+    "LYS",
+    "MET",
+    "PHE",
+    "PRO",
+    "SER",
+    "THR",
+    "TRP",
+    "TYR",
+    "VAL",
+]
+_AA20_IDX: dict[str, int] = {aa: i for i, aa in enumerate(_AA20)}
+
+# Kyte-Doolittle (1982) hydrophobicity, normalized to [−1, 1] by dividing by 4.5.
+# Unknown / non-standard residues map to 0.0 (neutral).
+_KD_SCALE: dict[str, float] = {
+    "ILE": 1.000,
+    "VAL": 0.933,
+    "LEU": 0.844,
+    "PHE": 0.622,
+    "CYS": 0.556,
+    "MET": 0.422,
+    "ALA": 0.400,
+    "GLY": -0.089,
+    "THR": -0.156,
+    "SER": -0.178,
+    "TRP": -0.200,
+    "TYR": -0.289,
+    "PRO": -0.356,
+    "HIS": -0.711,
+    "GLU": -0.778,
+    "GLN": -0.778,
+    "ASP": -0.778,
+    "ASN": -0.778,
+    "LYS": -0.867,
+    "ARG": -1.000,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -184,6 +236,32 @@ class BackboneResidue:
             [math.cos(phi_r), math.sin(phi_r), math.cos(psi_r), math.sin(psi_r)],
             dtype=np.float32,
         )
+
+    # ------------------------------------------------------------------
+    # Amino acid type encoding
+    # ------------------------------------------------------------------
+
+    def aa_gpo_class(self) -> int:
+        """Return Gly/Pro/Other class index (0, 1, 2).
+
+        Glycine (0) has no Cβ and a symmetric Ramachandran plot.
+        Proline (1) has a cyclic ring that constrains φ to ≈ −60°.
+        All other residues (2) share the standard generalized Ramachandran map.
+        """
+        name = self.residue_name.upper()[:3]
+        if name == "GLY":
+            return 0
+        if name == "PRO":
+            return 1
+        return 2
+
+    def aa_idx(self) -> int:
+        """Return index into the standard 20-AA alphabet, or -1 for UNK/non-standard."""
+        return _AA20_IDX.get(self.residue_name.upper()[:3], -1)
+
+    def aa_hphob(self) -> float:
+        """Kyte-Doolittle hydrophobicity normalized to [−1, 1]; 0.0 for unknowns."""
+        return _KD_SCALE.get(self.residue_name.upper()[:3], 0.0)
 
     def __repr__(self) -> str:
         return (
@@ -478,6 +556,54 @@ class BackboneAngleList:
         kept = [r for r in self.residues if r.secondary_structure in codes]
         return BackboneAngleList(residues=kept, name=self.name + f"_{''.join(codes)}")
 
+    def remap_u_by_ramachandran(self) -> BackboneAngleList:
+        """Re-classify U (unknown) residues by Ramachandran angle-box geometry.
+
+        Instead of lumping all U residues into coil, assigns each one to the
+        correct structural class based on where its (φ, ψ) actually falls on
+        the Ramachandran plot.  Boxes are checked in priority order to resolve
+        overlaps (P before E; H before P).
+
+        Boxes used (degrees):
+
+        ============  =================  =================
+        Class         φ range            ψ range
+        ============  =================  =================
+        H (α-helix)   [−90, −30]         [−70, −20]
+        L (left)      [+30, +90]         [+20, +80]
+        P (PPII)      [−90, −45]         [+110, +180]
+        E (β-sheet)   [−170, −50]        [+90, +180] or [−180, −150]
+        C (coil)      all other valid (φ, ψ)
+        ============  =================  =================
+
+        Residues whose φ or ψ is NaN remain U (terminal residues).
+
+        Returns a new :class:`BackboneAngleList`; does not modify in place.
+        """
+
+        def _assign(phi: float, psi: float) -> str:
+            if math.isnan(phi) or math.isnan(psi):
+                return "U"
+            if -90 <= phi <= -30 and -70 <= psi <= -20:
+                return "H"
+            if 30 <= phi <= 90 and 20 <= psi <= 80:
+                return "L"
+            if -90 <= phi <= -45 and 110 <= psi <= 180:
+                return "P"
+            if -170 <= phi <= -50 and (90 <= psi <= 180 or -180 <= psi <= -150):
+                return "E"
+            return "C"
+
+        remapped = []
+        for r in self.residues:
+            if r.secondary_structure == "U":
+                new_r = copy.copy(r)
+                new_r.secondary_structure = _assign(r.phi, r.psi)
+                remapped.append(new_r)
+            else:
+                remapped.append(r)
+        return BackboneAngleList(residues=remapped, name=self.name + "_rama")
+
     # ------------------------------------------------------------------
     # Bulk conversions
     # ------------------------------------------------------------------
@@ -510,6 +636,86 @@ class BackboneAngleList:
         """
         _map = {"H": 0, "E": 1, "P": 2, "L": 3, "C": 4, "U": 5}
         return np.array([_map.get(r.secondary_structure, 5) for r in self.residues], dtype=np.int32)
+
+    def to_rama_region_labels(self) -> np.ndarray:
+        """Return (N,) geometry-derived Ramachandran region codes for all residues.
+
+        Labels are assigned from (φ, ψ) angle boxes regardless of stored DSSP
+        secondary_structure.  Boxes match those used in remap_u_by_ramachandran.
+        Residues with NaN angles return 'U'.
+        """
+
+        def _region(phi: float, psi: float) -> str:
+            if math.isnan(phi) or math.isnan(psi):
+                return "U"
+            if -90 <= phi <= -30 and -70 <= psi <= -20:
+                return "H"
+            if 30 <= phi <= 90 and 20 <= psi <= 80:
+                return "L"
+            if -90 <= phi <= -45 and 110 <= psi <= 180:
+                return "P"
+            if -170 <= phi <= -50 and (90 <= psi <= 180 or -180 <= psi <= -150):
+                return "E"
+            return "C"
+
+        return np.array([_region(r.phi, r.psi) for r in self.residues])
+
+    def to_rama_int_labels_geometry(self) -> np.ndarray:
+        """Return (N,) int32 geometry-derived Ramachandran labels: H=0 E=1 P=2 L=3 C=4 U=5."""
+        _map = {"H": 0, "E": 1, "P": 2, "L": 3, "C": 4, "U": 5}
+        return np.array([_map[c] for c in self.to_rama_region_labels()], dtype=np.int32)
+
+    def to_aa_class_array(self) -> np.ndarray:
+        """Return (N, 3) float32 one-hot encoding of Gly / Pro / Other.
+
+        Column 0 = Glycine, column 1 = Proline, column 2 = all other residues.
+        These three classes have fundamentally different Ramachandran maps:
+        Gly is symmetric (no Cβ), Pro is constrained (cyclic ring), all others
+        share the standard generalized map.
+        """
+        out = np.zeros((len(self.residues), 3), dtype=np.float32)
+        for i, r in enumerate(self.residues):
+            out[i, r.aa_gpo_class()] = 1.0
+        return out
+
+    def to_omega_torus_array(self) -> np.ndarray:
+        """Return (N, 2) float32: (cos ω, sin ω) for each residue.
+
+        ω is the peptide bond planarity angle (Cα(i-1)–C(i-1)–N–Cα).
+        Trans peptides cluster near ±180°; cis-Pro near 0°.
+        Residues with NaN ω (rare parquet gaps) fall back to _OMEGA_TRANS.
+        """
+        out = []
+        for r in self.residues:
+            omega = r.omega if math.isfinite(r.omega) else _OMEGA_TRANS
+            rad = math.radians(omega)
+            out.append([math.cos(rad), math.sin(rad)])
+        return np.array(out, dtype=np.float32)
+
+    def to_aa_phys_array(self) -> np.ndarray:
+        """Return (N, 4) float32: GPO one-hot (3) + normalized Kyte-Doolittle (1).
+
+        Combines the Ramachandran-critical Gly/Pro/Other distinction with a
+        continuous hydrophobicity signal (range [−1, 1]).  Unknown residues get
+        hphob=0.0 (neutral).
+        """
+        gpo = self.to_aa_class_array()  # (N, 3)
+        hphob = np.array([[r.aa_hphob()] for r in self.residues], dtype=np.float32)  # (N, 1)
+        return np.concatenate([gpo, hphob], axis=1)
+
+    def to_aa_onehot_array(self) -> np.ndarray:
+        """Return (N, 20) float32 one-hot over the standard 20-AA alphabet.
+
+        Non-standard / unknown residues produce an all-zero row.
+        Column order: ALA ARG ASN ASP CYS GLN GLU GLY HIS ILE
+                      LEU LYS MET PHE PRO SER THR TRP TYR VAL
+        """
+        out = np.zeros((len(self.residues), 20), dtype=np.float32)
+        for i, r in enumerate(self.residues):
+            idx = r.aa_idx()
+            if idx >= 0:
+                out[i, idx] = 1.0
+        return out
 
     # ------------------------------------------------------------------
     # Diagnostics

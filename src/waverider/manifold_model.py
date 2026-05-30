@@ -350,7 +350,21 @@ class ManifoldModel:
             neighbors_batch = X[nn_block]  # (chunk_size, k_pca, ndim)
             centroids_batch = neighbors_batch.mean(axis=1)  # (chunk_size, ndim)
             centered_batch = neighbors_batch - centroids_batch[:, None, :]
-            # np.linalg.svd handles 3D input as a stack of matrices.
+            # Sanitize NaN/Inf (e.g. from missing omega values) and regularize
+            # near-zero-variance columns (cos ω at ±180° has std ~0.002 in a
+            # local neighbourhood, which makes LAPACK's batched SVD diverge).
+            np.nan_to_num(centered_batch, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
+            col_std = centered_batch.std(axis=1)  # (chunk_size, ndim)
+            tiny = col_std < 1e-5  # (chunk_size, ndim)
+            if tiny.any():
+                noise = (
+                    np.random.default_rng(0)
+                    .standard_normal(centered_batch.shape)
+                    .astype(centered_batch.dtype)
+                )
+                centered_batch = (
+                    centered_batch + noise * np.where(tiny, 1e-4, 0.0)[:, np.newaxis, :]
+                )
             _, s_batch, Vt_batch = np.linalg.svd(centered_batch, full_matrices=False)
             eig_batch = np.maximum((s_batch**2) / (k_pca - 1), 0.0)
 
@@ -626,6 +640,18 @@ class ManifoldModel:
             neighbors_batch = X_train[pca_idx_batch]
             centroids_batch = neighbors_batch.mean(axis=1)  # (cq, ndim)
             centered_batch = neighbors_batch - centroids_batch[:, None, :]
+            np.nan_to_num(centered_batch, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
+            col_std = centered_batch.std(axis=1)
+            tiny = col_std < 1e-5
+            if tiny.any():
+                noise = (
+                    np.random.default_rng(0)
+                    .standard_normal(centered_batch.shape)
+                    .astype(centered_batch.dtype)
+                )
+                centered_batch = (
+                    centered_batch + noise * np.where(tiny, 1e-4, 0.0)[:, np.newaxis, :]
+                )
 
             # --- Phase C: batched local PCA via one SVD call
             # SVD rank = min(k_pca, ndim); when k_pca > ndim, Vt has ndim rows.
