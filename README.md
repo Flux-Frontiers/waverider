@@ -122,6 +122,17 @@ For interactive 3-D voxel visualization (PyVista + SciPy):
 poetry install --with viz
 ```
 
+The viz extras also enable holographic output for both Looking Glass
+display families — quilts for the light-field line
+([docs/waverider/looking_glass.md](docs/waverider/looking_glass.md)) and
+turntable videos for Hololuminescent Displays
+([docs/waverider/hld.md](docs/waverider/hld.md)):
+
+```bash
+waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast  # light-field
+waverider-voxel-viz --dataset iris --hld --out iris                    # HLD
+```
+
 For neural network benchmarks (TensorFlow + Metal GPU on Apple Silicon):
 
 ```bash
@@ -236,7 +247,9 @@ waverider/
 │   ├── USAGE.md                      # Code examples for all components
 │   └── waverider/
 │       ├── waverider.md              # Technical paper
-│       └── manifold_voxel_viz.md     # Voxel visualizer CLI + API reference
+│       ├── manifold_voxel_viz.md     # Voxel visualizer CLI + API reference
+│       ├── looking_glass.md          # Light-field quilt output reference
+│       └── hld.md                    # Hololuminescent Display output reference
 ├── src/
 │   └── waverider/
 │       ├── __init__.py
@@ -245,7 +258,9 @@ waverider/
 │       ├── manifold_walker.py        # Riemannian gradient descent
 │       ├── manifold_observer.py      # (N+1)-dim extrinsic observer
 │       ├── manifold_model.py         # Zero-parameter manifold classifier
-│       └── voxel_viz.py              # 3-D voxel visualizer + waverider-voxel-viz CLI
+│       ├── voxel_viz.py              # 3-D voxel visualizer + waverider-voxel-viz CLI
+│       ├── looking_glass.py          # Light-field quilt renderer (LFD line)
+│       └── hld.py                    # Hololuminescent Display video renderer
 ├── tests/
 ├── benchmarks/
 │   └── canonical_tests/

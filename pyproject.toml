@@ -98,6 +98,8 @@ scipy     = ">=1.11"
 streamlit = ">=1.35"
 plotly    = ">=6.0"
 pillow    = ">=10.0"
+# Bundled ffmpeg for Looking Glass quilt video encoding (looking_glass.py)
+imageio-ffmpeg = ">=0.5"
 
 [tool.poetry.scripts]
 waverider-voxel-viz = "waverider.voxel_viz:main"

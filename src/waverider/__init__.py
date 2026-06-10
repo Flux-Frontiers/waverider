@@ -19,6 +19,20 @@ from .backbone_angles import BackboneAngleList, BackboneResidue, quantize_angle
 from .backbone_embedder import BackboneEmbedder
 from .backbone_manifold import BackboneManifoldResult, fit_backbone_manifold
 from .geodesic_coords import GeodesicEncoder
+from .hld import (
+    HLD_RESOLUTION,
+    HLD_SAFE_MARGINS,
+    render_hld_video,
+    style_plotter_for_hld,
+)
+from .looking_glass import (
+    QUILT_PRESETS,
+    QuiltSpec,
+    cast_quilt,
+    render_quilt,
+    render_quilt_video,
+    save_quilt,
+)
 from .manifold_model import ManifoldModel
 from .manifold_observer import ManifoldObserver
 from .manifold_walker import ManifoldWalker
@@ -31,7 +45,9 @@ from .voxel_viz import (
     build_grid,
     fit_and_observe,
     load_dataset,
+    render_hld_single,
     render_multi,
+    render_quilt_single,
     render_single,
     voxelize,
 )
@@ -62,4 +78,18 @@ __all__ = [
     "build_grid",
     "render_single",
     "render_multi",
+    # Looking Glass holographic output
+    "QuiltSpec",
+    "QUILT_PRESETS",
+    "render_quilt",
+    "render_quilt_video",
+    "render_quilt_single",
+    "save_quilt",
+    "cast_quilt",
+    # Hololuminescent Display (HLD) output
+    "HLD_RESOLUTION",
+    "HLD_SAFE_MARGINS",
+    "render_hld_video",
+    "render_hld_single",
+    "style_plotter_for_hld",
 ]

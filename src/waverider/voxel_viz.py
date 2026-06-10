@@ -73,6 +73,9 @@ CLI usage
     # Headless PNG export
     waverider-voxel-viz --dataset iris --off-screen --out iris_voxels.png
 
+    # Looking Glass holographic quilt (Portrait device), cast to the display
+    waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast
+
 Part of WaveRider — https://github.com/Flux-Frontiers/waverider
 Author: Eric G. Suchanek, PhD
 """
@@ -99,6 +102,13 @@ from sklearn.preprocessing import StandardScaler
 from waverider.dimensionality_discovery import (
     discover_dimensionality,
     discover_per_class_dimensionality,
+)
+from waverider.looking_glass import (
+    QUILT_PRESETS,
+    cast_quilt,
+    render_quilt,
+    render_quilt_video,
+    save_quilt,
 )
 from waverider.manifold_model import ManifoldModel
 from waverider.manifold_observer import ManifoldObserver
@@ -640,6 +650,53 @@ def _add_voxel_cloud(
     )
 
 
+def _compose_single_scene(
+    p,
+    grid,
+    pf: PointField,
+    scalar: str,
+    show_points: bool,
+    show_volume: bool,
+    vol_opacity: float,
+    vol_threshold: float,
+    pca_info: PCAInfo | None,
+    *,
+    sliceable: bool = True,
+    scalar_bar: bool = True,
+) -> None:
+    """Add the single-scalar scene (slices/cloud/points/arrows) to a plotter.
+
+    Shared by :func:`render_single` (interactive / PNG),
+    :func:`render_quilt_single` (Looking Glass quilt export), and
+    :func:`render_hld_single` (Hololuminescent Display video).
+
+    :param p: Active ``pv.Plotter``.
+    :param sliceable: If ``True``, use the interactive orthogonal-slice
+        widget; if ``False``, add static orthogonal slices (widgets cannot
+        be rendered repeatedly off-screen for quilt capture).
+    :param scalar_bar: Show the colour scale bar.  Disabled for HLD output,
+        where 2-D overlays breach the safe-area margins and clutter the
+        hologram.
+    """
+    if show_volume:
+        _add_voxel_cloud(p, grid, scalar, opacity=vol_opacity, threshold_frac=vol_threshold)
+
+    cmap = CMAP_MAP.get(scalar, "plasma")
+    if sliceable:
+        p.add_mesh_slice_orthogonal(grid, scalars=scalar, cmap=cmap, show_scalar_bar=scalar_bar)
+    else:
+        p.add_mesh(grid.slice_orthogonal(), scalars=scalar, cmap=cmap, show_scalar_bar=scalar_bar)
+
+    if show_points:
+        cloud = pv.PolyData(pf.X3.astype("f4"))
+        cloud.point_data["label"] = pf.labels.astype("f4")
+        p.add_points(
+            cloud, scalars="label", cmap="Set1", point_size=8, opacity=0.7, show_scalar_bar=False
+        )
+
+    _add_pca_arrows(p, pf, pca_info)
+
+
 def render_single(
     grid,
     pf: PointField,
@@ -671,25 +728,10 @@ def render_single(
     _require_viz("render_single")
     p = pv.Plotter(off_screen=off_screen, title=f"Manifold Voxels — {scalar}")
 
-    if show_volume:
-        _add_voxel_cloud(p, grid, scalar, opacity=vol_opacity, threshold_frac=vol_threshold)
-
-    p.add_mesh_slice_orthogonal(
-        grid,
-        scalars=scalar,
-        cmap=CMAP_MAP.get(scalar, "plasma"),
-        show_scalar_bar=True,
+    _compose_single_scene(
+        p, grid, pf, scalar, show_points, show_volume, vol_opacity, vol_threshold, pca_info
     )
-
-    if show_points:
-        cloud = pv.PolyData(pf.X3.astype("f4"))
-        cloud.point_data["label"] = pf.labels.astype("f4")
-        p.add_points(
-            cloud, scalars="label", cmap="Set1", point_size=8, opacity=0.7, show_scalar_bar=False
-        )
-
     _add_pca_axes(p, pca_info)
-    _add_pca_arrows(p, pf, pca_info)
     if not off_screen:
         _add_nav_help(p)
 
@@ -794,6 +836,183 @@ def render_multi(
         print(f"  Saved {out_path}")
     else:
         p.show()
+
+
+def render_quilt_single(
+    grid,
+    pf: PointField,
+    scalar: str = "density",
+    out_path: Path | str = "manifold",
+    device: str = "portrait",
+    view_cone: float | None = None,
+    show_points: bool = True,
+    show_volume: bool = False,
+    vol_opacity: float = 0.12,
+    vol_threshold: float = 0.04,
+    pca_info: PCAInfo | None = None,
+    cast: bool = False,
+    quilt_grid: tuple[int, int] | None = None,
+    video: bool = False,
+    n_frames: int = 180,
+    fps: int = 24,
+    orbit: float = 360.0,
+) -> Path:
+    """Render the single-scalar scene as a Looking Glass quilt (PNG or MP4).
+
+    Composes the same scene as :func:`render_single` (static slices instead
+    of the interactive widget), then sweeps the camera across the device's
+    view cone with off-axis projections and tiles the views into a quilt.
+    With ``video=True``, renders a turntable orbit of quilt frames and
+    encodes them to MP4.  Output filenames carry the
+    ``_qs<cols>x<rows>a<aspect>`` suffix so Looking Glass Studio / Bridge
+    auto-detect the settings.
+
+    Requires ``pyvista`` + ``pillow`` (``poetry install --with viz``);
+    video additionally needs ffmpeg (or ``pip install imageio-ffmpeg``).
+
+    :param grid: ``pv.ImageData`` from :func:`build_grid`.
+    :param pf: :class:`PointField` from :func:`fit_and_observe`.
+    :param scalar: Which scalar field to display.
+    :param out_path: Output stem; the quilt suffix + extension are appended.
+    :param device: Key into :data:`waverider.looking_glass.QUILT_PRESETS`
+        (e.g. ``"portrait"``, ``"go"``, ``"16-landscape"``).
+    :param view_cone: Override the preset's view cone in degrees.
+    :param show_points: Overlay scatter of raw training points.
+    :param show_volume: Render the full voxel cloud behind the slices.
+    :param vol_opacity: Opacity of the voxel cloud (0–1).
+    :param vol_threshold: Density threshold as a fraction of max.
+    :param pca_info: If provided, add PCA direction arrows.
+    :param cast: If ``True``, also send the quilt to a connected Looking
+        Glass via the local Looking Glass Bridge service.
+    :param quilt_grid: Optional ``(columns, rows)`` override of the preset's
+        view grid — more views = smoother look-around, lower per-view
+        resolution.
+    :param video: Render a turntable quilt video instead of a still.
+    :param n_frames: Video frame count (with *fps* sets loop duration).
+    :param fps: Video frame rate.
+    :param orbit: Total camera orbit in degrees over the clip (360 loops).
+    :return: Path of the quilt PNG/MP4 written.
+    """
+    _require_viz("render_quilt_single")
+    spec = QUILT_PRESETS[device]
+    if quilt_grid is not None:
+        spec = spec.with_grid(*quilt_grid)
+
+    p = pv.Plotter(off_screen=True)
+    _compose_single_scene(
+        p,
+        grid,
+        pf,
+        scalar,
+        show_points,
+        show_volume,
+        vol_opacity,
+        vol_threshold,
+        pca_info,
+        sliceable=False,
+    )
+
+    if video:
+        saved = render_quilt_video(
+            p,
+            spec,
+            out_path,
+            n_frames=n_frames,
+            fps=fps,
+            orbit_degrees=orbit,
+            view_cone=view_cone,
+        )
+        p.close()
+        print(
+            f"  Saved quilt video {saved}  "
+            f"({n_frames} frames x {spec.n_views} views, {n_frames / fps:.1f}s loop)"
+        )
+    else:
+        quilt = render_quilt(p, spec, view_cone=view_cone)
+        p.close()
+        saved = save_quilt(quilt, out_path, spec)
+        print(f"  Saved quilt {saved}  ({spec.n_views} views, {spec.columns}x{spec.rows})")
+
+    if cast:
+        cast_quilt(saved, spec)
+        print("  Cast to Looking Glass via Bridge")
+    return saved
+
+
+def render_hld_single(
+    grid,
+    pf: PointField,
+    scalar: str = "density",
+    out_path: Path | str = "manifold",
+    show_points: bool = True,
+    show_volume: bool = False,
+    vol_opacity: float = 0.12,
+    vol_threshold: float = 0.04,
+    pca_info: PCAInfo | None = None,
+    n_frames: int = 300,
+    fps: int = 30,
+    orbit: float = 360.0,
+    shadow: bool = True,
+) -> Path:
+    """Render the single-scalar scene as a Hololuminescent Display video.
+
+    HLDs (the 16"/27"/86" Hololuminescent line) play ordinary 2-D video —
+    no quilts — with pure white rendered invisible by the display's optics.
+    This composes the same scene as :func:`render_single` on a white
+    background, adds a soft contact shadow under the voxel volume, frames
+    it inside the HLD safe area, and renders a slow turntable orbit to the
+    official master spec (2160x3840, HEVC, bt709).
+
+    Run the output through Looking Glass's HLD Author app, then copy it to
+    the display's USB media player.  See :mod:`waverider.hld`.
+
+    Requires ``pyvista`` + ``pillow`` + ffmpeg (``poetry install --with viz``).
+
+    :param grid: ``pv.ImageData`` from :func:`build_grid`.
+    :param pf: :class:`PointField` from :func:`fit_and_observe`.
+    :param scalar: Which scalar field to display.
+    :param out_path: Output stem; ``_hld.mp4`` is appended.
+    :param show_points: Overlay scatter of raw training points.
+    :param show_volume: Render the full voxel cloud behind the slices.
+    :param vol_opacity: Opacity of the voxel cloud (0–1).
+    :param vol_threshold: Density threshold as a fraction of max.
+    :param pca_info: If provided, add PCA direction arrows.
+    :param n_frames: Frame count (default 300 @ 30 fps = 10 s loop).
+    :param fps: 30 or 60 per the HLD media spec.
+    :param orbit: Total turntable rotation in degrees (360 loops).
+    :param shadow: Paint a soft contact shadow under the volume (the HLD
+        guidelines call floor shadows crucial for the depth effect).
+    :return: Path of the MP4 written.
+    """
+    from waverider.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
+
+    _require_viz("render_hld_single")
+
+    p = pv.Plotter(off_screen=True, theme=pv.themes.DocumentTheme())
+    _compose_single_scene(
+        p,
+        grid,
+        pf,
+        scalar,
+        show_points,
+        show_volume,
+        vol_opacity,
+        vol_threshold,
+        pca_info,
+        sliceable=False,
+        scalar_bar=False,
+    )
+    if shadow:
+        add_floor_shadow(p, grid.bounds)
+    style_plotter_for_hld(p)
+
+    saved = render_hld_video(p, out_path, n_frames=n_frames, fps=fps, orbit_degrees=orbit)
+    p.close()
+    print(
+        f"  Saved HLD video {saved}  ({n_frames} frames, {n_frames / fps:.1f}s loop)\n"
+        "  Next: open it in HLD Author to encode for the display's USB player."
+    )
+    return saved
 
 
 # ---------------------------------------------------------------------------
@@ -902,6 +1121,77 @@ def parse_args() -> argparse.Namespace:
         help="Render headless and write a PNG instead of opening a window.",
     )
     p.add_argument("--out", default=None, help="Output PNG path (implies --off-screen).")
+
+    # Looking Glass holographic output
+    p.add_argument(
+        "--quilt",
+        choices=sorted(QUILT_PRESETS),
+        default=None,
+        help="Render a Looking Glass quilt for this device instead of a flat "
+        "PNG (implies --off-screen). Output name comes from --out (suffix "
+        "and extension are replaced by the quilt convention).",
+    )
+    p.add_argument(
+        "--view-cone",
+        type=float,
+        default=None,
+        help="Override the quilt view cone in degrees (default: 35).",
+    )
+    p.add_argument(
+        "--quilt-grid",
+        type=str,
+        default=None,
+        metavar="CxR",
+        help="Override the quilt view grid, e.g. '11x6' for 66 views. More "
+        "views = smoother look-around but lower per-view resolution "
+        "(quilt pixel size is fixed per device).",
+    )
+    p.add_argument(
+        "--quilt-video",
+        action="store_true",
+        help="Render a looping turntable quilt video (MP4) instead of a "
+        "still quilt. Requires ffmpeg (or pip install imageio-ffmpeg).",
+    )
+    p.add_argument(
+        "--frames",
+        type=int,
+        default=None,
+        help="Video frame count (default: 180 for --quilt-video, 300 for --hld).",
+    )
+    p.add_argument(
+        "--fps",
+        type=int,
+        default=None,
+        help="Video frame rate (default: 24 for --quilt-video; 30 for --hld, "
+        "which only allows 30 or 60).",
+    )
+    p.add_argument(
+        "--orbit",
+        type=float,
+        default=360.0,
+        help="Total turntable rotation in degrees over the clip (default 360).",
+    )
+    p.add_argument(
+        "--cast",
+        action="store_true",
+        help="After rendering the quilt, display it on the connected Looking "
+        "Glass via the local Looking Glass Bridge service.",
+    )
+
+    # Hololuminescent Display (HLD) output — the 16"/27"/86" HLD line plays
+    # plain 2-D video (white = invisible), not quilts.
+    p.add_argument(
+        "--hld",
+        action="store_true",
+        help="Render a turntable video for a Looking Glass Hololuminescent "
+        "Display (white background, safe-area framing, 2160x3840 HEVC "
+        "master). Finish it in the HLD Author app.",
+    )
+    p.add_argument(
+        "--no-shadow",
+        action="store_true",
+        help="HLD mode: skip the contact shadow under the volume.",
+    )
 
     return p.parse_args()
 
@@ -1047,7 +1337,57 @@ def main() -> None:
     print("\n[5/5] Rendering ...")
     grid = build_grid(vox)
 
-    if args.multi_scalar:
+    if args.hld and args.quilt:
+        print("ERROR: --hld and --quilt are mutually exclusive (different device families).")
+        sys.exit(1)
+
+    if args.hld:
+        stem = out_path if out_path else Path(f"manifold_{args.dataset}_{args.scalar}")
+        render_hld_single(
+            grid,
+            pf,
+            scalar=args.scalar,
+            out_path=stem,
+            show_points=not args.no_points,
+            show_volume=args.volume,
+            vol_opacity=args.vol_opacity,
+            vol_threshold=args.vol_threshold,
+            pca_info=pca_info,
+            n_frames=args.frames if args.frames is not None else 300,
+            fps=args.fps if args.fps is not None else 30,
+            orbit=args.orbit,
+            shadow=not args.no_shadow,
+        )
+    elif args.quilt:
+        stem = out_path if out_path else Path(f"manifold_{args.dataset}_{args.scalar}")
+        quilt_grid = None
+        if args.quilt_grid:
+            try:
+                cols, rows = (int(v) for v in args.quilt_grid.lower().split("x"))
+                quilt_grid = (cols, rows)
+            except ValueError:
+                print(f"ERROR: --quilt-grid must look like '11x6', got '{args.quilt_grid}'")
+                sys.exit(1)
+        render_quilt_single(
+            grid,
+            pf,
+            scalar=args.scalar,
+            out_path=stem,
+            device=args.quilt,
+            view_cone=args.view_cone,
+            show_points=not args.no_points,
+            show_volume=args.volume,
+            vol_opacity=args.vol_opacity,
+            vol_threshold=args.vol_threshold,
+            pca_info=pca_info,
+            cast=args.cast,
+            quilt_grid=quilt_grid,
+            video=args.quilt_video,
+            n_frames=args.frames if args.frames is not None else 180,
+            fps=args.fps if args.fps is not None else 24,
+            orbit=args.orbit,
+        )
+    elif args.multi_scalar:
         render_multi(
             grid,
             pf,
