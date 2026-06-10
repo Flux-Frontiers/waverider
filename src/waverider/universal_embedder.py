@@ -317,6 +317,7 @@ class UniversalEmbedder:
 
         :returns: (pca_basis, pca_mean, mli, global_var_at_d_star)
         """
+        assert self._d_star is not None  # set by fit() before this is called
         n, p = X.shape
         mean = X.mean(axis=0)
         Xc = (X - mean).astype("d")
@@ -368,6 +369,7 @@ class UniversalEmbedder:
 
     def _transform_pca(self, X: np.ndarray) -> np.ndarray:
         """Global linear projection: z = V_d* @ (x − μ)."""
+        assert self._pca_mean is not None and self._pca_basis is not None
         Z = (X - self._pca_mean) @ self._pca_basis.T
         return Z.astype("float32")
 
@@ -375,6 +377,11 @@ class UniversalEmbedder:
 
     def _transform_anchor(self, X: np.ndarray) -> np.ndarray:
         """Tangent-projected anchor distances (turtle or tangent strategy)."""
+        assert (
+            self._X_train is not None
+            and self._anchors is not None
+            and self._node_frames is not None
+        )
         n_query = X.shape[0]
         X_train = self._X_train
         n_train = X_train.shape[0]
@@ -461,6 +468,11 @@ class UniversalEmbedder:
 
     def _padded_basis(self, node_id: str) -> np.ndarray:
         """d*-row basis for a node, truncating or zero-padding to d*."""
+        assert (
+            self._model is not None
+            and self._d_star is not None
+            and self._ndim is not None
+        )
         geom = self._model._geometries[node_id]
         basis = geom.basis
         d = self._d_star
@@ -478,6 +490,7 @@ class UniversalEmbedder:
 
     def _build_tangent_frames(self) -> dict[str, np.ndarray]:
         """Raw sign-corrected PCA frames at each node."""
+        assert self._model is not None
         return {
             nid: self._sign_correct(self._padded_basis(nid))
             for nid in self._model._geometries
@@ -490,6 +503,11 @@ class UniversalEmbedder:
         rotates the parent frame to align with the neighbour's local PCA.
         Disconnected nodes fall back to sign-corrected tangent frames.
         """
+        assert (
+            self._model is not None
+            and self._model._graph is not None
+            and self._d_star is not None
+        )
         frames: dict[str, np.ndarray] = {}
 
         root_id = "n0"
