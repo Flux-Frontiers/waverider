@@ -1587,7 +1587,9 @@ def main() -> None:
             try:
                 isovalues = [float(v) for v in args.ct_isovalues.split(",")]
             except ValueError:
-                print(f"ERROR: --ct-isovalues must be comma-separated numbers, got '{args.ct_isovalues}'")
+                print(
+                    f"ERROR: --ct-isovalues must be comma-separated numbers, got '{args.ct_isovalues}'"
+                )
                 sys.exit(1)
         isos_display = isovalues if isovalues is not None else preset["isovalues"]
         print("=" * 60)

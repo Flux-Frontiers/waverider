@@ -15,8 +15,7 @@ The engine discovers reasoning paths through knowledge graphs by:
   4. Beam search — multiple hypothesis paths explored in parallel
   5. Cross-corpus bridging — edges can span knowledge bases
 
-Part of the program proteusPy, https://github.com/suchanek/proteusPy,
-a Python package for the manipulation and analysis of macromolecules.
+Part of WaveRider — https://github.com/Flux-Frontiers/waverider
 
 Author: Eric G. Suchanek, PhD
 """
@@ -30,7 +29,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
-from proteusPy.turtleND import TurtleND
+
+from waverider.turtleND import TurtleND
 
 __pdoc__ = {"__all__": True}
 

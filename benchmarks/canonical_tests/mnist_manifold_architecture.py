@@ -580,9 +580,7 @@ def main():
     t_start = time.perf_counter()
 
     _ds_prefix = "mnist" if args.dataset == "mnist" else "digits"
-    results_path = (
-        Path(__file__).resolve().parent / f"{_ds_prefix}_architecture_results.json"
-    )
+    results_path = Path(__file__).resolve().parent / f"{_ds_prefix}_architecture_results.json"
     plot_path = str(results_path.with_suffix(".png"))
 
     if args.plot_only:

@@ -153,8 +153,8 @@ class UniversalEmbedder:
         self._global_var_at_d_star: float | None = None
 
         # PCA strategy state
-        self._pca_basis: np.ndarray | None = None   # (n_out, ndim)
-        self._pca_mean: np.ndarray | None = None    # (ndim,)
+        self._pca_basis: np.ndarray | None = None  # (n_out, ndim)
+        self._pca_mean: np.ndarray | None = None  # (ndim,)
 
         # Turtle/tangent strategy state
         self._node_frames: dict[str, np.ndarray] | None = None
@@ -193,18 +193,14 @@ class UniversalEmbedder:
             "variance_threshold": self.variance_threshold,
             "mli_threshold": self.mli_threshold,
             "ambient_dim": self._ndim,
-            "noise_pct": (
-                100.0 * (1.0 - self._d_star / self._ndim) if self._ndim else 0.0
-            ),
+            "noise_pct": (100.0 * (1.0 - self._d_star / self._ndim) if self._ndim else 0.0),
             "n_nodes": self._model.n_nodes if self._model else 0,
-            "mean_intrinsic_dim": float(self._model.intrinsic_dim or 0.0)
-            if self._model
-            else 0.0,
+            "mean_intrinsic_dim": float(self._model.intrinsic_dim or 0.0) if self._model else 0.0,
         }
 
     # ── Fit ───────────────────────────────────────────────────────────────────
 
-    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> "UniversalEmbedder":
+    def fit(self, X: np.ndarray, y: np.ndarray | None = None) -> UniversalEmbedder:
         """Discover manifold geometry and build the coordinate system.
 
         Phase 1 — local geometry:
@@ -294,9 +290,7 @@ class UniversalEmbedder:
             return self._transform_pca(X)
         return self._transform_anchor(X)
 
-    def fit_transform(
-        self, X: np.ndarray, y: np.ndarray | None = None
-    ) -> np.ndarray:
+    def fit_transform(self, X: np.ndarray, y: np.ndarray | None = None) -> np.ndarray:
         """Fit and transform in one call.
 
         :param X: Training data, shape (n_samples, n_features).
@@ -385,7 +379,7 @@ class UniversalEmbedder:
         n_query = X.shape[0]
         X_train = self._X_train
         n_train = X_train.shape[0]
-        anchors = self._anchors        # (n_out, ndim)
+        anchors = self._anchors  # (n_out, ndim)
         n_out = len(anchors)
 
         out = np.zeros((n_query, n_out), dtype="float32")
@@ -398,19 +392,15 @@ class UniversalEmbedder:
         for cstart in range(0, n_query, chunk):
             cend = min(cstart + chunk, n_query)
             Xq = X[cstart:cend]
-            dist_sq = (
-                query_sq[cstart:cend, None]
-                + train_sq[None, :]
-                - 2.0 * (Xq @ X_train.T)
-            )
+            dist_sq = query_sq[cstart:cend, None] + train_sq[None, :] - 2.0 * (Xq @ X_train.T)
             np.maximum(dist_sq, 0.0, out=dist_sq)
             nearest = np.argmin(dist_sq, axis=1)
 
             for qi in range(cend - cstart):
                 node_id = f"n{nearest[qi]}"
-                frame_d = self._node_frames[node_id]       # (d*, ndim)
-                diff_matrix = Xq[qi][None, :] - anchors   # (n_out, ndim)
-                proj_matrix = frame_d @ diff_matrix.T      # (d*, n_out)
+                frame_d = self._node_frames[node_id]  # (d*, ndim)
+                diff_matrix = Xq[qi][None, :] - anchors  # (n_out, ndim)
+                proj_matrix = frame_d @ diff_matrix.T  # (d*, n_out)
                 out[cstart + qi] = np.linalg.norm(proj_matrix, axis=0).astype("float32")
 
         return out
@@ -468,11 +458,7 @@ class UniversalEmbedder:
 
     def _padded_basis(self, node_id: str) -> np.ndarray:
         """d*-row basis for a node, truncating or zero-padding to d*."""
-        assert (
-            self._model is not None
-            and self._d_star is not None
-            and self._ndim is not None
-        )
+        assert self._model is not None and self._d_star is not None and self._ndim is not None
         geom = self._model._geometries[node_id]
         basis = geom.basis
         d = self._d_star
@@ -491,10 +477,7 @@ class UniversalEmbedder:
     def _build_tangent_frames(self) -> dict[str, np.ndarray]:
         """Raw sign-corrected PCA frames at each node."""
         assert self._model is not None
-        return {
-            nid: self._sign_correct(self._padded_basis(nid))
-            for nid in self._model._geometries
-        }
+        return {nid: self._sign_correct(self._padded_basis(nid)) for nid in self._model._geometries}
 
     def _transport_frames(self) -> dict[str, np.ndarray]:
         """BFS Procrustes frame transport along the manifold graph.
@@ -504,9 +487,7 @@ class UniversalEmbedder:
         Disconnected nodes fall back to sign-corrected tangent frames.
         """
         assert (
-            self._model is not None
-            and self._model._graph is not None
-            and self._d_star is not None
+            self._model is not None and self._model._graph is not None and self._d_star is not None
         )
         frames: dict[str, np.ndarray] = {}
 

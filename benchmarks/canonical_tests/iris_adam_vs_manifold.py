@@ -968,9 +968,7 @@ def main():
         adam_results = [_to_obj(d) for d in saved["adam"]]
         manifold_results = [_to_obj(d) for d in saved["manifold_walker"]]
         manifold_adam_results = (
-            [_to_obj(d) for d in saved["manifold_adam"]]
-            if "manifold_adam" in saved
-            else None
+            [_to_obj(d) for d in saved["manifold_adam"]] if "manifold_adam" in saved else None
         )
         plot_results(adam_results, manifold_results, manifold_adam_results, save_path=plot_path)
         sys.exit(0)

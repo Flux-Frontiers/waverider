@@ -104,3 +104,6 @@ papers/**/*.toc
 
 # Draft articles / posts — private working files, not part of the release
 drafts/
+
+# Scratch file for `git commit -F` — never a project artifact
+commit.txt

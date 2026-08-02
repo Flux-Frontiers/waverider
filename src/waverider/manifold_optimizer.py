@@ -19,7 +19,7 @@ Usage
     model.compile(optimizer=opt, ...)
 
     Author: Eric G. Suchanek, PhD
-    Last Revision: 2026-03-30 00:43:13
+    Last Revision: 2026-05-23 19:15:23
 """
 
 import os

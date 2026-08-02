@@ -5,7 +5,6 @@ import pytest
 
 from waverider.universal_embedder import UniversalEmbedder
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -121,9 +120,7 @@ def test_n_components_truncates(mode):
     if d < 2:
         pytest.skip("d* too small to truncate")
 
-    ue2 = UniversalEmbedder(
-        n_components=d - 1, k_pca=20, k_graph=8, coordinate_mode=mode
-    )
+    ue2 = UniversalEmbedder(n_components=d - 1, k_pca=20, k_graph=8, coordinate_mode=mode)
     ue2.fit(X)
     Z = ue2.transform(X)
     assert Z.shape == (200, d - 1)
@@ -138,9 +135,7 @@ def test_n_components_expands(mode):
     d = ue.d_star
     target = d + 3
 
-    ue2 = UniversalEmbedder(
-        n_components=target, k_pca=20, k_graph=8, coordinate_mode=mode
-    )
+    ue2 = UniversalEmbedder(n_components=target, k_pca=20, k_graph=8, coordinate_mode=mode)
     ue2.fit(X)
     Z = ue2.transform(X)
     assert Z.shape == (200, target)
@@ -350,9 +345,7 @@ def test_benchmark_parity_pattern():
         X_tr, X_te = X[tr_idx], X[te_idx]
         y_tr = y[tr_idx]
 
-        ue_fold = UniversalEmbedder(
-            n_components=d_ue, k_pca=20, k_graph=8, variance_threshold=0.90
-        )
+        ue_fold = UniversalEmbedder(n_components=d_ue, k_pca=20, k_graph=8, variance_threshold=0.90)
         X_tr_ue = ue_fold.fit_transform(X_tr, y_tr).astype("float32")
         X_te_ue = ue_fold.transform(X_te).astype("float32")
 

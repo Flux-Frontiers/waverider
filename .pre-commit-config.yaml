@@ -16,13 +16,19 @@ repos:
           )$
       - id: debug-statements
 
-  # Pylint code quality checking
-  - repo: https://github.com/PyCQA/pylint
-    rev: v4.0.4
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.13
     hooks:
-      - id: pylint
-        args: ['--rcfile=pyproject.toml']
-        files: '^src/'
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: '(\.dockg|\.codekg|\.pycodekg)/'
 
   - repo: local
     hooks:
@@ -32,9 +38,9 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-      - id: mypy
-        name: mypy
-        entry: poetry run mypy src/
+      - id: ty
+        name: ty
+        entry: poetry run ty check src/
         language: system
         pass_filenames: false
         always_run: true
@@ -44,17 +50,3 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
-    hooks:
-      - id: detect-secrets
-        args: ['--baseline', '.secrets.baseline']
-        exclude: '(\.dockg|\.codekg)/'
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.10
-    hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format

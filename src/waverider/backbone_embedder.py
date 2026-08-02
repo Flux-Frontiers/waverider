@@ -246,7 +246,8 @@ class BackboneEmbedder:
 
     def _embed_discrete(self, bal: BackboneAngleList) -> np.ndarray:
         """Return (N, embedding_dim+aa_dim+omega_dim) via codebook lookup."""
-        parts = [self.codebook_[bal.to_combined_codes(self.n_bins)]]  # type: ignore[index]
+        assert self.codebook_ is not None, "_embed_discrete requires a fitted codebook"
+        parts = [self.codebook_[bal.to_combined_codes(self.n_bins)]]
         if self.include_aa:
             parts.append(self._aa_features(bal))
         if self.include_omega:
