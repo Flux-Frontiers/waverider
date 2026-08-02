@@ -1,11 +1,11 @@
-"""Tests for the Looking Glass quilt renderer (waverider.looking_glass)."""
+"""Tests for the Looking Glass quilt renderer (waverider.lfd)."""
 
 import math
 
 import numpy as np
 import pytest
 
-from waverider.looking_glass import (
+from waverider.lfd import (
     QUILT_PRESETS,
     QuiltSpec,
     _encode_args,
@@ -136,8 +136,11 @@ class TestEncodeArgs:
         assert "libx265" in args
 
     def test_odd_sizes_padded(self):
-        # 16" landscape quilts are 5999 px — yuv420p needs even dimensions.
-        args = _encode_args(QUILT_PRESETS["16-landscape"], crf=18)
+        # yuv420p needs even dimensions.  Built explicitly rather than taken
+        # from QUILT_PRESETS: preset sizes track real hardware and change
+        # when a device's spec is corrected, which is not what this asserts.
+        odd = QuiltSpec(columns=7, rows=7, quilt_width=5999, quilt_height=5999, aspect=1.777)
+        args = _encode_args(odd, crf=18)
         assert "-vf" in args
         assert "pad=" in args[args.index("-vf") + 1]
 
@@ -232,7 +235,7 @@ class TestRenderQuilt:
     def test_shape_and_views_differ(self, tiny_spec):
         import pyvista as pv
 
-        from waverider.looking_glass import render_quilt
+        from waverider.lfd import render_quilt
 
         p = pv.Plotter(off_screen=True)
         p.add_mesh(pv.Cube(), color="red")
@@ -254,7 +257,7 @@ class TestRenderQuilt:
         point should occupy the centre pixel of *every* view."""
         import pyvista as pv
 
-        from waverider.looking_glass import render_quilt
+        from waverider.lfd import render_quilt
 
         p = pv.Plotter(off_screen=True)
         p.add_mesh(pv.Sphere(radius=0.2), color="white")
@@ -272,7 +275,7 @@ class TestRenderQuilt:
     def test_camera_restored_after_render(self, tiny_spec):
         import pyvista as pv
 
-        from waverider.looking_glass import render_quilt
+        from waverider.lfd import render_quilt
 
         p = pv.Plotter(off_screen=True)
         p.add_mesh(pv.Sphere())
@@ -286,7 +289,7 @@ class TestRenderQuilt:
 
 def _have_ffmpeg() -> bool:
     try:
-        from waverider.looking_glass import _find_ffmpeg
+        from waverider.lfd import _find_ffmpeg
 
         _find_ffmpeg()
         return True
@@ -300,7 +303,7 @@ class TestRenderQuiltVideo:
     def test_turntable_mp4(self, tmp_path, tiny_spec):
         import pyvista as pv
 
-        from waverider.looking_glass import render_quilt_video
+        from waverider.lfd import render_quilt_video
 
         p = pv.Plotter(off_screen=True)
         p.add_mesh(pv.Cube(), color="red")
@@ -319,7 +322,7 @@ class TestRenderQuiltVideo:
     def test_on_frame_callback_runs(self, tmp_path, tiny_spec):
         import pyvista as pv
 
-        from waverider.looking_glass import render_quilt_video
+        from waverider.lfd import render_quilt_video
 
         seen = []
         p = pv.Plotter(off_screen=True)

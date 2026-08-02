@@ -78,6 +78,9 @@ tests/test_arc_harness.py
 docs/ARC_PAPER_PLAN.md
 docs/ARC_TAXONOMY_V1.md
 
+# HLD / video render outputs — large binaries, regenerable
+*.mp4
+
 # 3D ship mesh assets — large binary files, not part of the ML codebase
 3D_Objs/
 
@@ -98,3 +101,6 @@ papers/**/*.log
 papers/**/*.out
 papers/**/*.synctex.gz
 papers/**/*.toc
+
+# Draft articles / posts — private working files, not part of the release
+drafts/

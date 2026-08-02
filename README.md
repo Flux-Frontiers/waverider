@@ -81,28 +81,47 @@ On CIFAR-10 (d\*=16, C=10, w\*=25): post-bottleneck PCA reveals 7 geometry princ
 | **Manifold Adam** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
 | **Manifold Model** | `ManifoldModel` | Zero-parameter classifier: the manifold *is* the model |
 | **Manifold Observer** | `ManifoldObserver` | (N+1)-dimensional extrinsic observer — hovers above the manifold surface |
-| **Voxel Visualizer** | `waverider.voxel_viz` / `waverider-voxel-viz` | Projects the observer's geometric fields into 3-D, voxelises them, and renders interactive orthogonal slice planes in PyVista — a live cross-sectional anatomy of the manifold |
+| **Voxel Visualizer** | `waverider.voxel_viz` / `waverider-voxel-viz` | Two modes: (1) projects the observer's geometric fields into 3-D, voxelises them, and renders interactive orthogonal slice planes in PyVista; (2) `--ct-demo` loads real CT/MRI volumes and renders layered isosurfaces interactively or as an HLD turntable video |
 
 ---
 
-## Manifold Voxel Visualizer
+## Voxel Visualizer
 
-High-dimensional manifolds are invisible. The `ManifoldObserver` measures curvature, height above the tangent plane, local intrinsic dimensionality, and class-vote at every node — but those fields live in N-dimensional space. The **Voxel Visualizer** projects them into a 3-D PCA subspace, rasterises onto a uniform voxel grid, and hands the result to PyVista so you can drag three orthogonal slice planes through the volume in real time.
+The `waverider-voxel-viz` command ships two rendering modes:
+
+**Manifold mode** — high-dimensional manifolds are invisible. The `ManifoldObserver`
+measures curvature, height above the tangent plane, and local intrinsic
+dimensionality at every node. The Voxel Visualizer projects those fields into a
+3-D PCA subspace, rasterises them onto a uniform voxel grid, and opens a PyVista
+viewer where you drag three orthogonal slice planes through the volume in real time.
+
+**CT / MRI demo mode** (`--ct-demo`) — loads one of PyVista's built-in biomedical
+volumes (T1 MRI brain, CT head, or whole-body CT), extracts layered isosurfaces
+for skin / tissue / bone, and opens an interactive viewer or encodes a 10-second
+HLD turntable video — no ManifoldModel fitting required.
 
 ![Manifold Voxel Visualizer — pipeline, scalar fields, datasets, controls](docs/waverider/manifold_voxel_viz.png)
 
 ```bash
-poetry install --with viz                          # PyVista + SciPy + Streamlit
-waverider-voxel-viz                                # default: helix
-waverider-voxel-viz --dataset iris --multi-scalar  # density / curvature / height / class_vote in a 2×2 grid
+poetry install --with viz                          # PyVista + SciPy + Pillow
+
+# Manifold mode
+waverider-voxel-viz                                # default: synthetic helix
+waverider-voxel-viz --dataset iris --multi-scalar  # 2×2 panel: all scalar fields
 waverider-voxel-viz --dataset cifar10 --n-points 1000 --pre-pca 40
-waverider-voxel-viz --dataset breast_cancer --off-screen --out bc_voxels.png
+waverider-voxel-viz --dataset breast_cancer --hld --out bc_hld  # HLD video
+
+# CT / MRI demo mode
+waverider-voxel-viz --ct-demo                              # T1 MRI brain, interactive
+waverider-voxel-viz --ct-demo --ct-dataset full_head       # CT head, interactive
+waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # HLD video
 ```
 
-**Scalar fields per voxel:** `density`, `curvature`, `height`, `intrinsic_dim`, `class_vote`.
-**Built-in datasets:** synthetic (helix, swiss_roll, torus), tabular (iris, wine, breast_cancer, digits), large (mnist, cifar10, cifar100), or `--dataset load --X-file X.npy --y-file y.npy` for your own.
+**Manifold scalar fields:** `density`, `curvature`, `height`, `intrinsic_dim`, `class_vote`.
+**Manifold datasets:** synthetic (helix, swiss_roll, torus), tabular (iris, wine, breast_cancer, digits), large (mnist, cifar10, cifar100), or `--dataset load` for your own.
+**CT / MRI datasets:** `brain` (181³ T1 MRI), `full_head` / `head_2` (256² CT), `whole_body_ct_male` / `whole_body_ct_female` (160² whole-body CT).
 
-- **Full CLI + API reference:** [docs/waverider/manifold_voxel_viz.md](docs/waverider/manifold_voxel_viz.md)
+- **Full CLI + API reference:** [docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)
 - **Worked code examples:** [docs/USAGE.md § Voxel Visualizer](docs/USAGE.md#manifold-voxel-visualizer--interactive-3-d-manifold-anatomy)
 - **Method paper:** [papers/voxel_viz/voxel_viz.pdf](papers/voxel_viz/voxel_viz.pdf)
 
@@ -124,7 +143,7 @@ poetry install --with viz
 
 The viz extras also enable holographic output for both Looking Glass
 display families — quilts for the light-field line
-([docs/waverider/looking_glass.md](docs/waverider/looking_glass.md)) and
+([docs/waverider/lfd.md](docs/waverider/lfd.md)) and
 turntable videos for Hololuminescent Displays
 ([docs/waverider/hld.md](docs/waverider/hld.md)):
 
@@ -247,8 +266,8 @@ waverider/
 │   ├── USAGE.md                      # Code examples for all components
 │   └── waverider/
 │       ├── waverider.md              # Technical paper
-│       ├── manifold_voxel_viz.md     # Voxel visualizer CLI + API reference
-│       ├── looking_glass.md          # Light-field quilt output reference
+│       ├── voxel_viz.md              # Voxel visualizer CLI + API reference
+│       ├── lfd.md                    # Light-field (quilt) output reference
 │       └── hld.md                    # Hololuminescent Display output reference
 ├── src/
 │   └── waverider/
@@ -259,7 +278,7 @@ waverider/
 │       ├── manifold_observer.py      # (N+1)-dim extrinsic observer
 │       ├── manifold_model.py         # Zero-parameter manifold classifier
 │       ├── voxel_viz.py              # 3-D voxel visualizer + waverider-voxel-viz CLI
-│       ├── looking_glass.py          # Light-field quilt renderer (LFD line)
+│       ├── lfd.py          # Light-field quilt renderer (LFD line)
 │       └── hld.py                    # Hololuminescent Display video renderer
 ├── tests/
 ├── benchmarks/

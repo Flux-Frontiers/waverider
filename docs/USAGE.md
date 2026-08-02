@@ -112,7 +112,7 @@ waverider-voxel-viz --dataset breast_cancer --off-screen --out bc_voxels.png
 waverider-voxel-viz --dataset cifar10 --n-points 1000 --pre-pca 40
 ```
 
-See [waverider/manifold_voxel_viz.md](waverider/manifold_voxel_viz.md) for the full argument reference.
+See [waverider/voxel_viz.md](waverider/voxel_viz.md) for the full argument reference.
 
 ---
 

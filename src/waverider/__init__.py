@@ -25,7 +25,7 @@ from .hld import (
     render_hld_video,
     style_plotter_for_hld,
 )
-from .looking_glass import (
+from .lfd import (
     QUILT_PRESETS,
     QuiltSpec,
     cast_quilt,

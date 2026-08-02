@@ -28,7 +28,7 @@ front of / behind the glass.
 Typical usage::
 
     import pyvista as pv
-    from waverider.looking_glass import QUILT_PRESETS, render_quilt, save_quilt
+    from waverider.lfd import QUILT_PRESETS, render_quilt, save_quilt
 
     p = pv.Plotter(off_screen=True)
     p.add_mesh(pv.ParametricTorus())
@@ -163,7 +163,12 @@ class QuiltSpec:
 QUILT_PRESETS: dict[str, QuiltSpec] = {
     "portrait": QuiltSpec(columns=8, rows=6, quilt_width=3360, quilt_height=3360, aspect=0.75),
     "go": QuiltSpec(columns=11, rows=6, quilt_width=4092, quilt_height=4092, aspect=0.5625),
-    "16-landscape": QuiltSpec(columns=7, rows=7, quilt_width=5999, quilt_height=5999, aspect=1.777),
+    # Gen3 16" Landscape (hardwareVersion "16_gen3_l"), verified against the
+    # defaultQuilt Bridge reports for LKG-J00332.  Its native view cone is 50
+    # degrees, wider than the 35-degree QuiltSpec default.
+    "16-landscape": QuiltSpec(
+        columns=8, rows=6, quilt_width=7680, quilt_height=4320, aspect=1.77778, view_cone=50.0
+    ),
     "16-portrait": QuiltSpec(
         columns=11, rows=6, quilt_width=5995, quilt_height=6000, aspect=0.5625
     ),
@@ -256,6 +261,7 @@ def render_quilt(
     *,
     view_cone: float | None = None,
     fov: float | None = 14.0,
+    zoom: float | None = None,
 ) -> np.ndarray:
     """Render the plotter's scene into a quilt image.
 
@@ -273,6 +279,11 @@ def render_quilt(
         typical viewing distance); the camera is dollied back so the scene
         stays the same size in frame.  Pass ``None`` to keep the plotter's
         current FOV and distance.
+    :param zoom: Optional camera zoom factor applied after framing, before
+        the view sweep.  Values > 1 make the subject fill more of each tile,
+        which is what drives perceived depth — parallax is proportional to
+        on-screen size, so a subject occupying a third of the frame yields a
+        third of the available look-around.
     :return: ``uint8`` RGB array of shape ``(quilt_height, quilt_width, 3)``.
     """
     _require_pyvista("render_quilt")
@@ -303,6 +314,13 @@ def render_quilt(
         forward = (focal - pos) / distance
         camera.position = tuple(focal - forward * new_distance)
         camera.view_angle = fov
+    if zoom is not None and zoom != 1.0:
+        # Dolly rather than narrow the view angle: pulling the camera in
+        # magnifies the subject while preserving the FOV the parallax
+        # geometry was built around, and the focal plane stays on the
+        # display surface.  view_offsets() rescales with the new distance,
+        # so the angular look-around is unchanged.
+        camera.Dolly(zoom)
     base = _camera_frame(camera)
     distance = base[4]
     offsets = view_offsets(spec, distance)
@@ -389,10 +407,10 @@ def _find_ffmpeg() -> str:
 def _encode_args(spec: QuiltSpec, crf: int) -> list[str]:
     """ffmpeg output arguments for the official quilt-video requirements.
 
-    MP4 with ``yuv420p`` pixel format is required by Looking Glass players;
-    H.264 is fine up to Portrait/16" quilt sizes while the 8K-quilt devices
-    (32"/65") need HEVC.  yuv420p needs even dimensions, so odd quilt sizes
-    (e.g. the 16" presets) are padded by one pixel.
+    MP4 with ``yuv420p`` pixel format is required by Looking Glass players.
+    H.264 is fine for quilts up to 6000 px on their longest side (Portrait,
+    Go, 16" portrait); anything larger uses HEVC.  yuv420p also needs even
+    dimensions, so odd quilt sizes are padded by one pixel.
     """
     codec = "libx265" if max(spec.quilt_width, spec.quilt_height) > 6000 else "libx264"
     args = ["-vcodec", codec, "-crf", str(crf), "-pix_fmt", "yuv420p"]
@@ -411,6 +429,7 @@ def render_quilt_video(
     orbit_degrees: float = 360.0,
     view_cone: float | None = None,
     fov: float | None = 14.0,
+    zoom: float | None = None,
     crf: int = 18,
     on_frame=None,
     progress: bool = True,
@@ -433,6 +452,7 @@ def render_quilt_video(
         seamlessly.  Pass 0 to disable the turntable (use *on_frame*).
     :param view_cone: Override the spec's view cone in degrees.
     :param fov: Per-view vertical FOV; see :func:`render_quilt`.
+    :param zoom: Camera dolly factor; see :func:`render_quilt`.
     :param crf: x264/x265 quality (lower = better; 15-20 sensible).
     :param on_frame: Optional ``callback(frame_index)`` invoked before each
         frame renders — mutate the scene here for custom animation.
@@ -463,7 +483,12 @@ def render_quilt_video(
         for i in range(n_frames):
             if on_frame is not None:
                 on_frame(i)
-            quilt = render_quilt(plotter, spec, view_cone=view_cone, fov=fov)
+            # Zoom only on the first frame: render_quilt leaves the camera at
+            # the dollied distance, and Azimuth() preserves it, so re-applying
+            # it every frame would compound into a creeping zoom-in.
+            quilt = render_quilt(
+                plotter, spec, view_cone=view_cone, fov=fov, zoom=zoom if i == 0 else None
+            )
             Image.fromarray(quilt).save(f"{tmp}/frame{i:05d}.png")
             plotter.camera.Azimuth(step)
             if progress:
@@ -496,12 +521,17 @@ BRIDGE_URL = "http://localhost:33334"
 
 
 def _bridge_post(bridge_url: str, endpoint: str, payload: dict, timeout: float) -> dict:
-    """POST a JSON payload to a Bridge endpoint and decode the response."""
+    """Send a JSON payload to a Bridge endpoint and decode the response.
+
+    Bridge's HTTP API expects ``PUT``.  It answers ``POST`` with ``200 OK``
+    and an *empty* body, so using the wrong verb fails silently: the caller
+    reads back no orchestration token and every later call is a no-op.
+    """
     req = urllib.request.Request(
         f"{bridge_url}/{endpoint}",
         data=json.dumps(payload).encode(),
         headers={"Content-Type": "application/json"},
-        method="POST",
+        method="PUT",
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         body = resp.read().decode()
@@ -532,6 +562,11 @@ def cast_quilt(
     """
     resp = _bridge_post(bridge_url, "enter_orchestration", {"name": "default"}, timeout)
     token = resp.get("payload", {}).get("value", "")
+    if not token:
+        raise RuntimeError(
+            f"Looking Glass Bridge at {bridge_url} returned no orchestration token "
+            f"(response: {resp!r}).  Is Bridge running and >= 2.2?"
+        )
 
     _bridge_post(
         bridge_url,

@@ -7,7 +7,7 @@ Displays* — the HLD product line (16" / 27" / 86" Portrait).
 
 HLDs are a different technology from the classic light-field Looking Glass
 devices (which consume multi-view quilts; see
-:mod:`waverider.looking_glass`).  An HLD is an LCD with a fixed holographic
+:mod:`waverider.lfd`).  An HLD is an LCD with a fixed holographic
 "alcove" volume embedded in its optical stack; ordinary **flat 2-D video**
 is multiply-blended into that volume.  The consequences for rendering:
 
@@ -16,14 +16,14 @@ is multiply-blended into that volume.  The consequences for rendering:
 * The subject should be **centred inside safe-area margins** (~9% top,
   3% bottom/left/right) so it stays within the alcove.
 * A **slow turntable orbit** with an otherwise static camera reads best.
-* The master format is a standard **2160x3840 (9:16) MP4**, HEVC,
-  30 or 60 fps, bt709 — no depth, layers, alpha, or quilt tiling.
+* The master format is **3840x2160 (16:9 landscape) HEVC MP4**, 30 or 60
+  fps, bt709.  HLD Author requires landscape input and handles device
+  orientation internally.
 
 Spec: https://hlddocs.lookingglassfactory.com/resources/media-specs-and-encoding
 
-Delivery: run the rendered master through Looking Glass's free **HLD
-Author** app (which validates, rotates 90° CCW for the bundled Raspberry
-Pi player, and re-encodes), then copy to the player's USB drive.  For
+Delivery: run the rendered ``*_hld.mp4`` through Looking Glass's free **HLD
+Author** app, then copy the exported file to the player's USB drive.  For
 signage players (BrightSign/Yodeck) or direct HDMI, use the master as-is.
 
 Typical usage::
@@ -49,7 +49,7 @@ from pathlib import Path
 
 import numpy as np
 
-from waverider.looking_glass import _find_ffmpeg
+from waverider.lfd import _find_ffmpeg
 
 try:
     import pyvista as pv  # noqa: F401
@@ -67,9 +67,9 @@ def _require_pyvista(fn_name: str) -> None:
         )
 
 
-#: Master resolution from the official HLD media spec (9:16 portrait).
-#: One 4K master serves all HLD sizes; players downscale for the 16".
-HLD_RESOLUTION: tuple[int, int] = (2160, 3840)
+#: Master render resolution — 4K landscape (16:9) as required by HLD Author.
+#: One master serves all HLD sizes; players downscale for the 16".
+HLD_RESOLUTION: tuple[int, int] = (3840, 2160)
 
 #: Safe-area margins from the official content guidelines, as fractions of
 #: frame size: (top, bottom, left, right).  The larger top margin keeps the
@@ -104,31 +104,75 @@ def style_plotter_for_hld(
     plotter,
     *,
     safe_area: bool = True,
+    zoom: float = 1.0,
     resolution: tuple[int, int] = HLD_RESOLUTION,
 ) -> None:
     """Apply HLD content rules to a composed plotter.
 
     Sets the pure-white background (white = transparent on the device),
-    switches the window to the 9:16 master resolution, refits the camera
-    distance to the scene **at that aspect** (framing computed at the wrong
-    aspect overflows the narrow portrait frame), and frames the subject
-    inside the safe-area margins.  A camera position set beforehand keeps
-    its view *direction*; only the distance is refitted.
+    switches the window to the 16:9 master resolution (3840×2160), refits
+    the camera to the scene at that aspect, applies safe-area margins, then
+    applies an optional *zoom* factor so subjects fill the frame.
 
     :param plotter: ``pv.Plotter`` with the scene composed.
     :param safe_area: Apply :func:`apply_safe_area` framing.
-    :param resolution: Target ``(width, height)``; must match the
-        resolution later passed to :func:`render_hld_video`.
+    :param zoom: Extra zoom applied after safe-area framing.  Values > 1
+        scale the subject up to fill more of the frame; 1.0 = no extra zoom.
+        Useful for portrait-shaped subjects (brains, bodies) that appear
+        small inside a 16:9 landscape frame after ``reset_camera()``.
+    :param resolution: Render ``(width, height)``; default 3840×2160.
     """
     _require_pyvista("style_plotter_for_hld")
     plotter.set_background("white")
     plotter.window_size = resolution
-    plotter.render()  # apply window size so reset_camera sees 9:16
+    plotter.render()  # apply window size so reset_camera sees 16:9
     if not plotter.camera.is_set:
         plotter.camera_position = plotter.renderer.get_default_cam_pos()
     plotter.reset_camera()
     if safe_area:
         apply_safe_area(plotter.camera)
+    if zoom != 1.0:
+        plotter.camera.Zoom(zoom)
+
+
+def render_hld_still(
+    plotter,
+    out_stem: str | Path,
+    *,
+    resolution: tuple[int, int] = HLD_RESOLUTION,
+) -> Path:
+    """Render a single HLD-ready PNG at the current camera position.
+
+    Same white-background, safe-area framing as :func:`render_hld_video` but
+    outputs one ``*_hld.png`` instead of a video.  Useful for previews or
+    signage systems that accept still images.
+
+    :param plotter: An *off-screen* ``pv.Plotter`` with the scene composed and
+        already styled via :func:`style_plotter_for_hld`.
+    :param out_stem: Output path; ``_hld.png`` is appended.
+    :param resolution: Render ``(width, height)``; default 3840×2160.
+    :return: Path of the PNG written.
+    """
+    _require_pyvista("render_hld_still")
+    try:
+        from PIL import Image
+    except ImportError as exc:
+        raise ImportError(
+            "render_hld_still() requires pillow.\nInstall with:  poetry install --with viz"
+        ) from exc
+
+    out_stem = Path(out_stem)
+    if out_stem.suffix.lower() in (".png", ".jpg", ".jpeg"):
+        out_stem = out_stem.with_suffix("")
+    out_path = out_stem.parent / f"{out_stem.name}_hld.png"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    plotter.window_size = resolution
+    plotter.renderer.reset_camera_clipping_range()
+    plotter.render()
+    img = plotter.screenshot(None, return_img=True)[..., :3]
+    Image.fromarray(img).save(out_path)
+    return out_path
 
 
 def _hld_encode_args(fps: int, crf: int) -> list[str]:
@@ -173,9 +217,10 @@ def render_hld_video(
     """Render a turntable HLD master video of the plotter's scene.
 
     One ordinary 2-D render per frame (no multi-view sweep), camera
-    orbiting the focal point, encoded to the official HLD master spec.
-    Style the scene first with :func:`style_plotter_for_hld` (white
-    background is what makes the hologram read on the device).
+    orbiting the focal point, encoded to the official HLD master spec
+    (3840×2160 landscape HEVC bt709).  Style the scene first with
+    :func:`style_plotter_for_hld` (white background is what makes the
+    hologram read on the device).
 
     :param plotter: An *off-screen* ``pv.Plotter`` with the scene composed.
     :param out_stem: Output path; ``_hld.mp4`` is appended.
@@ -183,12 +228,10 @@ def render_hld_video(
     :param fps: 30 or 60 per the HLD spec.
     :param orbit_degrees: Total orbit over the clip; 360 loops seamlessly.
         Pass 0 to disable the turntable (use *on_frame*).
-    :param resolution: Master ``(width, height)``; default 2160x3840.
-    :param crf: x265 quality (lower = better; 15-20 sensible).
-    :param rotate_for_player: Also rotate 90° counter-clockwise, as the
-        bundled Raspberry Pi player expects.  Leave ``False`` and use
-        Looking Glass's HLD Author app for that step (recommended), or for
-        signage/HDMI delivery which takes the un-rotated master.
+    :param resolution: Render ``(width, height)``; default 3840×2160.
+    :param crf: x265 quality (lower = better; 15–20 sensible).
+    :param rotate_for_player: Rotate 90° CCW before output.  Leave ``False``
+        (default) for HLD Author and signage/HDMI delivery.
     :param on_frame: Optional ``callback(frame_index)`` before each frame.
     :param progress: Print a progress line while rendering.
     :return: Path of the MP4 written.
@@ -254,22 +297,31 @@ def add_floor_shadow(
     *,
     opacity: float = 0.25,
     scale: float = 1.4,
+    dark_bg: bool = False,
 ) -> None:
     """Add a soft fake contact shadow under the subject.
 
     The HLD guidelines call contact shadows on the alcove floor "crucial
     for the 3D effect".  PyVista's ray-traced shadows are unreliable with
     translucent voxel clouds, so this paints a flattened grey disc just
-    below the subject's bounding box — reading as a soft contact shadow
-    once multiply-blended into the alcove floor.
+    below the subject's bounding box.
+
+    On a **white** background (HLD): the disc fades centre→light-grey,
+    rim→white, so the rim is invisible against the background.
+
+    On a **dark** background (interactive viewer): pass ``dark_bg=True``
+    to flip the ramp — centre→dark-grey, rim→black — so the shadow reads
+    correctly instead of appearing as a glowing white disc.
 
     :param plotter: Active ``pv.Plotter``.
     :param subject_bounds: ``(xmin, xmax, ymin, ymax, zmin, zmax)`` of the
         subject (e.g. ``grid.bounds``).
-    :param opacity: Shadow darkness (0 = none).
+    :param opacity: Shadow darkness (0 = none, 1 = full grey at centre).
     :param scale: Shadow radius as a fraction of the subject's half-extent;
-        keep it > 1 so the shadow spreads past the footprint and stays
-        visible from elevated camera angles.
+        keep it > 1 so the shadow spreads past the footprint.
+    :param dark_bg: If ``True``, use a dark-background–compatible ramp
+        (centre = dark grey, rim = black).  Default ``False`` is optimised
+        for HLD's white background (centre = light grey, rim = white).
     """
     _require_pyvista("add_floor_shadow")
     xmin, xmax, ymin, ymax, zmin, zmax = subject_bounds
@@ -283,18 +335,25 @@ def add_floor_shadow(
         normal=(0, 0, 1),
         c_res=64,
     )
-    # Radial falloff: darkest at centre, fading to white at the rim.  White
-    # blends into the white background on screen and is invisible on the
-    # device, so no transparency is needed.
     pts = disc.points
     r = np.linalg.norm(pts[:, :2] - np.array([cx, cy]), axis=1) / max(radius, 1e-12)
     disc.point_data["shadow"] = (1.0 - np.clip(r, 0.0, 1.0)) ** 2
+    if dark_bg:
+        # "Greys_r": 0=black → 1=white.
+        # clim=(0, 3) maps the peak scalar (1.0) to position 0.33 → ~#555555.
+        # Rim scalar (0.0) stays black and blends into the dark background.
+        cmap, clim = "Greys_r", (0.0, 3.0)
+    else:
+        # "Greys": 0=white → 1=black.  Rim (scalar=0) fades to white and
+        # disappears into the HLD white background.
+        # clim max = 1.5 maps the peak scalar to 0.67 → ~#555555 dark grey,
+        # clearly visible against the white HLD background.
+        cmap, clim = "Greys", (0.0, 1.5)
     plotter.add_mesh(
         disc,
         scalars="shadow",
-        cmap="Greys",
-        # Stretch the ramp so the darkest point is only `opacity` grey.
-        clim=(0.0, 1.0 / max(opacity, 1e-6)),
+        cmap=cmap,
+        clim=clim,
         show_scalar_bar=False,
         lighting=False,
     )

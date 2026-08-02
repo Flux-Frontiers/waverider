@@ -19,7 +19,7 @@ you're rendering for:
 | Content | **ordinary 2-D video** | multi-view **quilts** |
 | True 3-D parallax | no — fixed holographic "alcove" effect | yes — ~48–100 views across a cone |
 | Software | HLD Author + USB media player | Bridge / Studio |
-| WaveRider module | `waverider.hld` (this page) | `waverider.looking_glass` |
+| WaveRider module | `waverider.hld` (this page) | `waverider.lfd` |
 
 The HLD is an LCD with a fixed holographic volume — a stage-like "alcove" —
 embedded in its optical stack. Your flat video is multiply-blended into it:
@@ -31,8 +31,8 @@ darker pixels appear as a subject standing inside it.
 From the official media spec and content guidelines
 (<https://hlddocs.lookingglassfactory.com/>):
 
-- **Master**: 2160×3840 (9:16 portrait) MP4, HEVC, 30 or 60 fps, bt709.
-  One 4K master serves all sizes.
+- **Master**: 3840×2160 (16:9 landscape) MP4, HEVC, 30 or 60 fps, bt709.
+  HLD Author requires landscape input; one 4K master serves all sizes.
 - **White background** — white is transparent on the device. Busy or dark
   backgrounds kill the effect.
 - **Centered subject** inside safe margins (~9% top, 3% bottom/sides) so it
@@ -41,15 +41,15 @@ From the official media spec and content guidelines
 - **Slow turntable orbit**, otherwise static camera.
 
 `render_hld_video()` / `--hld` handles all of this: white background,
-safe-area framing computed at the 9:16 aspect, a soft procedural contact
-shadow, a seamless 360° orbit, and spec-exact encoding.
+safe-area framing, contact shadow, a seamless 360° orbit, and
+spec-exact encoding at 3840×2160.
 
 ## Usage
 
 ```bash
 # 10-second rotating manifold for the HLD (300 frames @ 30 fps)
 waverider-voxel-viz --dataset iris --hld --out iris --volume
-# -> iris_hld.mp4   (2160x3840, HEVC, bt709)
+# -> iris_hld.mp4   (3840x2160, HEVC, bt709)
 
 # Faster render for previews
 waverider-voxel-viz --dataset iris --hld --frames 90 --out preview
@@ -63,7 +63,7 @@ from waverider import render_hld_video, style_plotter_for_hld
 
 p = pv.Plotter(off_screen=True)
 p.add_mesh(pv.ParametricTorus(), color="teal")
-style_plotter_for_hld(p)          # white bg + 9:16 + safe-area framing
+style_plotter_for_hld(p)          # white bg + 16:9 + safe-area framing
 render_hld_video(p, "torus")      # torus_hld.mp4
 p.close()
 ```
@@ -86,7 +86,7 @@ p.close()
 
 Note: Looking Glass **Bridge and quilts do not apply to HLDs** — those are
 for the light-field line (see
-[looking_glass.md](looking_glass.md)).
+[lfd.md](lfd.md)).
 
 ## Composition tips
 

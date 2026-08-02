@@ -16,10 +16,12 @@ from waverider.hld import (
 
 
 class TestHldSpec:
-    def test_master_resolution_is_9_16_4k(self):
+    def test_master_resolution_is_16_9_4k(self):
+        # HLD Author requires a landscape master and applies the device's
+        # own orientation internally, so the master is 16:9, not 9:16.
         w, h = HLD_RESOLUTION
-        assert (w, h) == (2160, 3840)
-        assert w / h == pytest.approx(9 / 16)
+        assert (w, h) == (3840, 2160)
+        assert w / h == pytest.approx(16 / 9)
 
     def test_safe_margins(self):
         top, bottom, left, right = HLD_SAFE_MARGINS
@@ -62,7 +64,7 @@ def _can_render() -> bool:
 
 def _have_ffmpeg() -> bool:
     try:
-        from waverider.looking_glass import _find_ffmpeg
+        from waverider.lfd import _find_ffmpeg
 
         _find_ffmpeg()
         return True

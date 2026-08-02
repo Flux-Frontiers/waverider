@@ -21,7 +21,9 @@
 | [WaveRider Technical Paper](waverider/waverider.md) | Full algorithmic description, proofs, and results |
 | [WaveRider Stack Summary](waverider/waverider_stack_summary.md) | One-page component overview |
 | [WaveRider Infographic](waverider/waverider_infographic_summary.md) | Visual summary of the stack |
-| [Manifold Voxel Visualizer](waverider/manifold_voxel_viz.md) | Full CLI and API reference for 3-D visualization |
+| [Voxel Visualizer](waverider/voxel_viz.md) | Full CLI and API reference for 3-D visualization (manifold + CT/MRI modes) |
+| [Light-Field Output](waverider/lfd.md) | Looking Glass quilt rendering, Bridge setup, device presets |
+| [Hololuminescent Output](waverider/hld.md) | Looking Glass HLD video masters and HLD Author workflow |
 | [ManifoldObserver Spec](manifold_observer/manifold_observer.md) | (N+1)-dimensional extrinsic observer design |
 | [ManifoldWalker Spec](manifold_walker_spec/manifold_walker_spec.md) | Riemannian gradient descent specification |
 
@@ -48,8 +50,8 @@ Results are seed-locked (seeds 42–51, 3–10 trials). JSON files are the autho
 
 | Dataset | Ambient | Intrinsic d | Noise | Report | PDF |
 |---------|---------|-------------|-------|--------|-----|
-| **CIFAR-10** | 3,072 | 33 | 99.1% | [cifar10_report.md](../benchmarks/canonical_tests/cifar10_report.md) | [PDF](../benchmarks/canonical_tests/cifar10_report.pdf) |
-| **CIFAR-100** | 3,072 | 19 | 99.4% | [cifar100_report.md](../benchmarks/canonical_tests/cifar100_report.md) | [PDF](../benchmarks/canonical_tests/cifar100_report.pdf) |
+| **CIFAR-10** | 3,072 | 33 | 99.1% | [cifar10_report.pdf](../benchmarks/canonical_tests/cifar10_report.pdf) | [PDF](../benchmarks/canonical_tests/cifar10_report.pdf) |
+| **CIFAR-100** | 3,072 | 19 | 99.4% | [cifar100_report.pdf](../benchmarks/canonical_tests/cifar100_report.pdf) | [PDF](../benchmarks/canonical_tests/cifar100_report.pdf) |
 | **MNIST** | 784 | 27 | 96.6% | [mnist_report.md](../benchmarks/canonical_tests/mnist_report.md) | [PDF](../benchmarks/canonical_tests/mnist_report.pdf) |
 | **Tiny ImageNet** | 12,288 | 20 | 99.9% | [tiny_imagenet_report.md](../benchmarks/canonical_tests/tiny_imagenet_report.md) | [PDF](../benchmarks/canonical_tests/tiny_imagenet_report.pdf) |
 | **Digits** | 64 | 14 | 78.1% | [digits_report.md](../benchmarks/canonical_tests/digits_report.md) | [PDF](../benchmarks/canonical_tests/digits_report.pdf) |

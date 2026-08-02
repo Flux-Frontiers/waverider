@@ -2,36 +2,56 @@
 Manifold Voxel Visualizer
 =========================
 
-Projects a fitted :class:`~waverider.ManifoldModel` + :class:`~waverider.ManifoldObserver`
-into a 3-D PCA subspace, rasterizes the observer's geometric fields (density,
+Two rendering modes share this module:
+
+**Manifold mode** — the primary pipeline.  Projects a fitted
+:class:`~waverider.ManifoldModel` + :class:`~waverider.ManifoldObserver` into
+a 3-D PCA subspace, rasterizes the observer's geometric fields (density,
 curvature, height, intrinsic dimensionality, class vote) into a uniform voxel
 grid, and opens an interactive PyVista viewer where you can slice, clip, and
-volume-render the manifold from any angle.
+inspect the manifold from any angle.
+
+**CT / MRI demo mode** (``--ct-demo``) — bypasses the ManifoldModel entirely.
+Loads one of PyVista's built-in biomedical volumes, extracts layered
+isosurfaces (skin / tissue / bone), and opens an interactive viewer or renders
+a turntable video to the Looking Glass Hololuminescent Display (HLD) master
+spec.
 
 **Optional dependencies** — install the ``viz`` extras group::
 
-    poetry install --with viz   # pyvista, streamlit, plotly, scipy, pillow
+    poetry install --with viz   # pyvista, scipy, pillow
 
-Pipeline
---------
+Manifold pipeline
+-----------------
 1. Load or generate embeddings + integer labels.
-2. Optional: pre-reduce with PCA to ``pre_pca`` dims before :class:`~waverider.ManifoldModel`
-   (recommended for high-dimensional datasets like MNIST/CIFAR).
+2. Optional: pre-reduce with PCA to ``pre_pca`` dims before
+   :class:`~waverider.ManifoldModel` (recommended for MNIST / CIFAR).
 3. Discover intrinsic dimensionality via local PCA (thin SVD) at multiple
    variance thresholds, with per-class analysis.
-4. Fit a :class:`~waverider.ManifoldModel`, then wrap it in a
-   :class:`~waverider.ManifoldObserver` and call ``observe()`` to populate
-   the geometric field.
-5. Project training points to 3-D via PCA for visualization, annotating
-   axes with explained-variance ratios and rendering direction arrows.
+4. Fit :class:`~waverider.ManifoldModel`, wrap in
+   :class:`~waverider.ManifoldObserver`, call ``observe()`` to populate the
+   geometric field.
+5. Project training points to 3-D via PCA, annotating axes with
+   explained-variance ratios and rendering direction arrows.
 6. Rasterize each scalar field (density / curvature / height / d* / class)
-   onto a uniform ``pv.ImageData`` voxel grid using ``numpy.histogramdd``
-   accumulation.
+   onto a uniform ``pv.ImageData`` voxel grid via ``numpy.bincount``
+   accumulation and optional Gaussian smoothing.
 7. Launch a PyVista plotter with an orthogonal-slice widget and optional
    scatter overlay of the raw training points.
 
-Supported datasets
-------------------
+CT / MRI demo pipeline
+----------------------
+1. Download a PyVista built-in biomedical ``ImageData`` volume (auto-cached).
+2. Extract per-preset isosurfaces with ``contour()`` — typically 2–3 layers
+   for skin / soft tissue / bone.
+3. Laplacian-smooth each surface to reduce marching-cubes faceting.
+4. Compose scene in a PyVista plotter: black background for the interactive
+   viewer, white background for the HLD video (white = invisible on device).
+5. Open the interactive viewer (``render_ct_viewer``) or encode a 10-second
+   HEVC turntable orbit to the HLD master spec (``render_ct_hld``).
+
+Manifold datasets
+-----------------
 Synthetic:
     helix         1-manifold in 3-D embedded in 5-D (default)
     swiss_roll    2-manifold in 3-D
@@ -51,11 +71,19 @@ Real (large, needs keras/tensorflow):
 Custom:
     load          X_file=<X.npy>  [y_file=<y.npy>]
 
-CLI usage
----------
+CT / MRI datasets (PyVista built-in, auto-downloaded on first use)
+-----------------------------------------------------------------
+brain               181 × 217 × 181, T1 MRI (1 mm isotropic)
+full_head           256 × 256 × 94,  CT head (12-bit)
+head_2              256 × 256 × 94,  CT head alternate (12-bit)
+whole_body_ct_male  160 × 160 × 273, CT full body male (Hounsfield units)
+whole_body_ct_female 160 × 160 × 271, CT full body female (Hounsfield units)
+
+CLI usage — manifold mode
+-------------------------
 ::
 
-    # Synthetic helix (default)
+    # Synthetic helix (default, interactive viewer)
     waverider-voxel-viz
 
     # Real: Iris dataset
@@ -75,6 +103,32 @@ CLI usage
 
     # Looking Glass holographic quilt (Portrait device), cast to the display
     waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast
+
+    # HLD turntable video (10-second loop)
+    waverider-voxel-viz --dataset iris --hld --out iris_hld
+
+CLI usage — CT / MRI demo mode
+-------------------------------
+::
+
+    # Interactive viewer — T1 MRI brain (default)
+    waverider-voxel-viz --ct-demo
+
+    # Interactive viewer — CT head
+    waverider-voxel-viz --ct-demo --ct-dataset full_head
+
+    # Interactive viewer — whole-body CT male
+    waverider-voxel-viz --ct-demo --ct-dataset whole_body_ct_male
+
+    # Headless PNG screenshot
+    waverider-voxel-viz --ct-demo --ct-dataset brain --out brain_preview.png
+
+    # HLD turntable video (10-second, 30 fps)
+    waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain
+
+    # HLD video with custom isovalue thresholds and longer clip
+    waverider-voxel-viz --ct-demo --ct-dataset full_head \\
+        --ct-isovalues 300,1200 --frames 600 --fps 30 --out head_hld
 
 Part of WaveRider — https://github.com/Flux-Frontiers/waverider
 Author: Eric G. Suchanek, PhD
@@ -103,7 +157,7 @@ from waverider.dimensionality_discovery import (
     discover_dimensionality,
     discover_per_class_dimensionality,
 )
-from waverider.looking_glass import (
+from waverider.lfd import (
     QUILT_PRESETS,
     cast_quilt,
     render_quilt,
@@ -856,6 +910,8 @@ def render_quilt_single(
     n_frames: int = 180,
     fps: int = 24,
     orbit: float = 360.0,
+    zoom: float = 1.6,
+    scalar_bar: bool = False,
 ) -> Path:
     """Render the single-scalar scene as a Looking Glass quilt (PNG or MP4).
 
@@ -874,7 +930,7 @@ def render_quilt_single(
     :param pf: :class:`PointField` from :func:`fit_and_observe`.
     :param scalar: Which scalar field to display.
     :param out_path: Output stem; the quilt suffix + extension are appended.
-    :param device: Key into :data:`waverider.looking_glass.QUILT_PRESETS`
+    :param device: Key into :data:`waverider.lfd.QUILT_PRESETS`
         (e.g. ``"portrait"``, ``"go"``, ``"16-landscape"``).
     :param view_cone: Override the preset's view cone in degrees.
     :param show_points: Overlay scatter of raw training points.
@@ -891,6 +947,12 @@ def render_quilt_single(
     :param n_frames: Video frame count (with *fps* sets loop duration).
     :param fps: Video frame rate.
     :param orbit: Total camera orbit in degrees over the clip (360 loops).
+    :param zoom: Camera dolly factor.  PyVista's default framing leaves the
+        volume filling roughly a third of the frame, which wastes both the
+        per-view resolution and the parallax budget; > 1 pulls the camera in.
+    :param scalar_bar: Show the colour scale bar.  Off by default for quilts:
+        a 2-D overlay is pinned to the focal plane and reads as a flat pane
+        cutting through the hologram.
     :return: Path of the quilt PNG/MP4 written.
     """
     _require_viz("render_quilt_single")
@@ -910,6 +972,7 @@ def render_quilt_single(
         vol_threshold,
         pca_info,
         sliceable=False,
+        scalar_bar=scalar_bar,
     )
 
     if video:
@@ -921,6 +984,7 @@ def render_quilt_single(
             fps=fps,
             orbit_degrees=orbit,
             view_cone=view_cone,
+            zoom=zoom,
         )
         p.close()
         print(
@@ -928,7 +992,7 @@ def render_quilt_single(
             f"({n_frames} frames x {spec.n_views} views, {n_frames / fps:.1f}s loop)"
         )
     else:
-        quilt = render_quilt(p, spec, view_cone=view_cone)
+        quilt = render_quilt(p, spec, view_cone=view_cone, zoom=zoom)
         p.close()
         saved = save_quilt(quilt, out_path, spec)
         print(f"  Saved quilt {saved}  ({spec.n_views} views, {spec.columns}x{spec.rows})")
@@ -953,6 +1017,7 @@ def render_hld_single(
     fps: int = 30,
     orbit: float = 360.0,
     shadow: bool = True,
+    zoom: float = 1.0,
 ) -> Path:
     """Render the single-scalar scene as a Hololuminescent Display video.
 
@@ -961,7 +1026,7 @@ def render_hld_single(
     This composes the same scene as :func:`render_single` on a white
     background, adds a soft contact shadow under the voxel volume, frames
     it inside the HLD safe area, and renders a slow turntable orbit to the
-    official master spec (2160x3840, HEVC, bt709).
+    official HLD master spec (3840×2160 landscape HEVC bt709).
 
     Run the output through Looking Glass's HLD Author app, then copy it to
     the display's USB media player.  See :mod:`waverider.hld`.
@@ -982,6 +1047,9 @@ def render_hld_single(
     :param orbit: Total turntable rotation in degrees (360 loops).
     :param shadow: Paint a soft contact shadow under the volume (the HLD
         guidelines call floor shadows crucial for the depth effect).
+    :param zoom: Extra camera zoom applied after safe-area framing.  1.0 =
+        no extra zoom; values > 1 enlarge the subject (useful for portrait
+        subjects in the 16:9 frame).
     :return: Path of the MP4 written.
     """
     from waverider.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
@@ -1004,7 +1072,7 @@ def render_hld_single(
     )
     if shadow:
         add_floor_shadow(p, grid.bounds)
-    style_plotter_for_hld(p)
+    style_plotter_for_hld(p, zoom=zoom)
 
     saved = render_hld_video(p, out_path, n_frames=n_frames, fps=fps, orbit_degrees=orbit)
     p.close()
@@ -1013,6 +1081,261 @@ def render_hld_single(
         "  Next: open it in HLD Author to encode for the display's USB player."
     )
     return saved
+
+
+# ---------------------------------------------------------------------------
+# CT / MRI biomedical demo
+# ---------------------------------------------------------------------------
+
+#: Per-dataset presets: isovalues, colors, and per-layer opacities tuned to
+#: each modality's intensity distribution.  Colors deliberately avoid pure
+#: white so they remain visible on an HLD (white = transparent on-device).
+CT_PRESETS: dict[str, dict] = {
+    "brain": {
+        "loader": "download_brain",
+        "scalar": "image_data",
+        "description": "181×217×181 T1 MRI brain (1 mm isotropic)",
+        "isovalues": [40, 100, 180],
+        "colors": ["#e8c4a0", "#e07030", "#c02020"],
+        "opacities": [0.25, 0.60, 0.90],
+        "smooth_iters": 30,
+    },
+    "full_head": {
+        "loader": "download_full_head",
+        "scalar": "MetaImage",
+        "description": "256×256×94 CT head (12-bit Hounsfield-ish)",
+        "isovalues": [400, 1500],
+        "colors": ["#f4c8a0", "#f0e8c0"],
+        "opacities": [0.20, 0.85],
+        "smooth_iters": 20,
+    },
+    "head_2": {
+        "loader": "download_head_2",
+        "scalar": "Scalars_",
+        "description": "256×256×94 CT head alt (12-bit Hounsfield-ish)",
+        "isovalues": [400, 1500],
+        "colors": ["#f4c8a0", "#f0e8c0"],
+        "opacities": [0.20, 0.85],
+        "smooth_iters": 20,
+    },
+    "whole_body_ct_male": {
+        "loader": "download_whole_body_ct_male",
+        "scalar": "NIFTI",
+        "description": "160×160×273 whole-body CT male (Hounsfield units)",
+        "isovalues": [-100, 300, 700],
+        "colors": ["#f0c080", "#d08040", "#f0e8c0"],
+        "opacities": [0.15, 0.45, 0.85],
+        "smooth_iters": 20,
+        "multiblock_key": "ct",
+    },
+    "whole_body_ct_female": {
+        "loader": "download_whole_body_ct_female",
+        "scalar": "NIFTI",
+        "description": "160×160×271 whole-body CT female (Hounsfield units)",
+        "isovalues": [-100, 300, 700],
+        "colors": ["#f0c080", "#d08040", "#f0e8c0"],
+        "opacities": [0.15, 0.45, 0.85],
+        "smooth_iters": 20,
+        "multiblock_key": "ct",
+    },
+}
+
+
+def render_ct_hld(
+    ct_dataset: str = "brain",
+    out_path: Path | str = "ct_demo",
+    n_frames: int = 300,
+    fps: int = 30,
+    orbit: float = 360.0,
+    shadow: bool = True,
+    smooth_iters: int | None = None,
+    isovalues: list[float] | None = None,
+    zoom: float = 1.8,
+) -> Path:
+    """Render a PyVista biomedical CT/MRI dataset as a Hololuminescent Display video.
+
+    Loads one of PyVista's built-in medical volumes, extracts layered
+    isosurfaces (skin / tissue / bone), and renders a slow turntable orbit
+    to the official HLD master spec (3840×2160 HEVC bt709).  White = the
+    HLD background is invisible on-device, so all colors avoid pure white.
+
+    Requires ``pyvista`` + ``pillow`` + ffmpeg (``poetry install --with viz``).
+
+    :param ct_dataset: Dataset key from :data:`CT_PRESETS`
+        (``"brain"``, ``"full_head"``, ``"head_2"``,
+        ``"whole_body_ct_male"``, ``"whole_body_ct_female"``).
+    :param out_path: Output stem; ``_hld.mp4`` is appended.
+    :param n_frames: Frame count (default 300 @ 30 fps = 10 s loop).
+    :param fps: 30 or 60 per the HLD media spec.
+    :param orbit: Total turntable rotation in degrees (360 loops seamlessly).
+    :param shadow: Paint a soft contact shadow under the volume.
+    :param smooth_iters: Surface-smoothing iterations (``None`` uses preset).
+    :param isovalues: Override isovalue thresholds (``None`` uses preset).
+    :param zoom: Camera zoom applied after safe-area framing (default 1.8).
+        Portrait subjects (brains, bodies) appear small in the 16:9 landscape
+        frame after ``reset_camera()``; this zooms them up to fill the alcove.
+        Increase for taller subjects (e.g. 2.2 for whole-body CT).
+    :return: Path of the MP4 written.
+    """
+    from waverider.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
+
+    _require_viz("render_ct_hld")
+
+    data = _load_ct_volume(ct_dataset, isovalues)
+    preset = CT_PRESETS[ct_dataset]
+    isos = isovalues if isovalues is not None else preset["isovalues"]
+    n_smooth = smooth_iters if smooth_iters is not None else preset["smooth_iters"]
+
+    p = pv.Plotter(off_screen=True, theme=pv.themes.DocumentTheme())
+    _compose_ct_scene(p, data, preset, isos, n_smooth)
+
+    if shadow:
+        add_floor_shadow(p, data.bounds)
+    style_plotter_for_hld(p, zoom=zoom)
+
+    saved = render_hld_video(p, out_path, n_frames=n_frames, fps=fps, orbit_degrees=orbit)
+    p.close()
+    print(
+        f"  Saved HLD video {saved}  ({n_frames} frames, {n_frames / fps:.1f}s loop)\n"
+        "  Next: open in HLD Author to encode for the display's USB player."
+    )
+    return saved
+
+
+def render_ct_still(
+    ct_dataset: str = "brain",
+    out_path: Path | str = "ct_demo",
+    shadow: bool = True,
+    smooth_iters: int | None = None,
+    isovalues: list[float] | None = None,
+    zoom: float = 1.8,
+) -> Path:
+    """Render a single HLD-resolution PNG of a CT/MRI dataset.
+
+    Same scene as :func:`render_ct_hld` (white background, safe-area framing,
+    layered isosurfaces, optional contact shadow) but exports one
+    ``*_hld.png`` at 3840×2160 instead of a video.  No ffmpeg required.
+    Useful for previews and signage systems that accept still images.
+
+    :param ct_dataset: Dataset key from :data:`CT_PRESETS`.
+    :param out_path: Output stem; ``_hld.png`` is appended.
+    :param shadow: Paint a soft contact shadow under the volume.
+    :param smooth_iters: Surface-smoothing iterations (``None`` uses preset).
+    :param isovalues: Override isovalue thresholds (``None`` uses preset).
+    :param zoom: Camera zoom after safe-area framing (default 1.8).
+    :return: Path of the PNG written.
+    """
+    from waverider.hld import add_floor_shadow, render_hld_still, style_plotter_for_hld
+
+    _require_viz("render_ct_still")
+
+    data = _load_ct_volume(ct_dataset, isovalues)
+    preset = CT_PRESETS[ct_dataset]
+    isos = isovalues if isovalues is not None else preset["isovalues"]
+    n_smooth = smooth_iters if smooth_iters is not None else preset["smooth_iters"]
+
+    p = pv.Plotter(off_screen=True, theme=pv.themes.DocumentTheme())
+    _compose_ct_scene(p, data, preset, isos, n_smooth)
+
+    if shadow:
+        add_floor_shadow(p, data.bounds)
+    style_plotter_for_hld(p, zoom=zoom)
+
+    saved = render_hld_still(p, out_path)
+    p.close()
+    print(f"  Saved HLD still {saved}  (3840×2160, white background)")
+    return saved
+
+
+def render_ct_viewer(
+    ct_dataset: str = "brain",
+    off_screen: bool = False,
+    out_path: Path | str | None = None,
+    shadow: bool = False,
+    smooth_iters: int | None = None,
+    isovalues: list[float] | None = None,
+) -> None:
+    """Interactive PyVista viewer for a biomedical CT/MRI isosurface scene.
+
+    Opens an interactive window (rotate / zoom / pan) or, with
+    *off_screen* / *out_path*, saves a PNG screenshot.  Uses the same
+    isosurface layers as :func:`render_ct_hld` but on a dark background
+    so the translucent layers read clearly on screen.
+
+    Requires ``pyvista`` (``poetry install --with viz``).
+
+    :param ct_dataset: Dataset key from :data:`CT_PRESETS`.
+    :param off_screen: Render headless (for PNG export).
+    :param out_path: PNG path; implies *off_screen*.
+    :param shadow: Add a contact shadow disc under the volume.
+    :param smooth_iters: Surface-smoothing iterations (``None`` = preset).
+    :param isovalues: Override isovalue thresholds (``None`` = preset).
+    """
+    from waverider.hld import add_floor_shadow
+
+    _require_viz("render_ct_viewer")
+
+    if out_path is not None:
+        off_screen = True
+
+    data = _load_ct_volume(ct_dataset, isovalues)
+    preset = CT_PRESETS[ct_dataset]
+    isos = isovalues if isovalues is not None else preset["isovalues"]
+    n_smooth = smooth_iters if smooth_iters is not None else preset["smooth_iters"]
+
+    p = pv.Plotter(off_screen=off_screen, title=f"CT/MRI — {ct_dataset}")
+    p.set_background("black")
+    _compose_ct_scene(p, data, preset, isos, n_smooth)
+
+    if shadow:
+        add_floor_shadow(p, data.bounds, dark_bg=True)
+
+    if not off_screen:
+        _add_nav_help(p)
+    p.add_title(f"{ct_dataset}  —  {preset['description']}", font_size=10, color="white")
+    p.add_axes()
+
+    if off_screen and out_path:
+        p.show(auto_close=False)
+        p.screenshot(str(out_path))
+        p.close()
+        print(f"  Saved {out_path}")
+    else:
+        p.show()
+
+
+def _load_ct_volume(ct_dataset: str, isovalues: list[float] | None = None):
+    """Load and return the raw ``pv.ImageData`` for *ct_dataset*."""
+    import pyvista.examples as pv_examples
+
+    if ct_dataset not in CT_PRESETS:
+        raise ValueError(f"Unknown ct_dataset '{ct_dataset}'.  Choose from: {list(CT_PRESETS)}")
+
+    preset = CT_PRESETS[ct_dataset]
+    print(f"  Loading {ct_dataset}: {preset['description']} ...", flush=True)
+
+    loader = getattr(pv_examples, preset["loader"])
+    data = loader()
+    if "multiblock_key" in preset:
+        data = data[preset["multiblock_key"]]
+    data.set_active_scalars(preset["scalar"])
+    return data
+
+
+def _compose_ct_scene(p, data, preset: dict, isos: list[float], n_smooth: int) -> None:
+    """Add CT isosurface layers to an existing plotter."""
+    colors = preset["colors"]
+    opacities = preset["opacities"]
+
+    for iso, color, opacity in zip(isos, colors, opacities):
+        surf = data.contour([iso])
+        if surf.n_points == 0:
+            print(f"    isovalue {iso}: no surface — skipping")
+            continue
+        if n_smooth > 0:
+            surf = surf.smooth(n_iter=n_smooth, relaxation_factor=0.1)
+        p.add_mesh(surf, color=color, opacity=opacity, smooth_shading=True, show_scalar_bar=False)
+        print(f"    isovalue {iso}: {surf.n_points:,} pts  color={color}  opacity={opacity}")
 
 
 # ---------------------------------------------------------------------------
@@ -1135,7 +1458,8 @@ def parse_args() -> argparse.Namespace:
         "--view-cone",
         type=float,
         default=None,
-        help="Override the quilt view cone in degrees (default: 35).",
+        help="Override the quilt view cone in degrees (default: the device "
+        "preset's cone — 35 for most, 50 for the Gen3 16\" landscape).",
     )
     p.add_argument(
         "--quilt-grid",
@@ -1172,6 +1496,20 @@ def parse_args() -> argparse.Namespace:
         help="Total turntable rotation in degrees over the clip (default 360).",
     )
     p.add_argument(
+        "--quilt-zoom",
+        type=float,
+        default=1.6,
+        help="Camera dolly factor for quilt output (default: 1.6). >1 makes "
+        "the volume fill more of each view, which increases both effective "
+        "resolution and perceived depth. Use 1.0 for PyVista's own framing.",
+    )
+    p.add_argument(
+        "--quilt-scalar-bar",
+        action="store_true",
+        help="Keep the colour scale bar in quilt output. Off by default: a "
+        "2-D overlay sits on the focal plane and fights the depth cue.",
+    )
+    p.add_argument(
         "--cast",
         action="store_true",
         help="After rendering the quilt, display it on the connected Looking "
@@ -1184,13 +1522,50 @@ def parse_args() -> argparse.Namespace:
         "--hld",
         action="store_true",
         help="Render a turntable video for a Looking Glass Hololuminescent "
-        "Display (white background, safe-area framing, 2160x3840 HEVC "
+        "Display (white background, safe-area framing, 3840x2160 HEVC "
         "master). Finish it in the HLD Author app.",
     )
     p.add_argument(
         "--no-shadow",
         action="store_true",
         help="HLD mode: skip the contact shadow under the volume.",
+    )
+
+    # CT / MRI biomedical demo — bypasses ManifoldModel entirely
+    p.add_argument(
+        "--ct-demo",
+        action="store_true",
+        help="Render a real PyVista biomedical CT/MRI dataset directly to HLD "
+        "(skips ManifoldModel; combine with --ct-dataset, --frames, --fps, "
+        "--orbit, --no-shadow, --out).",
+    )
+    p.add_argument(
+        "--ct-dataset",
+        choices=sorted(CT_PRESETS),
+        default="brain",
+        help="Which PyVista medical dataset to render (default: brain).",
+    )
+    p.add_argument(
+        "--ct-isovalues",
+        type=str,
+        default=None,
+        metavar="V1,V2,...",
+        help="Comma-separated isovalue thresholds for CT demo (overrides preset). "
+        "E.g. '400,1500' for a two-layer head CT.",
+    )
+    p.add_argument(
+        "--zoom",
+        type=float,
+        default=None,
+        help="Camera zoom applied after safe-area framing for HLD output.  "
+        "Default: 1.8 for --ct-demo (portrait subjects in 16:9 frame), "
+        "1.0 for manifold mode.  Values > 1 enlarge the subject; < 1 shrink it.",
+    )
+    p.add_argument(
+        "--still",
+        action="store_true",
+        help="Export a single HLD-resolution PNG (3840×2160, white background) "
+        "instead of a video.  No ffmpeg required.  Only applies with --hld.",
     )
 
     return p.parse_args()
@@ -1203,6 +1578,62 @@ def main() -> None:
         args.off_screen = True
 
     out_path = Path(args.out) if args.out else None
+
+    # ---- CT / MRI biomedical demo (short-circuit — no ManifoldModel) ------
+    if args.ct_demo:
+        preset = CT_PRESETS[args.ct_dataset]
+        isovalues = None
+        if args.ct_isovalues:
+            try:
+                isovalues = [float(v) for v in args.ct_isovalues.split(",")]
+            except ValueError:
+                print(f"ERROR: --ct-isovalues must be comma-separated numbers, got '{args.ct_isovalues}'")
+                sys.exit(1)
+        isos_display = isovalues if isovalues is not None else preset["isovalues"]
+        print("=" * 60)
+        print("CT / MRI BIOMEDICAL DEMO")
+        print(f"  dataset  : {args.ct_dataset}")
+        print(f"  desc     : {preset['description']}")
+        print(f"  isovalues: {isos_display}")
+        print("=" * 60)
+
+        if args.hld and args.still:
+            stem = out_path if out_path else Path(f"ct_{args.ct_dataset}")
+            print(f"  mode     : HLD still → {stem}_hld.png")
+            render_ct_still(
+                ct_dataset=args.ct_dataset,
+                out_path=stem,
+                shadow=not args.no_shadow,
+                isovalues=isovalues,
+                zoom=args.zoom if args.zoom is not None else 1.8,
+            )
+        elif args.hld:
+            stem = out_path if out_path else Path(f"ct_{args.ct_dataset}")
+            print(f"  mode     : HLD video → {stem}_hld.mp4")
+            print(f"  frames   : {args.frames or 300}  fps={args.fps or 30}  orbit={args.orbit}°")
+            render_ct_hld(
+                ct_dataset=args.ct_dataset,
+                out_path=stem,
+                n_frames=args.frames if args.frames is not None else 300,
+                fps=args.fps if args.fps is not None else 30,
+                orbit=args.orbit,
+                shadow=not args.no_shadow,
+                isovalues=isovalues,
+                zoom=args.zoom if args.zoom is not None else 1.8,
+            )
+        else:
+            print(f"  mode     : {'headless PNG' if args.off_screen else 'interactive viewer'}")
+            render_ct_viewer(
+                ct_dataset=args.ct_dataset,
+                off_screen=args.off_screen,
+                out_path=out_path,
+                shadow=not args.no_shadow,
+                isovalues=isovalues,
+            )
+        print("\nDone.")
+        return
+
+    # -----------------------------------------------------------------------
 
     try:
         pca_components = tuple(int(x) for x in args.pca_components.split(","))
@@ -1357,6 +1788,7 @@ def main() -> None:
             fps=args.fps if args.fps is not None else 30,
             orbit=args.orbit,
             shadow=not args.no_shadow,
+            zoom=args.zoom if args.zoom is not None else 1.0,
         )
     elif args.quilt:
         stem = out_path if out_path else Path(f"manifold_{args.dataset}_{args.scalar}")
@@ -1386,6 +1818,8 @@ def main() -> None:
             n_frames=args.frames if args.frames is not None else 180,
             fps=args.fps if args.fps is not None else 24,
             orbit=args.orbit,
+            zoom=args.quilt_zoom,
+            scalar_bar=args.quilt_scalar_bar,
         )
     elif args.multi_scalar:
         render_multi(
