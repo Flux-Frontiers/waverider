@@ -9,12 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **README "Breaking News" section** covering the v0.10.0 holographic output
-  paths — `waverider.lfd` (Looking Glass light-field quilts: off-axis
-  asymmetric-frustum sweep, 9 device presets, stills/MP4, live Bridge casting)
-  and `waverider.hld` (Hololuminescent Display 4K turntable masters) — plus the
-  `--ct-demo` CT/MRI mode. `lfd` and `hld` were also missing from the Algorithms
-  table and are now listed there.
+- **README "Breaking News" section** — a short summary of the v0.10.0
+  holographic output paths (`waverider.lfd` light-field quilts,
+  `waverider.hld` Hololuminescent video, and the `--ct-demo` CT/MRI mode) with
+  a runnable example, linking to `docs/waverider/{lfd,hld,voxel_viz}.md` for the
+  full references. `lfd` and `hld` were also missing from the Algorithms table
+  and are now listed there.
 
 - **Typeset benchmark reports are now tracked** — 11 `*_report.pdf` files
   (2 CIFAR, 4 clinical, 5 others), 5.29 MB total, built from the committed

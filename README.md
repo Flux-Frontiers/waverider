@@ -18,42 +18,15 @@
 ## 📡 Breaking News — WaveRider renders to holographic displays
 
 **As of v0.10.0, any WaveRider scene can be pushed to real holographic hardware.**
-Two Looking Glass device families are supported, and they are *not*
-interchangeable — they take different media, so render for the display you own.
+Two Looking Glass device families are supported, and they take different media —
+render for the display you own:
 
-### Light-field output — `waverider.lfd`
-
-Sweeps the plotter camera across a device's view cone and tiles the views into a
-**quilt**. The views use **off-axis asymmetric-frustum projections** (VTK
-window-centre shear), which keeps the focal plane pixel-identical across views —
-the geometric precondition for the display to fuse them into depth. Naïve
-"rotate the camera" sweeps fail here; this is the part that has to be right.
-
-- **9 official ideal-quilt device presets** — Portrait, Go, 16″/27″/32″ landscape
-  and portrait, 65″ — via `QUILT_PRESETS`
-- Quilt stills (`render_quilt`, `save_quilt`) and turntable/animated MP4s
-  (`render_quilt_video`, H.264/HEVC + `yuv420p`)
-- **Live casting** (`cast_quilt`) straight to a connected display through the
-  local Looking Glass Bridge HTTP API
-- Filenames carry the `_qs<cols>x<rows>a<aspect>` convention Bridge and Studio
-  auto-detect, so output drops straight into the existing tooling
-
-### Hololuminescent output — `waverider.hld`
-
-A separate device family that plays **ordinary 2-D video** — pure white renders
-as invisible, so the subject appears to float. Renders a slow turntable orbit to
-the official master spec: **3840×2160, 16:9, HEVC, bt709, 30/60 fps**, white
-background, safe-area framing, and a soft contact shadow.
-
-- `render_hld_video` (with an `on_frame(i)` hook), `render_hld_still`,
-  `style_plotter_for_hld`, `add_floor_shadow`
-- Landscape master by design — HLD Author applies the device's own orientation
-
-### CT / MRI demo mode — no model fitting required
-
-`waverider-voxel-viz --ct-demo` loads a real biomedical volume (T1 MRI brain, CT
-head, or whole-body CT), extracts layered skin/tissue/bone isosurfaces, and
-renders it interactively or straight to an HLD turntable video.
+- **Light-field quilts** — `waverider.lfd`, 9 device presets, stills, MP4, and
+  live casting via Bridge → **[docs/waverider/lfd.md](docs/waverider/lfd.md)**
+- **Hololuminescent video** — `waverider.hld`, 4K turntable masters to the
+  official spec → **[docs/waverider/hld.md](docs/waverider/hld.md)**
+- **CT / MRI demo mode** — real biomedical volumes, no model fitting
+  → **[docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)**
 
 ```bash
 waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast   # light-field, live cast
@@ -61,9 +34,8 @@ waverider-voxel-viz --dataset iris --hld --out iris                     # HLD vi
 waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # MRI brain → HLD
 ```
 
-`--hld` and `--quilt` are mutually exclusive — different device families.
-Both paths need the viz extras (`poetry install --with viz`).
-Full references: [lfd.md](docs/waverider/lfd.md) · [hld.md](docs/waverider/hld.md)
+Needs the viz extras (`poetry install --with viz`); `--quilt` and `--hld` are
+mutually exclusive.
 
 ---
 
