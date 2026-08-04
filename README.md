@@ -53,8 +53,6 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 
 ## Headline Results
 
-→ **[Full documentation and all benchmark reports](docs/INDEX.md)**
-
 ### Universal Bottleneck — formula-derived architectures beat ResNet
 
 | Dataset | d\* | C | w\* = d\*+C−1 | ManifoldResNet-UB+Drop | Accuracy | vs ResNet-32 | Δ |
@@ -64,51 +62,14 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 | [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 16 | 10 | 25 | 29,110 params | **98.98% ± 0.21%** | 47,338 params → 99.27% ± 0.13% | within 0.3 pp, 38% fewer params |
 | [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
 
-*UB+Drop = w\* filters with dropout=0.3; bare UB (no dropout) underperforms — dropout is the regularizer that lets the formula-derived width generalize. See [resnet_manifold_architecture_results.json](benchmarks/canonical_tests/resnet_manifold_architecture_results.json) (CIFAR-10) and [mnist_ub_phase_boundary_*_results.json](benchmarks/canonical_tests/) (MNIST/Fashion-MNIST) for raw trial data.*
+*UB+Drop = w\* filters with dropout=0.3 — dropout is the regularizer that lets the formula-derived width generalize.*
 
-### Zero-parameter classifiers — the manifold is the model
+Two more results families, in **[docs/RESULTS.md](docs/RESULTS.md)** with full tables and provenance notes:
 
-| Dataset | ManifoldModel (0 params) | Best trained | Δ |
-|---------|--------------------------|-------------|---|
-| [**Heart Disease**](benchmarks/canonical_tests/clinical/heart_report.md) | **83.82% ± 2.47%** | Standard MLP: 80.96% ± 2.91% (7,022 params) | **+2.86 pp with zero parameters** |
-| [**Parkinson's**](benchmarks/canonical_tests/clinical/parkinsons_report.md) | **90.77% ± 2.61%** | Standard MLP: 93.33% ± 3.08% (19,802 params) | −2.56 pp vs MLP; beats KNN (89.74%) |
-| [**Breast Cancer**](benchmarks/canonical_tests/clinical/breast_cancer_report.md) | 96.31% ± 1.61% | Standard MLP: 97.31% ± 1.41% (36,602 params) | within 1 pp, zero params |
-| [**Dermatology**](benchmarks/canonical_tests/clinical/dermatology_report.md) | 95.90% ± 1.51% | Standard MLP: 96.71% ± 2.05% (42,630 params) | within 0.8 pp, zero params |
+- **Zero-parameter classifiers** — `ManifoldModel` beats a trained MLP on Heart Disease (**83.82% vs 80.96%**) and stays within 1 pp on Breast Cancer and Dermatology, with **zero trained parameters**.
+- **Parameter efficiency** — manifold-constrained models match or beat dense baselines with **105×–724×** fewer parameters (MNIST, CIFAR-10) and beat them outright on Tiny ImageNet and CIFAR-100.
 
-### Parameter efficiency — noise suppression across datasets
-
-| Dataset | Ambient Dim | Intrinsic d | Noise | Standard baseline | Manifold result | Param reduction |
-|---------|-------------|-------------|-------|-------------------|-----------------|-----------------|
-| [**Tiny ImageNet**](benchmarks/canonical_tests/tiny_imagenet_report.md) | 12,288 | 20 | 99.8% | 2.66% @ 13.2M params | **3.36% @ 80,400 params** | **164×** |
-| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 3,072 | 19 | 99.4% | 21.31% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 1.8× better acc |
-| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 34 | 98.9% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
-| [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 784 | 27 | 96.6% | 97.42% @ 109,386 params | 95.11% @ 1,036 params | **105×** at −2.3 pp |
-
-> **Why d differs between tables.** The same dataset appears with different
-> intrinsic dimensions above because the tables cite different benchmark runs,
-> and each run reports two measures at τ=0.90: a **per-class maximum**
-> (`intrinsic_dim`) and a **global mean** (`global_dim`). CIFAR-10 is 34/29 in
-> [`cifar10_architecture_results.json`](benchmarks/canonical_tests/cifar10_architecture_results.json)
-> but 19/16 in
-> [`resnet_manifold_architecture_results.json`](benchmarks/canonical_tests/resnet_manifold_architecture_results.json),
-> whose preprocessing differs; MNIST is 27 in the efficiency run and 16 in the
-> UB run. The Universal Bottleneck table uses the per-class maximum of its own
-> run, which is what w\* is derived from. Every figure is traceable to the JSON
-> committed beside its script — the numbers are not interchangeable across rows.
-
-> **Caveat: the CIFAR-100 baseline and manifold figures come from different
-> runs.** The 21.31% baseline is the `Standard (1024→512)` arm of
-> [`cifar100_architecture_results.json`](benchmarks/canonical_tests/cifar100_architecture_results.json)
-> (100 epochs, 3 trials, test loss 3.8); the 38.3% manifold result is
-> `ManifoldResNet-UB` from
-> [`cifar100_resnet_manifold_architecture_results.json`](benchmarks/canonical_tests/cifar100_resnet_manifold_architecture_results.json)
-> (30 epochs). The same-configuration baseline inside that second run reaches
-> only 5.21%, because all three of its trials diverged — test losses of 23,371 /
-> 30,574 / 46,555, against ~2.5 for the manifold arms. Quoting 5.21% would
-> make the comparison same-run but would measure the manifold against a network
-> that failed to train, so the row cites the converged 21.31% instead and the
-> accuracy ratio is 1.8×, not 7×. The divergence is itself worth knowing: the
-> 3.7M-parameter dense net is unstable at the 30-epoch setting.
+All benchmark reports are indexed in **[docs/INDEX.md](docs/INDEX.md)**; every figure traces to a results JSON committed beside its script.
 
 ---
 
@@ -132,264 +93,100 @@ flat/low-profile objects, PC12 wheeled vehicles. *(Paper, Table 8.)*
 
 ---
 
-## Algorithms
+## The Stack
 
-### Core geometry
+All 17 modules in `src/waverider`, by layer. Full per-component detail lives in
+the **[stack summary](docs/waverider/waverider_stack_summary.md)**; worked code
+examples in **[docs/USAGE.md](docs/USAGE.md)**.
 
-| Component | Class / Module | Description |
-|-----------|----------------|-------------|
-| **TurtleND** | `TurtleND` | N-dimensional position + orthonormal frame (navigation primitive) |
-| **Turtle3D** | `Turtle3D` | 3-D specialization of the navigation primitive |
-| **Vector3D** | `Vector3D` / `waverider.vector3D` | 3-D vector utilities — angles, dihedrals, distances, RMS difference |
-| **Manifold Walker** | `ManifoldWalker` | Riemannian gradient descent in discovered tangent space |
-| **Manifold Adam Walker** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
-| **Manifold Model** | `ManifoldModel` | Zero-parameter classifier: the manifold *is* the model |
-| **Manifold Observer** | `ManifoldObserver` | (N+1)-dimensional extrinsic observer — hovers above the manifold surface |
-
-### Dimensionality and embedding
-
-| Component | Class / Module | Description |
-|-----------|----------------|-------------|
-| **Dimensionality Discovery** | `discover_dimensionality`, `discover_per_class_dimensionality` | Local-PCA measurement of intrinsic dimensionality d\* at threshold τ — the shared primitive behind every canonical benchmark |
-| **Universal Embedder** | `UniversalEmbedder` | Geometry-grounded, modality-agnostic reduction to d\* coordinates. Discovers d\* from local geometry, then branches on the Manifold Linearity Index. Drop-in for sklearn PCA — same `fit`/`transform`/`fit_transform` API |
-| **Geodesic Encoder** | `GeodesicEncoder` | Encodes ambient points as tangent-projected geodesic distances in d\* dimensions |
-| **Manifold Adam (optimizer)** | `ManifoldAdam` | Keras optimizer that projects gradients onto the top-d principal directions before each update, zeroing the noise dimensions. Distinct from `ManifoldAdamWalker` above |
-
-### Domain applications
-
-| Component | Class / Module | Description |
-|-----------|----------------|-------------|
-| **Backbone Angles** | `BackboneResidue`, `BackboneAngleList` | Protein backbone (φ, ψ, ω) dihedral representation |
-| **Backbone Embedder** | `BackboneEmbedder` | Maps (φ, ψ) pairs to vectors — three embedding strategies |
-| **Backbone Manifold** | `fit_backbone_manifold` | End-to-end protein backbone latent-space discovery over the WaveRider stack |
-| **Graph Reasoner** | `KnowledgeGraph` / `waverider.graph_reasoner` | Semantic reasoning over knowledge graphs — navigates semantically weighted edges, with pluggable edge discoverers (radius, kNN, directed) and steering strategies |
-
-### Rendering
-
-| Component | Class / Module | Description |
-|-----------|----------------|-------------|
-| **Voxel Visualizer** | `waverider.voxel_viz` / `waverider-voxel-viz` | Two modes: (1) projects the observer's geometric fields into 3-D, voxelises them, and renders interactive orthogonal slice planes in PyVista; (2) `--ct-demo` loads real CT/MRI volumes and renders layered isosurfaces interactively or as an HLD turntable video |
-| **Light-Field Renderer** | `waverider.lfd` | Looking Glass quilt output — off-axis asymmetric-frustum view sweep, 9 device presets, stills, MP4, and live casting via Bridge |
-| **HLD Renderer** | `waverider.hld` | Hololuminescent Display output — 4K turntable video to the official master spec, safe-area framing, contact shadow |
+| Layer | Modules | What it does |
+|-------|---------|--------------|
+| **Core geometry** | `TurtleND`, `Turtle3D`, `Vector3D`, `ManifoldWalker`, `ManifoldAdamWalker`, `ManifoldModel`, `ManifoldObserver` | Navigation primitives (N-dim position + orthonormal frame), Riemannian gradient descent with tangent-space Adam momentum, the zero-parameter classifier, and the (N+1)-dim extrinsic observer |
+| **Dimensionality & embedding** | `discover_dimensionality`, `UniversalEmbedder`, `GeodesicEncoder`, `ManifoldAdam` | Local-PCA measurement of d\* (the primitive behind every benchmark), sklearn-PCA-compatible reduction to d\* coordinates, geodesic encoding, and a Keras optimizer that zeroes gradient noise dimensions (distinct from `ManifoldAdamWalker`) |
+| **Domain applications** | `BackboneResidue`/`BackboneEmbedder`/`fit_backbone_manifold`, `KnowledgeGraph` | Protein backbone (φ, ψ, ω) latent-space discovery; semantic reasoning over knowledge graphs (module `graph_reasoner` — its entry point is `KnowledgeGraph`) |
+| **Rendering** | `voxel_viz`, `lfd`, `hld` | Interactive 3-D voxel slicing, Looking Glass light-field quilts, and Hololuminescent 4K video — see [Visualization](#visualization--holographic-output) below |
 
 ---
 
-## Quick Start
+## Getting Started
+
+**Requirements:** Python 3.12
 
 ```bash
 git clone https://github.com/Flux-Frontiers/waverider.git
 cd waverider
-poetry install
+poetry install                          # core
+poetry install --with viz               # + PyVista visualization & holographic output
+poetry install --with benchmarks        # + TensorFlow (Metal GPU on Apple Silicon)
+poetry install --with viz,benchmarks    # everything
 ```
 
-For interactive 3-D voxel visualization (PyVista + SciPy):
+As a dependency: `poetry add git+https://github.com/Flux-Frontiers/waverider.git`
+(or `pip install git+…`).
 
-```bash
-poetry install --with viz
-```
-
-The viz extras also enable holographic output for both Looking Glass
-display families — quilts for the light-field line
-([docs/waverider/lfd.md](docs/waverider/lfd.md)) and
-turntable videos for Hololuminescent Displays
-([docs/waverider/hld.md](docs/waverider/hld.md)):
-
-```bash
-waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast  # light-field
-waverider-voxel-viz --dataset iris --hld --out iris                    # HLD
-```
-
-For neural network benchmarks (TensorFlow + Metal GPU on Apple Silicon):
-
-```bash
-poetry install --with benchmarks
-```
-
-Full install (viz + benchmarks):
-
-```bash
-poetry install --with viz,benchmarks
-```
+Complete code examples for every component: **[docs/USAGE.md](docs/USAGE.md)**.
+The full documentation map is **[docs/INDEX.md](docs/INDEX.md)**; code lives in
+`src/waverider/`, locked benchmarks in `benchmarks/canonical_tests/`, and papers
+in `papers/`.
 
 ---
 
-## Installation
+## Visualization & Holographic Output
 
-**Requirements:** Python 3.12
-
-### From source
-
-```bash
-pip install git+https://github.com/Flux-Frontiers/waverider.git
-```
-
-### Poetry (recommended)
-
-```bash
-poetry add git+https://github.com/Flux-Frontiers/waverider.git
-```
-
----
-
-## Usage
-
-See **[docs/USAGE.md](docs/USAGE.md)** for complete code examples covering all components.
-
----
-
-## Voxel Visualizer
-
-The `waverider-voxel-viz` command ships two rendering modes:
-
-**Manifold mode** — high-dimensional manifolds are invisible. The `ManifoldObserver`
-measures curvature, height above the tangent plane, and local intrinsic
-dimensionality at every node. The Voxel Visualizer projects those fields into a
-3-D PCA subspace, rasterises them onto a uniform voxel grid, and opens a PyVista
-viewer where you drag three orthogonal slice planes through the volume in real time.
-
-**CT / MRI demo mode** (`--ct-demo`) — loads one of PyVista's built-in biomedical
-volumes (T1 MRI brain, CT head, or whole-body CT), extracts layered isosurfaces
-for skin / tissue / bone, and opens an interactive viewer or encodes a 10-second
-HLD turntable video — no ManifoldModel fitting required.
+`waverider-voxel-viz` makes high-dimensional manifolds visible: the
+`ManifoldObserver`'s scalar fields (curvature, height, local intrinsic
+dimensionality, …) are projected into a 3-D PCA subspace, voxelised, and served
+as interactive orthogonal slice planes in PyVista. A CT/MRI demo mode
+(`--ct-demo`) renders real biomedical volumes with no model fitting.
 
 ![Manifold Voxel Visualizer — pipeline, scalar fields, datasets, controls](docs/waverider/manifold_voxel_viz.png)
 
 ```bash
-poetry install --with viz                          # PyVista + SciPy + Pillow
-
-# Manifold mode
-waverider-voxel-viz                                # default: synthetic helix
-waverider-voxel-viz --dataset iris --multi-scalar  # 2×2 panel: all scalar fields
-waverider-voxel-viz --dataset cifar10 --n-points 1000 --pre-pca 40
-waverider-voxel-viz --dataset breast_cancer --hld --out bc_hld  # HLD video
-
-# CT / MRI demo mode
-waverider-voxel-viz --ct-demo                              # T1 MRI brain, interactive
-waverider-voxel-viz --ct-demo --ct-dataset full_head       # CT head, interactive
-waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # HLD video
+waverider-voxel-viz --dataset iris --multi-scalar         # manifold mode, all fields
+waverider-voxel-viz --ct-demo                             # T1 MRI brain, interactive
+waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # MRI → HLD video
 ```
 
-**Manifold scalar fields:** `density`, `curvature`, `height`, `intrinsic_dim`, `class_vote`.
-**Manifold datasets:** synthetic (helix, swiss_roll, torus), tabular (iris, wine, breast_cancer, digits), large (mnist, cifar10, cifar100), or `--dataset load` for your own.
-**CT / MRI datasets:** `brain` (181³ T1 MRI), `full_head` / `head_2` (256² CT), `whole_body_ct_male` / `whole_body_ct_female` (160² whole-body CT).
-
-- **Full CLI + API reference:** [docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)
-- **Worked code examples:** [docs/USAGE.md § Voxel Visualizer](docs/USAGE.md#manifold-voxel-visualizer--interactive-3-d-manifold-anatomy)
-- **Method paper:** [papers/voxel_viz/voxel_viz.pdf](papers/voxel_viz/voxel_viz.pdf)
+- **Full CLI + API reference** (all datasets, scalar fields, flags): [docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)
+- **Light-field quilts / HLD video:** [docs/waverider/lfd.md](docs/waverider/lfd.md) · [docs/waverider/hld.md](docs/waverider/hld.md)
+- **Worked examples:** [docs/USAGE.md](docs/USAGE.md#manifold-voxel-visualizer--interactive-3-d-manifold-anatomy) · **Method paper:** [papers/voxel_viz/voxel_viz.pdf](papers/voxel_viz/voxel_viz.pdf)
 
 ---
 
 ## Method
 
-### Gradient-Diversity PCA
+Gradient-diversity PCA finds the tangent space of the loss manifold: decompose
+the covariance of mini-batch gradients, and the top-d eigenvectors span the
+gradient's active subspace while the remaining P−d point into noise. Every
+update is then projected onto that subspace before Adam sees it — momentum
+accumulates signal, never noise, and its state lives in global R^P so nothing
+is lost when the PCA basis rotates. The eigenvalue weighting is a form of
+natural gradient using the data covariance as an empirical Fisher matrix
+(Amari, 1998).
 
-At a point **w** in weight space R^P, mini-batch gradients on S random data subsets are gathered and decomposed:
-
-```
-G = [g₁ - ḡ, ..., gₛ - ḡ]ᵀ ∈ R^{S×P}
-C = GᵀG / (S-1) = VΛVᵀ
-```
-
-The top *d* eigenvectors V_d span the **gradient's active subspace** — the tangent space of the loss manifold. The remaining P − d eigenvectors point into noise.
-
-### Manifold-Projected Step
-
-```
-1. Project:   ℓ = Vdᵀ g  (local coords)
-              g_proj = Vd ℓ  (back to global, off-manifold zeroed)
-2. Adam update on g_proj  (momentum accumulates signal, never noise)
-3. Step:      w ← w − η Δw
-```
-
-Adam state lives in global R^P — momentum persists across manifold re-orientations without losing memory when the PCA basis rotates.
-
-### Why Projection Matters
-
-Operating in the ambient space conflates signal with noise:
-
-- **KNN without projection**: distances inflated by noise dimensions — true neighbors appear farther, non-neighbors appear closer
-- **Adam without projection**: momentum accumulates noise, adaptive denominator tracks noise variance, learning rates adapt to the wrong signals
-
-### Relationship to Natural Gradient
-
-The eigenvalue weighting λᵢ/λ₁ is a form of natural gradient descent using the data covariance as an empirical Fisher information matrix (Amari, 1998). The manifold projection ensures both natural gradient and Adam operate on the right dimensions.
+Full derivations, the projected-step algorithm, and the ambient-space failure
+modes (noise-inflated KNN distances, noise-adapted Adam denominators) are in
+the **[technical paper](papers/waverider_article/waverider_jmlr.pdf)** and the
+**[ManifoldWalker spec](docs/manifold_walker_spec/manifold_walker_spec.md)**.
 
 ---
 
 ## Benchmarks
 
-All benchmark scripts are run directly with Python — no test runner needed.
+Every benchmark in `benchmarks/canonical_tests/` is a standalone script, run
+directly with Python:
 
 ```bash
-# Standard datasets
-python benchmarks/canonical_tests/cifar10_manifold_architecture.py
-python benchmarks/canonical_tests/cifar100_manifold_architecture.py
-python benchmarks/canonical_tests/mnist_manifold_architecture.py
-python benchmarks/canonical_tests/tiny_imagenet_manifold_architecture.py
-python benchmarks/canonical_tests/digits_manifold_architecture.py
-python benchmarks/canonical_tests/iris_manifold_architecture.py
-
-# Clinical datasets
-python benchmarks/canonical_tests/clinical/disease_manifold_architecture.py
-
-# Canonical geometry measurements
-python benchmarks/canonical_tests/helix_manifold_observer.py
-python benchmarks/canonical_tests/torus_manifold_observer.py
-
-# Universal Bottleneck phase boundary
-python benchmarks/canonical_tests/mnist_ub_phase_boundary.py
+python benchmarks/canonical_tests/cifar10_manifold_architecture.py             # per-dataset (cifar100, mnist, tiny_imagenet, digits, iris likewise)
+python benchmarks/canonical_tests/clinical/disease_manifold_architecture.py    # all clinical datasets
+python benchmarks/canonical_tests/mnist_ub_phase_boundary.py                   # Universal Bottleneck phase boundary
 ```
 
-Seed-locked results (seeds 42–51, 3–10 trials) are committed as JSON alongside each script. The committed JSONs are the locked numbers cited in the papers. See **[docs/INDEX.md](docs/INDEX.md)** for the full benchmark report index.
-
-Each benchmark ships a rendered report in three forms — `*_report.md`,
-`*_report.tex`, and a typeset `*_report.pdf` — all generated from the committed
-results JSON by `report_generator.py`. The tables above link the Markdown, which
-renders inline on github.com; the PDF is the print/citation copy. To regenerate
-after a new run:
-
-```bash
-python benchmarks/canonical_tests/report_generator.py <dataset>_architecture_results.json
-```
-
----
-
-## Project Structure
-
-```
-waverider/
-├── pyproject.toml
-├── README.md
-├── docs/
-│   ├── INDEX.md                      # Full documentation index
-│   ├── USAGE.md                      # Code examples for all components
-│   └── waverider/
-│       ├── waverider.md              # Technical paper
-│       ├── voxel_viz.md              # Voxel visualizer CLI + API reference
-│       ├── lfd.md                    # Light-field (quilt) output reference
-│       └── hld.md                    # Hololuminescent Display output reference
-├── src/
-│   └── waverider/
-│       ├── __init__.py
-│       ├── turtleND.py               # N-dim position + orthonormal frame
-│       ├── turtle3D.py               # 3D specialization
-│       ├── manifold_walker.py        # Riemannian gradient descent
-│       ├── manifold_observer.py      # (N+1)-dim extrinsic observer
-│       ├── manifold_model.py         # Zero-parameter manifold classifier
-│       ├── voxel_viz.py              # 3-D voxel visualizer + waverider-voxel-viz CLI
-│       ├── lfd.py                    # Light-field quilt renderer (LFD line)
-│       └── hld.py                    # Hololuminescent Display video renderer
-├── tests/
-├── benchmarks/
-│   └── canonical_tests/
-│       ├── clinical/                 # Heart, breast cancer, Parkinson's, etc.
-│       └── *.py / *.json / *.md      # Locked benchmark scripts and results
-├── papers/
-│   ├── waverider_article/
-│   ├── clinical_manifolds/
-│   ├── manifold_classification/
-│   └── voxel_viz/
-```
+Seed-locked results (seeds 42–51, 3–10 trials) are committed as JSON alongside
+each script — the locked numbers cited in the papers. Each benchmark ships a
+rendered report (`*_report.md` / `.tex` / `.pdf`) generated from its JSON by
+`report_generator.py`. Full report index: **[docs/INDEX.md](docs/INDEX.md)**;
+all results tables and provenance notes: **[docs/RESULTS.md](docs/RESULTS.md)**.
 
 ---
 

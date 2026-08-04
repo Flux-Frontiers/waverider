@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`docs/RESULTS.md`** — single landing page for all three headline results
+  tables (Universal Bottleneck, zero-parameter classifiers, parameter
+  efficiency) plus the two provenance notes (why d differs between tables; the
+  CIFAR-100 cross-run baseline caveat) and the report-regeneration command.
+  Linked from the README and `docs/INDEX.md`.
+
+### Changed
+
+- **README halved: 429 → 229 lines, no information deleted — relocated.**
+  Headline Results keeps only the flagship Universal Bottleneck table; the
+  other two tables and both provenance notes moved to `docs/RESULTS.md`, each
+  represented inline by a one-line claim. The Algorithms section became "The
+  Stack": one row per layer with all 17 module names inline, linking the
+  existing per-component stack summary. Quick Start / Installation / Usage
+  merged into one Getting Started. The Voxel Visualizer deep-dive shrank to a
+  summary + image + three commands (dataset and scalar-field tables were
+  already in `docs/waverider/voxel_viz.md`). Method condensed to one paragraph
+  linking the paper and walker spec. Benchmarks kept three representative
+  commands. Project Structure dropped — GitHub renders the tree and
+  `docs/INDEX.md` maps the docs; the src/benchmarks/papers pointers moved into
+  Getting Started.
+
 - **README "Breaking News" section** — a short summary of the v0.10.0
   holographic output paths (`waverider.lfd` light-field quilts,
   `waverider.hld` Hololuminescent video, and the `--ct-demo` CT/MRI mode) with
