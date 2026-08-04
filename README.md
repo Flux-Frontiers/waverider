@@ -168,6 +168,7 @@ modes output straight to the holographic paths above.
 waverider-voxel-viz --dataset iris --multi-scalar         # manifold mode, all fields
 waverider-voxel-viz --ct-demo                             # T1 MRI brain, interactive
 waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # MRI → HLD video
+waverider-voxel-viz --ct-demo --ct-dataset brain --quilt portrait --out brain --cast  # MRI → light-field
 ```
 
 - **Full CLI + API reference** (all datasets, scalar fields, flags): [docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)

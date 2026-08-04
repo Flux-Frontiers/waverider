@@ -129,6 +129,9 @@ waverider-voxel-viz --dataset iris --quilt 16-landscape --quilt-grid 11x6 --out 
 
 # Override the view cone (use what the device reported)
 waverider-voxel-viz --dataset digits --quilt 16-landscape --view-cone 50 --out digits
+
+# CT/MRI demo mode: brain MRI instead of a manifold fit
+waverider-voxel-viz --ct-demo --ct-dataset brain --quilt portrait --out brain --cast
 ```
 
 Drop `--cast` to just write the file, then drag it into Looking Glass
@@ -164,6 +167,19 @@ render_quilt_single(grid, pf, scalar="curvature", out_path="curvature",
 render_quilt_single(grid, pf, scalar="curvature", out_path="curvature_spin",
                     device="16-landscape", pca_info=pca_info,
                     video=True, n_frames=180, fps=24)
+```
+
+### From the CT/MRI demo mode
+
+```python
+from waverider.voxel_viz import render_ct_quilt
+
+render_ct_quilt(ct_dataset="brain", out_path="brain",
+                device="16-landscape", cast=True)
+
+# Rotating version (MP4 turntable)
+render_ct_quilt(ct_dataset="full_head", out_path="head_spin",
+                device="16-landscape", video=True, n_frames=180, fps=24)
 ```
 
 ### Animated holograms beyond turntables

@@ -13,9 +13,10 @@ inspect the manifold from any angle.
 
 **CT / MRI demo mode** (``--ct-demo``) — bypasses the ManifoldModel entirely.
 Loads one of PyVista's built-in biomedical volumes, extracts layered
-isosurfaces (skin / tissue / bone), and opens an interactive viewer or renders
-a turntable video to the Looking Glass Hololuminescent Display (HLD) master
-spec.
+isosurfaces (skin / tissue / bone), and opens an interactive viewer, renders
+a Looking Glass quilt (``--quilt``, LFD devices), or renders a turntable
+video to the Looking Glass Hololuminescent Display (``--hld``, HLD master
+spec).
 
 **Optional dependencies** — install the ``viz`` extras group::
 
@@ -46,9 +47,11 @@ CT / MRI demo pipeline
    for skin / soft tissue / bone.
 3. Laplacian-smooth each surface to reduce marching-cubes faceting.
 4. Compose scene in a PyVista plotter: black background for the interactive
-   viewer, white background for the HLD video (white = invisible on device).
-5. Open the interactive viewer (``render_ct_viewer``) or encode a 10-second
-   HEVC turntable orbit to the HLD master spec (``render_ct_hld``).
+   viewer, unmodified background for LFD quilts, white background for the
+   HLD video (white = invisible on device).
+5. Open the interactive viewer (``render_ct_viewer``), sweep the camera into
+   a Looking Glass quilt still/video (``render_ct_quilt``), or encode a
+   10-second HEVC turntable orbit to the HLD master spec (``render_ct_hld``).
 
 Manifold datasets
 -----------------
@@ -129,6 +132,14 @@ CLI usage — CT / MRI demo mode
     # HLD video with custom isovalue thresholds and longer clip
     waverider-voxel-viz --ct-demo --ct-dataset full_head \\
         --ct-isovalues 300,1200 --frames 600 --fps 30 --out head_hld
+
+    # Looking Glass quilt still (Portrait device), cast to the display
+    waverider-voxel-viz --ct-demo --ct-dataset brain \\
+        --quilt portrait --out brain --cast
+
+    # Looking Glass quilt turntable video (Go device)
+    waverider-voxel-viz --ct-demo --ct-dataset full_head \\
+        --quilt go --quilt-video --out head
 
 Part of WaveRider — https://github.com/Flux-Frontiers/waverider
 Author: Eric G. Suchanek, PhD
@@ -1202,6 +1213,93 @@ def render_ct_hld(
     return saved
 
 
+def render_ct_quilt(
+    ct_dataset: str = "brain",
+    out_path: Path | str = "ct_demo",
+    device: str = "portrait",
+    view_cone: float | None = None,
+    smooth_iters: int | None = None,
+    isovalues: list[float] | None = None,
+    cast: bool = False,
+    quilt_grid: tuple[int, int] | None = None,
+    video: bool = False,
+    n_frames: int = 180,
+    fps: int = 24,
+    orbit: float = 360.0,
+    zoom: float = 1.6,
+) -> Path:
+    """Render a PyVista biomedical CT/MRI dataset as a Looking Glass quilt (PNG or MP4).
+
+    Composes the same isosurface layers as :func:`render_ct_hld` (skin /
+    tissue / bone), then sweeps the camera across the device's view cone
+    with off-axis projections and tiles the views into a quilt.  Unlike HLD
+    output, no white background or safe-area framing is needed — the quilt's
+    view-cone sweep and off-axis cameras handle framing on their own.
+
+    Requires ``pyvista`` + ``pillow`` (``poetry install --with viz``);
+    video additionally needs ffmpeg (or ``pip install imageio-ffmpeg``).
+
+    :param ct_dataset: Dataset key from :data:`CT_PRESETS`.
+    :param out_path: Output stem; the quilt suffix + extension are appended.
+    :param device: Key into :data:`waverider.lfd.QUILT_PRESETS`
+        (e.g. ``"portrait"``, ``"go"``, ``"16-landscape"``).
+    :param view_cone: Override the preset's view cone in degrees.
+    :param smooth_iters: Surface-smoothing iterations (``None`` uses preset).
+    :param isovalues: Override isovalue thresholds (``None`` uses preset).
+    :param cast: If ``True``, also send the quilt to a connected Looking
+        Glass via the local Looking Glass Bridge service.
+    :param quilt_grid: Optional ``(columns, rows)`` override of the preset's
+        view grid — more views = smoother look-around, lower per-view
+        resolution.
+    :param video: Render a turntable quilt video instead of a still.
+    :param n_frames: Video frame count (with *fps* sets loop duration).
+    :param fps: Video frame rate.
+    :param orbit: Total camera orbit in degrees over the clip (360 loops).
+    :param zoom: Camera dolly factor; see :func:`render_quilt`.
+    :return: Path of the quilt PNG/MP4 written.
+    """
+    _require_viz("render_ct_quilt")
+
+    data = _load_ct_volume(ct_dataset, isovalues)
+    preset = CT_PRESETS[ct_dataset]
+    isos = isovalues if isovalues is not None else preset["isovalues"]
+    n_smooth = smooth_iters if smooth_iters is not None else preset["smooth_iters"]
+
+    spec = QUILT_PRESETS[device]
+    if quilt_grid is not None:
+        spec = spec.with_grid(*quilt_grid)
+
+    p = pv.Plotter(off_screen=True)
+    _compose_ct_scene(p, data, preset, isos, n_smooth)
+
+    if video:
+        saved = render_quilt_video(
+            p,
+            spec,
+            out_path,
+            n_frames=n_frames,
+            fps=fps,
+            orbit_degrees=orbit,
+            view_cone=view_cone,
+            zoom=zoom,
+        )
+        p.close()
+        print(
+            f"  Saved quilt video {saved}  "
+            f"({n_frames} frames x {spec.n_views} views, {n_frames / fps:.1f}s loop)"
+        )
+    else:
+        quilt = render_quilt(p, spec, view_cone=view_cone, zoom=zoom)
+        p.close()
+        saved = save_quilt(quilt, out_path, spec)
+        print(f"  Saved quilt {saved}  ({spec.n_views} views, {spec.columns}x{spec.rows})")
+
+    if cast:
+        cast_quilt(saved, spec)
+        print("  Cast to Looking Glass via Bridge")
+    return saved
+
+
 def render_ct_still(
     ct_dataset: str = "brain",
     out_path: Path | str = "ct_demo",
@@ -1536,8 +1634,9 @@ def parse_args() -> argparse.Namespace:
         "--ct-demo",
         action="store_true",
         help="Render a real PyVista biomedical CT/MRI dataset directly to HLD "
-        "(skips ManifoldModel; combine with --ct-dataset, --frames, --fps, "
-        "--orbit, --no-shadow, --out).",
+        "or a Looking Glass quilt (skips ManifoldModel; combine with "
+        "--ct-dataset, --hld or --quilt, --frames, --fps, --orbit, "
+        "--no-shadow, --out).",
     )
     p.add_argument(
         "--ct-dataset",
@@ -1599,6 +1698,10 @@ def main() -> None:
         print(f"  isovalues: {isos_display}")
         print("=" * 60)
 
+        if args.hld and args.quilt:
+            print("ERROR: --hld and --quilt are mutually exclusive (different device families).")
+            sys.exit(1)
+
         if args.hld and args.still:
             stem = out_path if out_path else Path(f"ct_{args.ct_dataset}")
             print(f"  mode     : HLD still → {stem}_hld.png")
@@ -1622,6 +1725,32 @@ def main() -> None:
                 shadow=not args.no_shadow,
                 isovalues=isovalues,
                 zoom=args.zoom if args.zoom is not None else 1.8,
+            )
+        elif args.quilt:
+            stem = out_path if out_path else Path(f"ct_{args.ct_dataset}")
+            quilt_grid = None
+            if args.quilt_grid:
+                try:
+                    cols, rows = (int(v) for v in args.quilt_grid.lower().split("x"))
+                    quilt_grid = (cols, rows)
+                except ValueError:
+                    print(f"ERROR: --quilt-grid must look like '11x6', got '{args.quilt_grid}'")
+                    sys.exit(1)
+            kind = "video" if args.quilt_video else "still"
+            print(f"  mode     : LFD quilt {kind} ({args.quilt}) → {stem}_qs...")
+            render_ct_quilt(
+                ct_dataset=args.ct_dataset,
+                out_path=stem,
+                device=args.quilt,
+                view_cone=args.view_cone,
+                isovalues=isovalues,
+                cast=args.cast,
+                quilt_grid=quilt_grid,
+                video=args.quilt_video,
+                n_frames=args.frames if args.frames is not None else 180,
+                fps=args.fps if args.fps is not None else 24,
+                orbit=args.orbit,
+                zoom=args.quilt_zoom,
             )
         else:
             print(f"  mode     : {'headless PNG' if args.off_screen else 'interactive viewer'}")

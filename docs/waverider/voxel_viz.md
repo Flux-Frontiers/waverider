@@ -16,7 +16,7 @@
 | Mode | Flag | What it does |
 |---|---|---|
 | **Manifold mode** | *(default)* | Fits `ManifoldModel` + `ManifoldObserver`, rasterizes geometric fields into a voxel grid, opens an interactive PyVista slice viewer |
-| **CT / MRI demo mode** | `--ct-demo` | Loads a real biomedical CT or MRI volume from PyVista's built-in library, extracts layered isosurfaces (skin / tissue / bone), opens an interactive viewer or encodes an HLD turntable video |
+| **CT / MRI demo mode** | `--ct-demo` | Loads a real biomedical CT or MRI volume from PyVista's built-in library, extracts layered isosurfaces (skin / tissue / bone), and opens an interactive viewer, renders a Looking Glass quilt, or encodes an HLD turntable video |
 
 Both modes share the same PyVista renderer and the same Looking Glass / HLD output pipeline.
 
@@ -259,12 +259,13 @@ PyVista.
 `--ct-demo` bypasses the ManifoldModel pipeline entirely. It loads one of
 PyVista's built-in biomedical volumes directly from the PyVista example library
 (auto-cached on first use), extracts layered isosurfaces for skin, soft tissue,
-and bone, and renders the result interactively or as an HLD master video.
+and bone, and renders the result interactively, as a Looking Glass quilt
+(`--quilt`), or as an HLD master video (`--hld`).
 
 The volumes are real clinical data — CT scans and T1 MRI — making this mode
 useful for:
 
-- Demonstrating the HLD display with immediately recognizable content
+- Demonstrating the LFD/HLD displays with immediately recognizable content
 - Validating the holographic rendering pipeline before producing manifold videos
 - Standalone biomedical visualization without any machine learning overhead
 
@@ -306,13 +307,19 @@ Override any preset with `--ct-isovalues V1,V2,...`.
 | `--ct-demo` | off | Enable CT/MRI demo mode (skips ManifoldModel). |
 | `--ct-dataset` | `brain` | Dataset key (see table above). |
 | `--ct-isovalues` | *(preset)* | Comma-separated isovalue overrides, e.g. `400,1500`. |
-| `--no-shadow` | off | Suppress the contact shadow disc under the volume. |
-| `--hld` | off | Render HLD turntable video instead of opening the viewer. |
-| `--frames` | `300` | Video frame count (with `--hld`). |
-| `--fps` | `30` | Video frame rate — 30 or 60 per HLD spec (with `--hld`). |
-| `--orbit` | `360` | Total turntable rotation in degrees. |
-| `--zoom` | `1.8` (CT), `1.0` (manifold) | Camera zoom applied after safe-area framing. Values > 1 enlarge the subject in the 16:9 frame; useful for portrait-shaped subjects (brains, bodies). |
-| `--still` | off | With `--hld`, export a single 3840×2160 PNG instead of a video. No ffmpeg required. |
+| `--no-shadow` | off | Suppress the contact shadow disc under the volume (HLD only). |
+| `--hld` | off | Render HLD turntable video instead of opening the viewer. Mutually exclusive with `--quilt`. |
+| `--quilt` | *(none)* | Render a Looking Glass quilt for this device instead of opening the viewer (e.g. `portrait`, `go`, `16-landscape`). Mutually exclusive with `--hld`. |
+| `--view-cone` | *(preset)* | Override the quilt device's view-cone angle in degrees (with `--quilt`). |
+| `--quilt-grid` | *(preset)* | Override the quilt view grid, e.g. `11x6` (with `--quilt`). |
+| `--quilt-video` | off | Render a looping turntable quilt MP4 instead of a still (with `--quilt`). Requires ffmpeg. |
+| `--quilt-zoom` | `1.6` | Camera dolly factor for quilt output (with `--quilt`). |
+| `--cast` | off | After rendering the quilt, display it on the connected Looking Glass via Bridge (with `--quilt`). |
+| `--frames` | `300` (`--hld`), `180` (`--quilt-video`) | Video frame count. |
+| `--fps` | `30` (`--hld`), `24` (`--quilt-video`) | Video frame rate — 30 or 60 per HLD spec. |
+| `--orbit` | `360` | Total turntable rotation in degrees (`--hld` or `--quilt-video`). |
+| `--zoom` | `1.8` (CT), `1.0` (manifold) | Camera zoom applied after safe-area framing (`--hld` only). Values > 1 enlarge the subject in the 16:9 frame; useful for portrait-shaped subjects (brains, bodies). |
+| `--still` | off | With `--hld`, export a single 3840×2160 PNG instead of a video. No ffmpeg required. Quilt stills need no flag — omitting `--quilt-video` already produces a still. |
 | `--out` | *(auto)* | Output stem for PNG or video; suffix is appended automatically. |
 
 ### CLI examples — CT / MRI demo mode
@@ -340,12 +347,20 @@ waverider-voxel-viz --ct-demo --ct-dataset full_head \
 # HLD video — whole-body CT, no floor shadow
 waverider-voxel-viz --ct-demo --ct-dataset whole_body_ct_male \
     --hld --no-shadow --out body_hld
+
+# Looking Glass quilt still — brain MRI, Portrait device, cast to display
+waverider-voxel-viz --ct-demo --ct-dataset brain \
+    --quilt portrait --out brain --cast
+
+# Looking Glass quilt turntable video — CT head, Go device
+waverider-voxel-viz --ct-demo --ct-dataset full_head \
+    --quilt go --quilt-video --out head
 ```
 
 ### Programmatic API — CT / MRI demo mode
 
 ```python
-from waverider.voxel_viz import CT_PRESETS, render_ct_viewer, render_ct_hld
+from waverider.voxel_viz import CT_PRESETS, render_ct_viewer, render_ct_hld, render_ct_quilt
 
 # List available datasets and their presets
 for name, preset in CT_PRESETS.items():
@@ -373,6 +388,24 @@ render_ct_hld(
     out_path="head_custom",
     isovalues=[300, 1200],
 )
+
+# Looking Glass quilt still, cast to the connected display
+render_ct_quilt(
+    ct_dataset="brain",
+    out_path="brain",         # _qs<cols>x<rows>a<aspect>.png is appended
+    device="portrait",
+    cast=True,
+)
+
+# Looking Glass quilt turntable video (Go device)
+render_ct_quilt(
+    ct_dataset="full_head",
+    out_path="head",          # _qs<cols>x<rows>a<aspect>.mp4 is appended
+    device="go",
+    video=True,
+    n_frames=180,
+    fps=24,
+)
 ```
 
 ---
@@ -394,6 +427,9 @@ waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast
 
 # Quilt video (looping turntable MP4)
 waverider-voxel-viz --dataset iris --quilt portrait --quilt-video --out iris_loop
+
+# CT demo mode — brain MRI quilt, cast to connected device
+waverider-voxel-viz --ct-demo --ct-dataset brain --quilt portrait --out brain --cast
 ```
 
 Available devices: `portrait`, `go`, `16-landscape`, and others (see
