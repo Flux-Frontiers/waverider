@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **`kgdeps` dependency group and its `agent-kg` git dependency.** `agent_kg`
+  is a private repository, so any resolution touching that group — including a
+  full `poetry lock` — fails for anyone without access to it. The group was
+  optional, so plain `poetry install` was unaffected. Nothing in `waverider`
+  imports `agent_kg`.
+
 ### Fixed
 
 ## [0.10.0] - 2026-08-02

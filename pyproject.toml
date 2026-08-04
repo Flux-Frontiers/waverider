@@ -9,8 +9,7 @@
 #   poetry install --with benchmarks             core + scientific computing for benchmarks
 #   poetry install --with viz                    core + voxel/Streamlit visualization
 #   poetry install --with benchmarks,viz         full install
-#   poetry install --extras "kg"                 core + KG integrations (doc-kg, pycode-kg, ftree-kg, proteuspy)
-#   poetry install --with kgdeps                 core + git-only KG deps (agent-kg)
+#   poetry install --extras "kg"                 core + KG integrations (doc-kg, pycode-kg, proteuspy)
 #   poetry install --all-extras --with dev       everything
 #
 # Quick install (pip)
@@ -78,12 +77,6 @@ Repository = "https://github.com/Flux-Frontiers/waverider"
 
 [project.scripts]
 waverider-voxel-viz = "waverider.voxel_viz:main"
-
-[tool.poetry.group.kgdeps]
-optional = true
-
-[tool.poetry.group.kgdeps.dependencies]
-agent-kg = { git = "https://github.com/Flux-Frontiers/agent_kg.git" }
 
 [tool.poetry.group.dev.dependencies]
 detect-secrets = ">=1.5.0"
