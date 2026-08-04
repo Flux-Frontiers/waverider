@@ -210,9 +210,10 @@ before committing to a long clip.
 
 ## 4. Control playback
 
-`cast_quilt()` starts playback; four more calls cover the rest of a normal
-session — pause, resume, and stop (which deletes the playlist so the next
-`cast_quilt()` starts clean):
+`cast_quilt()` starts playback; three more calls cover the rest of a normal
+session — pause, resume, and stop (which pauses and hides the window,
+leaving the playlist in place so the next `cast_quilt()` replaces it
+cleanly):
 
 ```python
 from waverider import cast_quilt, pause_quilt, resume_quilt, stop_quilt
@@ -220,7 +221,7 @@ from waverider import cast_quilt, pause_quilt, resume_quilt, stop_quilt
 cast_quilt(path, spec)   # play (creates/replaces the "waverider" playlist)
 pause_quilt()             # freeze the current frame
 resume_quilt()            # continue from where it paused
-stop_quilt()               # delete the playlist entirely
+stop_quilt()               # pause + hide the display window
 ```
 
 Or via `curl`, once you have an orchestration token (see the probe in
@@ -242,12 +243,24 @@ curl -s -X PUT -H 'Content-Type: application/json' \
 > so a wrong guess looks identical to a slow success until you check that
 > the response has no `status` field. The real control group is
 > **transport control** (`transport_control_play` / `_pause` / `_next` /
-> `_previous` / `_seek_to_index`), plus `delete_playlist` to remove a
-> playlist outright. None of this is in Bridge's public docs; it's
-> confirmed against the endpoint list in the official
+> `_previous` / `_seek_to_index`). None of this is in Bridge's public docs;
+> it's confirmed against the endpoint list in the official
 > [bridge.js](https://github.com/Looking-Glass/bridge.js) SDK source
 > (`src/library/components/endpoints.ts`), the JS client for this same
 > HTTP API.
+
+> **`delete_playlist` is documented but was unsafe in testing.** bridge.js's
+> own reference implementation of "stop" (`BridgeClient.stopStudioPlaylist`)
+> calls `delete_playlist` then `show_window(false)`. On this Bridge install
+> (2.6.3, macOS), `delete_playlist` reliably left the daemon unresponsive to
+> every further HTTP call — reproduced twice, once mid-video and once on a
+> single still image, so it wasn't a large-file decode race. `stop_quilt()`
+> avoids it entirely: `transport_control_pause` then `show_window(false)`,
+> both individually proven safe, reaching the same visible end state
+> (nothing showing, playback halted) without deleting anything. If you want
+> the playlist actually removed and are on a Bridge version where
+> `delete_playlist` behaves, call it directly via Bridge's HTTP API — just
+> be ready to restart Bridge if it doesn't return.
 
 | Action | Endpoint | Bridge request body |
 |---|---|---|
@@ -256,7 +269,8 @@ curl -s -X PUT -H 'Content-Type: application/json' \
 | Resume | `transport_control_play` | `{orchestration}` |
 | Next / previous entry | `transport_control_next` / `_previous` | `{orchestration}` |
 | Seek to entry | `transport_control_seek_to_index` | `{orchestration, index}` |
-| Delete playlist (stop) | `delete_playlist` | `{orchestration, name, loop}` |
+| Hide/show window | `show_window` | `{orchestration, show_window, head_index}` |
+| Delete playlist ⚠️ | `delete_playlist` | `{orchestration, name, loop}` — hung Bridge in testing, see above |
 
 ---
 

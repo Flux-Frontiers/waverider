@@ -15,6 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`stop_quilt()` no longer calls `delete_playlist`.** The v0.12.0
+  implementation followed bridge.js's documented `stopStudioPlaylist`
+  pattern (`delete_playlist` then `show_window(false)`), but
+  `delete_playlist` reliably hung Looking Glass Bridge 2.6.3 (macOS) —
+  reproduced twice, once mid-video and once on a single still image,
+  requiring a manual `kill -9` and relaunch of Bridge to recover. `stop_quilt()`
+  now reaches the same end state (nothing visible, playback halted) via
+  `transport_control_pause` + `show_window(false)` only, both independently
+  verified safe. Confirmed against a live device: Bridge stayed responsive
+  and the display went blank.
+
 ## [0.12.0] - 2026-08-04
 
 ### Added

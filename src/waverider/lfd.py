@@ -51,6 +51,7 @@ from __future__ import annotations
 import json
 import math
 import urllib.request
+from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -255,6 +256,41 @@ def _apply_off_axis_view(camera, base, offset: float, tile_aspect: float) -> Non
 # ---------------------------------------------------------------------------
 
 
+def assemble_quilt(views: Iterable[np.ndarray], spec: QuiltSpec) -> np.ndarray:
+    """Tile per-view images into a single quilt image.
+
+    This is the renderer-agnostic half of quilt production: it takes views
+    that some backend already rendered — VTK via :func:`render_quilt`, a
+    ray-tracer via :mod:`waverider.povray` — and lays them out in quilt
+    order.  Views are consumed lazily, so a backend can stream them without
+    holding all ``n_views`` frames in memory at once.
+
+    Views whose pixel size differs from the tile size are resampled, which
+    is what makes anamorphic quilts (tile pixel aspect != view aspect, e.g.
+    the 27" presets) come out correctly.
+
+    :param views: Iterable of ``uint8`` RGB (or RGBA) arrays in view order —
+        view 0 is the leftmost camera.  Must yield exactly ``spec.n_views``.
+    :param spec: Quilt specification (grid, size, aspect).
+    :return: ``uint8`` RGB array of shape ``(quilt_height, quilt_width, 3)``.
+    :raises ValueError: If the number of views does not match ``spec``.
+    """
+    quilt = np.zeros((spec.quilt_height, spec.quilt_width, 3), dtype=np.uint8)
+    n = 0
+    for i, img in enumerate(views):
+        if i >= spec.n_views:
+            raise ValueError(f"got more than {spec.n_views} views for a {spec.columns}x{spec.rows} quilt")
+        img = np.asarray(img)[..., :3]
+        if img.shape[:2] != (spec.tile_height, spec.tile_width):
+            img = _resize_view(img, spec.tile_width, spec.tile_height)
+        x, y = spec.tile_origin(i)
+        quilt[y : y + spec.tile_height, x : x + spec.tile_width] = img
+        n = i + 1
+    if n != spec.n_views:
+        raise ValueError(f"expected {spec.n_views} views for a {spec.columns}x{spec.rows} quilt, got {n}")
+    return quilt
+
+
 def render_quilt(
     plotter,
     spec: QuiltSpec,
@@ -326,20 +362,18 @@ def render_quilt(
     offsets = view_offsets(spec, distance)
     render_aspect = render_w / render_h
 
-    quilt = np.zeros((spec.quilt_height, spec.quilt_width, 3), dtype=np.uint8)
-    for i, offset in enumerate(offsets):
-        _apply_off_axis_view(camera, base, float(offset), render_aspect)
-        # The dolly + lateral sweep move the camera well outside the range
-        # VTK computed for the original position; re-fit it to the scene.
-        plotter.renderer.reset_camera_clipping_range()
-        # screenshot() alone returns the previous framebuffer; force a render
-        # so each view reflects this view's camera.
-        plotter.render()
-        img = plotter.screenshot(None, return_img=True)[..., :3]
-        if (render_w, render_h) != (spec.tile_width, spec.tile_height):
-            img = _resize_view(img, spec.tile_width, spec.tile_height)
-        x, y = spec.tile_origin(i)
-        quilt[y : y + spec.tile_height, x : x + spec.tile_width] = img
+    def views():
+        for offset in offsets:
+            _apply_off_axis_view(camera, base, float(offset), render_aspect)
+            # The dolly + lateral sweep move the camera well outside the range
+            # VTK computed for the original position; re-fit it to the scene.
+            plotter.renderer.reset_camera_clipping_range()
+            # screenshot() alone returns the previous framebuffer; force a
+            # render so each view reflects this view's camera.
+            plotter.render()
+            yield plotter.screenshot(None, return_img=True)
+
+    quilt = assemble_quilt(views(), spec)
 
     # Restore the centre view so the plotter is reusable afterwards.
     _apply_off_axis_view(camera, base, 0.0, render_aspect)
@@ -650,25 +684,29 @@ def resume_quilt(*, bridge_url: str = BRIDGE_URL, timeout: float = 10.0) -> dict
     return _bridge_post(bridge_url, "transport_control_play", {"orchestration": token}, timeout)
 
 
-def stop_quilt(
-    *, playlist: str = "waverider", bridge_url: str = BRIDGE_URL, timeout: float = 10.0
-) -> dict:
-    """Stop playback and delete the playlist :func:`cast_quilt` created.
+def stop_quilt(*, bridge_url: str = BRIDGE_URL, timeout: float = 10.0) -> dict:
+    """Stop playback: pause the current frame and hide the display window.
 
-    Unlike :func:`pause_quilt`, this removes the playlist outright — call
-    :func:`cast_quilt` again to show something new afterwards.
+    Bridge's own `bridge.js <https://github.com/Looking-Glass/bridge.js>`_
+    SDK documents ``delete_playlist`` as *the* way to stop a playlist, and
+    an earlier version of this function called it. In testing it reliably
+    left Bridge unresponsive to every further HTTP call — reproduced twice,
+    once mid-video and once on a single still image, so it isn't a
+    large-file decode race. This function deliberately avoids
+    ``delete_playlist`` and reaches the same end state (nothing visible,
+    playback halted) through calls already proven safe: the playlist from
+    :func:`cast_quilt` is left instantiated but paused and hidden, rather
+    than deleted, so :func:`cast_quilt` can safely replace it later.
 
-    :param playlist: Name of the Bridge playlist to delete (must match the
-        ``playlist`` passed to :func:`cast_quilt`).
     :param bridge_url: Base URL of the Bridge HTTP API.
     :param timeout: HTTP timeout in seconds.
-    :return: Decoded JSON response of the ``delete_playlist`` call.
+    :return: Decoded JSON response of the final ``show_window`` call.
     """
     token = _enter_orchestration(bridge_url, timeout)
+    _bridge_post(bridge_url, "transport_control_pause", {"orchestration": token}, timeout)
     return _bridge_post(
         bridge_url,
-        "delete_playlist",
-        # `loop` has no bearing on deletion but Bridge's schema requires it.
-        {"orchestration": token, "name": playlist, "loop": True},
+        "show_window",
+        {"orchestration": token, "show_window": False, "head_index": -1},
         timeout,
     )
