@@ -39,7 +39,7 @@ packages = [{include = "waverider", from = "src"}]
 # ---------------------------------------------------------------------------
 [project]
 name = "waverider"
-version = "0.11.0"
+version = "0.12.0"
 description = "Manifold-aware geometric ML stack: TurtleND, ManifoldWalker, ManifoldModel, ManifoldObserver"
 readme = "README.md"
 license = "Elastic-2.0"

@@ -208,6 +208,58 @@ before committing to a long clip.
 
 ---
 
+## 4. Control playback
+
+`cast_quilt()` starts playback; four more calls cover the rest of a normal
+session — pause, resume, and stop (which deletes the playlist so the next
+`cast_quilt()` starts clean):
+
+```python
+from waverider import cast_quilt, pause_quilt, resume_quilt, stop_quilt
+
+cast_quilt(path, spec)   # play (creates/replaces the "waverider" playlist)
+pause_quilt()             # freeze the current frame
+resume_quilt()            # continue from where it paused
+stop_quilt()               # delete the playlist entirely
+```
+
+Or via `curl`, once you have an orchestration token (see the probe in
+step 2):
+
+```bash
+curl -s -X PUT -H 'Content-Type: application/json' \
+     -d "{\"orchestration\":\"$TOK\"}" \
+     http://localhost:33334/transport_control_pause
+
+curl -s -X PUT -H 'Content-Type: application/json' \
+     -d "{\"orchestration\":\"$TOK\"}" \
+     http://localhost:33334/transport_control_play
+```
+
+> **There is no `stop_playlist` or `pause_playlist` endpoint.** Guessing
+> plausible names here is a trap: Bridge answers an *unrecognised* endpoint
+> the same way it answers a wrong HTTP verb — `200 OK` with an empty body —
+> so a wrong guess looks identical to a slow success until you check that
+> the response has no `status` field. The real control group is
+> **transport control** (`transport_control_play` / `_pause` / `_next` /
+> `_previous` / `_seek_to_index`), plus `delete_playlist` to remove a
+> playlist outright. None of this is in Bridge's public docs; it's
+> confirmed against the endpoint list in the official
+> [bridge.js](https://github.com/Looking-Glass/bridge.js) SDK source
+> (`src/library/components/endpoints.ts`), the JS client for this same
+> HTTP API.
+
+| Action | Endpoint | Bridge request body |
+|---|---|---|
+| Play / cast | `play_playlist` | `{orchestration, name, head_index}` |
+| Pause | `transport_control_pause` | `{orchestration}` |
+| Resume | `transport_control_play` | `{orchestration}` |
+| Next / previous entry | `transport_control_next` / `_previous` | `{orchestration}` |
+| Seek to entry | `transport_control_seek_to_index` | `{orchestration, index}` |
+| Delete playlist (stop) | `delete_playlist` | `{orchestration, name, loop}` |
+
+---
+
 ## Device presets
 
 `QUILT_PRESETS` follows the official ideal-quilt table

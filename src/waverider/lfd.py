@@ -538,6 +538,26 @@ def _bridge_post(bridge_url: str, endpoint: str, payload: dict, timeout: float) 
     return json.loads(body) if body else {}
 
 
+def _enter_orchestration(bridge_url: str, timeout: float) -> str:
+    """Enter (or rejoin) the default Bridge orchestration session.
+
+    Bridge scopes all playback control to an orchestration session; calling
+    ``enter_orchestration`` again while one is already active returns the
+    *same* token rather than starting a new session, so every helper in this
+    module can call this independently without stepping on the others.
+
+    :return: The orchestration token required by every other Bridge call.
+    """
+    resp = _bridge_post(bridge_url, "enter_orchestration", {"name": "default"}, timeout)
+    token = resp.get("payload", {}).get("value", "")
+    if not token:
+        raise RuntimeError(
+            f"Looking Glass Bridge at {bridge_url} returned no orchestration token "
+            f"(response: {resp!r}).  Is Bridge running and >= 2.2?"
+        )
+    return token
+
+
 def cast_quilt(
     quilt_path: str | Path,
     spec: QuiltSpec,
@@ -560,13 +580,7 @@ def cast_quilt(
     :param timeout: HTTP timeout in seconds per request.
     :return: Decoded JSON response of the final ``play_playlist`` call.
     """
-    resp = _bridge_post(bridge_url, "enter_orchestration", {"name": "default"}, timeout)
-    token = resp.get("payload", {}).get("value", "")
-    if not token:
-        raise RuntimeError(
-            f"Looking Glass Bridge at {bridge_url} returned no orchestration token "
-            f"(response: {resp!r}).  Is Bridge running and >= 2.2?"
-        )
+    token = _enter_orchestration(bridge_url, timeout)
 
     _bridge_post(
         bridge_url,
@@ -601,5 +615,60 @@ def cast_quilt(
         bridge_url,
         "play_playlist",
         {"orchestration": token, "name": playlist, "head_index": -1},
+        timeout,
+    )
+
+
+def pause_quilt(*, bridge_url: str = BRIDGE_URL, timeout: float = 10.0) -> dict:
+    """Pause playback on the connected Looking Glass.
+
+    Freezes the current frame; the playlist and its position are retained,
+    so :func:`resume_quilt` continues from where it left off. This is
+    Bridge's *transport control* group — there is no ``stop_playlist`` or
+    ``pause_playlist`` endpoint (a guessed endpoint name doesn't 404: Bridge
+    answers with ``200 OK`` and an empty body, indistinguishable from a slow
+    success unless you check that the response has no ``status`` field).
+    Confirmed against the endpoint list in the official
+    `bridge.js <https://github.com/Looking-Glass/bridge.js>`_ SDK source.
+
+    :param bridge_url: Base URL of the Bridge HTTP API.
+    :param timeout: HTTP timeout in seconds.
+    :return: Decoded JSON response of the ``transport_control_pause`` call.
+    """
+    token = _enter_orchestration(bridge_url, timeout)
+    return _bridge_post(bridge_url, "transport_control_pause", {"orchestration": token}, timeout)
+
+
+def resume_quilt(*, bridge_url: str = BRIDGE_URL, timeout: float = 10.0) -> dict:
+    """Resume playback after :func:`pause_quilt`.
+
+    :param bridge_url: Base URL of the Bridge HTTP API.
+    :param timeout: HTTP timeout in seconds.
+    :return: Decoded JSON response of the ``transport_control_play`` call.
+    """
+    token = _enter_orchestration(bridge_url, timeout)
+    return _bridge_post(bridge_url, "transport_control_play", {"orchestration": token}, timeout)
+
+
+def stop_quilt(
+    *, playlist: str = "waverider", bridge_url: str = BRIDGE_URL, timeout: float = 10.0
+) -> dict:
+    """Stop playback and delete the playlist :func:`cast_quilt` created.
+
+    Unlike :func:`pause_quilt`, this removes the playlist outright — call
+    :func:`cast_quilt` again to show something new afterwards.
+
+    :param playlist: Name of the Bridge playlist to delete (must match the
+        ``playlist`` passed to :func:`cast_quilt`).
+    :param bridge_url: Base URL of the Bridge HTTP API.
+    :param timeout: HTTP timeout in seconds.
+    :return: Decoded JSON response of the ``delete_playlist`` call.
+    """
+    token = _enter_orchestration(bridge_url, timeout)
+    return _bridge_post(
+        bridge_url,
+        "delete_playlist",
+        # `loop` has no bearing on deletion but Bridge's schema requires it.
+        {"orchestration": token, "name": playlist, "loop": True},
         timeout,
     )

@@ -29,9 +29,12 @@ from .lfd import (
     QUILT_PRESETS,
     QuiltSpec,
     cast_quilt,
+    pause_quilt,
     render_quilt,
     render_quilt_video,
+    resume_quilt,
     save_quilt,
+    stop_quilt,
 )
 from .manifold_model import ManifoldModel
 from .manifold_observer import ManifoldObserver
@@ -52,7 +55,7 @@ from .voxel_viz import (
     voxelize,
 )
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 __all__ = [
     # Protein backbone
     "BackboneResidue",
@@ -86,6 +89,9 @@ __all__ = [
     "render_quilt_single",
     "save_quilt",
     "cast_quilt",
+    "pause_quilt",
+    "resume_quilt",
+    "stop_quilt",
     # Hololuminescent Display (HLD) output
     "HLD_RESOLUTION",
     "HLD_SAFE_MARGINS",
