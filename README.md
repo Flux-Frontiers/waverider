@@ -87,10 +87,10 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 
 | Dataset | d\* | C | w\* = d\*+C−1 | ManifoldResNet-UB+Drop | Accuracy | vs ResNet-32 | Δ |
 |---------|-----|---|--------------|------------------------|----------|-------------|---|
-| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_analysis.md) | 19 | 10 | 28 | 36,942 params | **71.83% ± 0.60%** | 47,978 params → 63.26% ± 3.09% | **+8.57 pp, 23% fewer params** |
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 19 | 10 | 28 | 36,942 params | **71.83% ± 0.60%** | 47,978 params → 63.26% ± 3.09% | **+8.57 pp, 23% fewer params** |
 | [**Fashion-MNIST**](benchmarks/canonical_tests/mnist_report.md) | 18 | 10 | 27 | 33,868 params | **88.38% ± 0.37%** | 47,338 params → 82.85% ± 2.60% | **+5.53 pp, 28% fewer params** |
 | [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 16 | 10 | 25 | 29,110 params | **98.98% ± 0.21%** | 47,338 params → 99.27% ± 0.13% | within 0.3 pp, 38% fewer params |
-| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_analysis.md) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
 
 *UB+Drop = w\* filters with dropout=0.3; bare UB (no dropout) underperforms — dropout is the regularizer that lets the formula-derived width generalize. See [resnet_manifold_architecture_results.json](benchmarks/canonical_tests/resnet_manifold_architecture_results.json) (CIFAR-10) and [mnist_ub_phase_boundary_*_results.json](benchmarks/canonical_tests/) (MNIST/Fashion-MNIST) for raw trial data.*
 
@@ -108,8 +108,8 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 | Dataset | Ambient Dim | Intrinsic d | Noise | Standard baseline | Manifold result | Param reduction |
 |---------|-------------|-------------|-------|-------------------|-----------------|-----------------|
 | [**Tiny ImageNet**](benchmarks/canonical_tests/tiny_imagenet_report.md) | 12,288 | 20 | 99.8% | 2.66% @ 13.2M params | **3.36% @ 80,400 params** | **164×** |
-| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_analysis.md) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
-| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_analysis.md) | 3,072 | 34 | 98.9% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 34 | 98.9% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
 | [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 784 | 27 | 96.6% | 97.42% @ 109,386 params | 95.11% @ 1,036 params | **105×** at −2.3 pp |
 
 > **Why d differs between tables.** The same dataset appears with different
@@ -328,6 +328,16 @@ python benchmarks/canonical_tests/mnist_ub_phase_boundary.py
 ```
 
 Seed-locked results (seeds 42–51, 3–10 trials) are committed as JSON alongside each script. The committed JSONs are the locked numbers cited in the papers. See **[docs/INDEX.md](docs/INDEX.md)** for the full benchmark report index.
+
+Each benchmark ships a rendered report in three forms — `*_report.md`,
+`*_report.tex`, and a typeset `*_report.pdf` — all generated from the committed
+results JSON by `report_generator.py`. The tables above link the Markdown, which
+renders inline on github.com; the PDF is the print/citation copy. To regenerate
+after a new run:
+
+```bash
+python benchmarks/canonical_tests/report_generator.py <dataset>_architecture_results.json
+```
 
 ---
 
