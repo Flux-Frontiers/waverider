@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.11.0] - 2026-08-04
+
+### Added
+
 - **`--ct-demo --quilt <device>`** — CT/MRI demo mode now renders Looking
   Glass light-field quilts (still or `--quilt-video` turntable MP4), not just
   HLD video. New `render_ct_quilt()` in `waverider.voxel_viz` mirrors
@@ -16,12 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `--quilt-grid`, `--quilt-zoom`, `--cast`, `--frames`/`--fps`/`--orbit`
   flags, and the `--hld`/`--quilt` mutual-exclusivity check now applies to
   CT demo mode too.
-
-### Changed
-
-### Removed
-
-### Fixed
 
 ## [0.10.1] - 2026-08-04
 

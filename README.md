@@ -1,6 +1,6 @@
 [![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/version-0.10.1-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
+[![Version](https://img.shields.io/badge/version-0.11.0-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20383651.svg)](https://doi.org/10.5281/zenodo.20383651)
 
@@ -17,14 +17,18 @@
 
 ## 📡 Breaking News — WaveRider renders to holographic displays
 
-**As of v0.10.0, any WaveRider scene can be pushed to real holographic hardware.**
-Two Looking Glass device families are supported, and they take different media —
-render for the display you own:
+**As of v0.10.0, any WaveRider scene can be pushed to real
+[Looking Glass](https://lookingglassfactory.com/) holographic hardware.**
+Two device families are supported, and they take different media — render
+for the display you own:
 
-- **Light-field quilts** — `waverider.lfd`, 9 device presets, stills, MP4, and
-  live casting via Bridge → **[docs/waverider/lfd.md](docs/waverider/lfd.md)**
-- **Hololuminescent video** — `waverider.hld`, 4K turntable masters to the
-  official spec → **[docs/waverider/hld.md](docs/waverider/hld.md)**
+- **[Light-field quilts](https://lfdocs.lookingglassfactory.com/keyconcepts/quilts)**
+  — `waverider.lfd`, 9 device presets, stills, MP4, and live casting via
+  [Looking Glass Bridge](https://lookingglassfactory.com/software/looking-glass-bridge)
+  → **[docs/waverider/lfd.md](docs/waverider/lfd.md)**
+- **[Hololuminescent video](https://hlddocs.lookingglassfactory.com/)** —
+  `waverider.hld`, 4K turntable masters to the official spec →
+  **[docs/waverider/hld.md](docs/waverider/hld.md)**
 - **CT / MRI demo mode** — real biomedical volumes, no model fitting
   → **[docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)**
 
@@ -135,18 +139,23 @@ in `papers/`.
 
 ### Looking Glass holographic displays — new in v0.10.0
 
-**WaveRider renders any PyVista scene to real Looking Glass holographic
-hardware**, validated end-to-end on a physical Gen3 16″ panel. Both device
-families are supported — they take different media, so render for the display
-you own:
+**WaveRider renders any PyVista scene to real
+[Looking Glass](https://lookingglassfactory.com/) holographic hardware**,
+validated end-to-end on a physical Gen3 16″ panel. Both device families are
+supported — they take different media, so render for the display you own:
 
-- **`waverider.lfd` — light-field quilts.** Off-axis asymmetric-frustum view
-  sweep tiled into a quilt; 9 official device presets (Portrait, Go, 16″–65″),
-  stills, MP4, and **live casting** to a connected display via Looking Glass
-  Bridge. → [docs/waverider/lfd.md](docs/waverider/lfd.md)
-- **`waverider.hld` — Hololuminescent video.** 4K turntable masters to the
-  official spec (3840×2160, HEVC, bt709); white renders invisible, so the
-  subject floats. → [docs/waverider/hld.md](docs/waverider/hld.md)
+- **`waverider.lfd` —
+  [light-field quilts](https://lfdocs.lookingglassfactory.com/keyconcepts/quilts).**
+  Off-axis asymmetric-frustum view sweep tiled into a quilt; 9 official device
+  presets (Portrait, Go, 16″–65″), stills, MP4, and **live casting** to a
+  connected display via
+  [Looking Glass Bridge](https://lookingglassfactory.com/software/looking-glass-bridge).
+  → [docs/waverider/lfd.md](docs/waverider/lfd.md)
+- **`waverider.hld` —
+  [Hololuminescent video](https://hlddocs.lookingglassfactory.com/resources/media-specs-and-encoding).**
+  4K turntable masters to the official spec (3840×2160, HEVC, bt709); white
+  renders invisible, so the subject floats.
+  → [docs/waverider/hld.md](docs/waverider/hld.md)
 
 ```bash
 waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast   # light-field, live cast
@@ -229,13 +238,13 @@ If you use WaveRider in your research or project, please cite it. Citation metad
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20383651.svg)](https://doi.org/10.5281/zenodo.20383651)
 
-> Suchanek, E. G. (2026). *WaveRider: Manifold-Aware Geometric Machine Learning* (Version 0.10.1) [Software]. Flux-Frontiers. https://doi.org/10.5281/zenodo.20383651
+> Suchanek, E. G. (2026). *WaveRider: Manifold-Aware Geometric Machine Learning* (Version 0.11.0) [Software]. Flux-Frontiers. https://doi.org/10.5281/zenodo.20383651
 
 ```bibtex
 @software{suchanek_waverider,
   author    = {Suchanek, Eric G.},
   title     = {{WaveRider}: Manifold-Aware Geometric Machine Learning},
-  version   = {0.10.1},
+  version   = {0.11.0},
   year      = {2026},
   publisher = {Flux-Frontiers},
   url       = {https://github.com/Flux-Frontiers/waverider},
@@ -250,3 +259,7 @@ If you use WaveRider in your research or project, please cite it. Citation metad
 [Elastic License 2.0 (ELv2)](https://www.elastic.co/licensing/elastic-license) — see [LICENSE](LICENSE).
 
 Free to use, modify, and distribute. May not be offered as a hosted or managed service to third parties.
+
+---
+
+*[Looking Glass](https://lookingglassfactory.com/) is a trademark of Looking Glass Factory, Inc. WaveRider is an independent project; its author is a customer and user of Looking Glass hardware, not affiliated with, sponsored by, or endorsed by Looking Glass Factory.*
