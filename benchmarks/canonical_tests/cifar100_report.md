@@ -1,11 +1,11 @@
 # Manifold-Informed Architecture Benchmark — CIFAR100
 
-**Generated:** 2026-08-04 03:29:45  
+**Generated:** 2026-08-04 03:33:58  
 **Machine:** Apple M5 Max MacBook Pro, 64 GB RAM, 2TB SSD  
-**Repository:** waverider @ `3c5d283` (--abbrev-re
-3c5d28344fd5c5ace0b3399593d61b40363afcda)  
-**Commit:** 2026-08-04 03:22:44 +0000 — docs(readme): add holographic-rendering Breaking News section; audit fixes  
-**Python:** 3.12.3  |  **TensorFlow:** 2.21.0  |  **Device:** CPU  
+**Repository:** waverider @ `6339d08` (--abbrev-re
+6339d08512638a9eee199cce4244b7362b15e2a4)  
+**Commit:** 2026-08-04 03:31:33 +0000 — docs(benchmarks): build and track the 11 typeset report PDFs  
+**Python:** 3.12.3  |  **TensorFlow:** 2.16.2  |  **Device:** Metal GPU (/physical_device:GPU:0)  
 **Host:** vm  |  **OS:** Linux-6.18.5-fc-v18-x86_64-with-glibc2.39
 
 ---
@@ -19,21 +19,19 @@
 | Classes | 100 |
 | Intrinsic dim (d) | 19 |
 | Variance threshold (τ) | 0.9 |
-| Epochs | 100 |
+| Epochs | 30 |
 | Trials | 3 |
-| Batch size | 256 |
-| Learning rate | 0.001 |
 
 ## Manifold Discovery
 
-Local PCA over the training set, k=25 neighbors.
+Local PCA over the training set, k=not recorded neighbors.
 
 | τ | Mean d | Std | Min | Max | Noise % |
 |---|---|---|---|---|---|
-| 0.95 | 18.9 | 1.0 | 15 | 21 | 99.4% |
+| 0.95 | 18.9 | 0.9 | 15 | 21 | 99.4% |
 | 0.90 | 15.7 | 1.1 | 11 | 18 | 99.5% |
-| 0.85 | 13.3 | 1.1 | 9 | 15 | 99.6% |
-| 0.80 | 11.4 | 1.1 | 7 | 14 | 99.6% |
+| 0.85 | 13.3 | 1.1 | 9 | 16 | 99.6% |
+| 0.80 | 11.5 | 1.1 | 8 | 14 | 99.6% |
 
 ### Per-Class Intrinsic Dimensionality
 
@@ -41,47 +39,52 @@ Local PCA over the training set, k=25 neighbors.
 
 | Class | Mean d | Std | Min | Max |
 |---|---|---|---|---|
-| motorcycle | 18.1 | 0.5 | 17 | 19 |
-| bus | 17.7 | 0.5 | 17 | 18 |
-| butterfly | 17.6 | 0.7 | 16 | 18 |
-| house | 17.6 | 0.5 | 17 | 18 |
-| poppy | 17.6 | 0.5 | 17 | 18 |
-| pickup_truck | 17.5 | 0.5 | 17 | 18 |
-| tiger | 17.5 | 0.7 | 16 | 18 |
-| mushroom | 17.2 | 1.0 | 16 | 19 |
-| orchid | 17.1 | 0.9 | 15 | 18 |
-| raccoon | 17.1 | 0.8 | 16 | 18 |
+| 51 | 18.0 | 0.0 | 18 | 18 |
+| 81 | 18.0 | 0.6 | 17 | 19 |
+| 48 | 17.8 | 0.4 | 17 | 18 |
+| 13 | 17.6 | 0.5 | 17 | 18 |
+| 14 | 17.6 | 0.5 | 17 | 18 |
+| 66 | 17.6 | 1.0 | 16 | 19 |
+| 6 | 17.4 | 0.5 | 17 | 18 |
+| 37 | 17.4 | 0.5 | 17 | 18 |
+| 58 | 17.4 | 0.5 | 17 | 18 |
+| 43 | 17.2 | 0.4 | 17 | 18 |
 | … | … | … | … | … |
-| plate | 14.1 | 0.8 | 12 | 15 |
-| apple | 14.0 | 1.3 | 12 | 16 |
-| bottle | 14.0 | 0.4 | 13 | 15 |
-| cup | 13.7 | 0.8 | 13 | 15 |
-| ray | 13.5 | 0.8 | 12 | 15 |
-| shark | 13.0 | 0.4 | 12 | 14 |
-| rocket | 12.8 | 0.6 | 12 | 14 |
-| cloud | 12.4 | 1.1 | 10 | 14 |
-| plain | 12.1 | 0.9 | 11 | 14 |
-| sea | 11.3 | 0.8 | 10 | 12 |
+| 94 | 14.2 | 1.0 | 13 | 15 |
+| 61 | 14.0 | 0.9 | 13 | 15 |
+| 9 | 13.8 | 0.4 | 13 | 14 |
+| 24 | 13.8 | 0.7 | 13 | 15 |
+| 73 | 13.4 | 0.8 | 13 | 15 |
+| 67 | 13.0 | 0.9 | 12 | 14 |
+| 69 | 13.0 | 0.9 | 12 | 14 |
+| 23 | 12.4 | 0.5 | 12 | 13 |
+| 60 | 12.4 | 0.5 | 12 | 13 |
+| 71 | 11.0 | 0.9 | 10 | 12 |
 
 ## Architecture Comparison
 
 | Architecture | Params | Test Acc (mean ± std) | Test Loss | Acc/Kparam |
 |---|---|---|---|---|
-| Standard (1024→512) | 3,722,852 | 0.2131 ± 0.0028 | 3.7730 | 0.0001 |
-| Wide Manifold (d+1, d=100) | 320,573 | 0.2114 ± 0.0033 | 3.6483 | 0.0007 |
-| Manifold (d=100) | 317,400 | 0.2089 ± 0.0019 | 3.5762 | 0.0007 |
-| Manifold + ManifoldAdam (d=100) | 317,400 | 0.2402 ± 0.0064 | 3.2974 | 0.0008 |
-| ManifoldAdam (1024→512, proj→100D) | 3,722,852 | 0.2193 ± 0.0010 | 3.5856 | 0.0001 |
-| PCA→100D + MLP (2d→d) | 50,400 | 0.2386 ± 0.0035 | 3.3877 | 0.0047 |
-| Intrinsic Dim (PCA→100D→output) ✦ | 20,200 | 0.2560 ± 0.0012 | 3.2191 | 0.0127 |
+| Standard (1024→512) | 3,722,852 | 0.0521 ± 0.0048 | 33499.9707 | 0.0000 |
+| Manifold (2d→d, d=19) | 317,400 | 0.0833 ± 0.0043 | 12.7129 | 0.0003 |
+| Manifold + ManifoldAdam (d=19) | 317,400 | 0.0614 ± 0.0039 | 11.9235 | 0.0002 |
+| ResNet (Adam) | 50,948 | 0.3755 ± 0.0089 | 2.4784 | 0.0074 |
+| ManifoldResNet-d (d=19) | 19,176 | 0.3116 ± 0.0068 | 2.6885 | 0.0162 |
+| ManifoldResNet-d+C (d=19) | 29,276 | 0.3051 ± 0.0058 | 2.8108 | 0.0104 |
+| PCA→d*→C→C (d=19) | 12,100 | 0.0966 ± 0.0048 | 4.3031 | 0.0080 |
+| ManifoldResNet-2d (2d=38) | 70,742 | 0.3719 ± 0.0195 | 2.5369 | 0.0053 |
+| PCA(100) Whitney(2d=38)→100 | 7,738 | 0.1502 ± 0.0019 | 3.8427 | 0.0194 |
+| Intrinsic Dim (PCA→19D→output) | 2,380 | 0.1212 ± 0.0052 | 3.9027 | 0.0509 |
+| ManifoldResNet-UB (w*=118) ✦ | 644,262 | 0.3829 ± 0.0377 | 4.1482 | 0.0006 |
+| UB-PCA-MLP (→119→PCA→119→100) | 391,967 | 0.1309 ± 0.0021 | 4.0014 | 0.0003 |
 
 ## Key Findings
 
-- **Best architecture:** Intrinsic Dim (PCA→100D→output)
-  — test accuracy 0.2560 ± 0.0012
-- **vs Standard:** +0.0429 (4.29 pp) accuracy gain
-- **Parameter reduction:** 184.3× fewer parameters (20,200 vs 3,722,852)
-- **Parameter efficiency:** 0.0127 acc/Kparam vs 0.0001 for Standard (221.4× improvement)
+- **Best architecture:** ManifoldResNet-UB (w*=118)
+  — test accuracy 0.3829 ± 0.0377
+- **vs Standard:** +0.3308 (33.08 pp) accuracy gain
+- **Parameter reduction:** 5.8× fewer parameters (644,262 vs 3,722,852)
+- **Parameter efficiency:** 0.0006 acc/Kparam vs 0.0000 for Standard (42.5× improvement)
 - **Manifold compression:** 3,072D → 19D (99.4% of ambient dimensions are noise)
 
 ## Result Figure

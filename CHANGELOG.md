@@ -56,13 +56,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tracked and the links could not resolve on github.com. The reports are now
   built and tracked (see Added), and every dataset row links its `*_report.md`
   uniformly.
-- **Stale CIFAR benchmark reports regenerated.** `cifar10_report.tex` and
+- **Stale CIFAR benchmark reports regenerated.** Both `cifar10_report.tex` and
   `cifar100_report.tex` were committed from an April 2026 run and had drifted
   from the results JSONs the README cites — the CIFAR-10 report gave an
   intrinsic d of 33, a best accuracy of 0.5204 and 4,795 params, against
   34 / 0.5167 / 5,076 in `cifar10_architecture_results.json`. Both are
-  regenerated from their committed JSONs via `report_generator.py` and now
-  agree with the README.
+  regenerated with `report_generator.py` and now agree with the README:
+  CIFAR-10 from `cifar10_architecture_results.json`, CIFAR-100 from
+  `cifar100_resnet_manifold_architecture_results.json` (the source of both
+  figures in its README row — the 5.21% baseline and the 38.3% @ 644,262
+  ManifoldResNet-UB result). The CIFAR-100 report's architecture table is now
+  byte-identical to the one kept in the sister repo.
 - **README intrinsic-dimension and noise figures reconciled with the results
   JSONs.** The opening paragraph put CIFAR-10 at 33 intrinsic dimensions,
   carried over from the stale report above; the current
