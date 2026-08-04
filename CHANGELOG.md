@@ -21,6 +21,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Rendering-capability probe no longer crashes collection on headless
+  machines.** `tests/test_hld.py` and `tests/test_lfd.py` each ran an identical
+  `_can_render()` probe at module import time, wrapped in `try/except
+  Exception`. VTK aborts with SIGSEGV rather than raising when no usable OpenGL
+  implementation is reachable, so the guard could not contain it and a bare
+  `pytest` died during collection (exit 139) before any test ran. The probe now
+  lives in `tests/render_probe.py` and executes in a subprocess, turning the
+  crash into an inspectable exit code: `pytest` reports 281 passed / 9 skipped
+  without a display, and the full 290 still run under one (`xvfb-run -a
+  pytest`).
+
 ## [0.10.0] - 2026-08-02
 
 ### Added

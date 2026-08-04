@@ -4,6 +4,7 @@ import math
 
 import numpy as np
 import pytest
+from render_probe import can_render
 
 from waverider.lfd import (
     QUILT_PRESETS,
@@ -211,22 +212,8 @@ class TestSaveQuilt:
 # ---------------------------------------------------------------------------
 
 
-def _can_render() -> bool:
-    """True if pyvista can produce an off-screen render in this environment."""
-    try:
-        import pyvista as pv
-
-        p = pv.Plotter(off_screen=True, window_size=(32, 32))
-        p.add_mesh(pv.Sphere())
-        p.screenshot(None, return_img=True)
-        p.close()
-        return True
-    except Exception:
-        return False
-
-
 requires_render = pytest.mark.skipif(
-    not _can_render(), reason="pyvista off-screen rendering unavailable"
+    not can_render(), reason="pyvista off-screen rendering unavailable"
 )
 
 
