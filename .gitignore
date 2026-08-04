@@ -19,6 +19,7 @@ benchmarks/canonical_tests/*.png
 !benchmarks/canonical_tests/manifold_dim_probe.png
 !benchmarks/canonical_tests/manifold_dim_probe_cifar10.png
 benchmarks/canonical_tests/*.pdf
+!benchmarks/canonical_tests/*_report.pdf
 benchmarks/canonical_tests/logs/
 benchmarks/canonical_tests/*.npz
 # clinical/ subdir — same rules; LaTeX intermediates excluded, results kept
@@ -27,6 +28,7 @@ benchmarks/canonical_tests/clinical/*.json
 benchmarks/canonical_tests/clinical/*.png
 !benchmarks/canonical_tests/clinical/*_results.png
 benchmarks/canonical_tests/clinical/*.pdf
+!benchmarks/canonical_tests/clinical/*_report.pdf
 benchmarks/canonical_tests/clinical/*.aux
 benchmarks/canonical_tests/clinical/*.fls
 benchmarks/canonical_tests/clinical/*.fdb_latexmk

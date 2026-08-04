@@ -15,9 +15,33 @@
 
 ---
 
+## 📡 Breaking News — WaveRider renders to holographic displays
+
+**As of v0.10.0, any WaveRider scene can be pushed to real holographic hardware.**
+Two Looking Glass device families are supported, and they take different media —
+render for the display you own:
+
+- **Light-field quilts** — `waverider.lfd`, 9 device presets, stills, MP4, and
+  live casting via Bridge → **[docs/waverider/lfd.md](docs/waverider/lfd.md)**
+- **Hololuminescent video** — `waverider.hld`, 4K turntable masters to the
+  official spec → **[docs/waverider/hld.md](docs/waverider/hld.md)**
+- **CT / MRI demo mode** — real biomedical volumes, no model fitting
+  → **[docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)**
+
+```bash
+waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast   # light-field, live cast
+waverider-voxel-viz --dataset iris --hld --out iris                     # HLD video
+waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # MRI brain → HLD
+```
+
+Needs the viz extras (`poetry install --with viz`); `--quilt` and `--hld` are
+mutually exclusive.
+
+---
+
 ## The Core Finding
 
-Machine learning spaces are **99% noise** by dimension. CIFAR-10 images live in a 33-dimensional manifold inside a 3,072-dimensional ambient space. Tiny ImageNet: 20 intrinsic dimensions inside 12,288. Standard algorithms treat every dimension equally — spending 99%+ of their compute on dimensions that carry no signal, while momentum, distance metrics, and gradient updates are polluted by that noise.
+Machine learning spaces are **99% noise** by dimension. CIFAR-10 images live in a 34-dimensional manifold inside a 3,072-dimensional ambient space. Tiny ImageNet: 20 intrinsic dimensions inside 12,288. Standard algorithms treat every dimension equally — spending 99%+ of their compute on dimensions that carry no signal, while momentum, distance metrics, and gradient updates are polluted by that noise.
 
 WaveRider measures the actual geometry, builds models constrained to the signal manifold, and derives a closed-form formula for optimal network width from first principles:
 
@@ -35,10 +59,10 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 
 | Dataset | d\* | C | w\* = d\*+C−1 | ManifoldResNet-UB+Drop | Accuracy | vs ResNet-32 | Δ |
 |---------|-----|---|--------------|------------------------|----------|-------------|---|
-| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.pdf) | 19 | 10 | 28 | 36,942 params | **71.83% ± 0.60%** | 47,978 params → 63.26% ± 3.09% | **+8.57 pp, 23% fewer params** |
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 19 | 10 | 28 | 36,942 params | **71.83% ± 0.60%** | 47,978 params → 63.26% ± 3.09% | **+8.57 pp, 23% fewer params** |
 | [**Fashion-MNIST**](benchmarks/canonical_tests/mnist_report.md) | 18 | 10 | 27 | 33,868 params | **88.38% ± 0.37%** | 47,338 params → 82.85% ± 2.60% | **+5.53 pp, 28% fewer params** |
 | [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 16 | 10 | 25 | 29,110 params | **98.98% ± 0.21%** | 47,338 params → 99.27% ± 0.13% | within 0.3 pp, 38% fewer params |
-| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.pdf) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 19 | 100 | 118 | 644,262 params | **38.3% ± 3.8%** | 50,948 params → 37.6% ± 0.9% | +0.7 pp |
 
 *UB+Drop = w\* filters with dropout=0.3; bare UB (no dropout) underperforms — dropout is the regularizer that lets the formula-derived width generalize. See [resnet_manifold_architecture_results.json](benchmarks/canonical_tests/resnet_manifold_architecture_results.json) (CIFAR-10) and [mnist_ub_phase_boundary_*_results.json](benchmarks/canonical_tests/) (MNIST/Fashion-MNIST) for raw trial data.*
 
@@ -55,18 +79,54 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 
 | Dataset | Ambient Dim | Intrinsic d | Noise | Standard baseline | Manifold result | Param reduction |
 |---------|-------------|-------------|-------|-------------------|-----------------|-----------------|
-| [**Tiny ImageNet**](benchmarks/canonical_tests/tiny_imagenet_report.md) | 12,288 | 20 | 99.9% | 2.66% @ 13.2M params | **3.36% @ 80,400 params** | **164×** |
-| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.pdf) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
-| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.pdf) | 3,072 | 34 | 99.1% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
+| [**Tiny ImageNet**](benchmarks/canonical_tests/tiny_imagenet_report.md) | 12,288 | 20 | 99.8% | 2.66% @ 13.2M params | **3.36% @ 80,400 params** | **164×** |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
+| [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 34 | 98.9% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
 | [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 784 | 27 | 96.6% | 97.42% @ 109,386 params | 95.11% @ 1,036 params | **105×** at −2.3 pp |
+
+> **Why d differs between tables.** The same dataset appears with different
+> intrinsic dimensions above because the tables cite different benchmark runs,
+> and each run reports two measures at τ=0.90: a **per-class maximum**
+> (`intrinsic_dim`) and a **global mean** (`global_dim`). CIFAR-10 is 34/29 in
+> [`cifar10_architecture_results.json`](benchmarks/canonical_tests/cifar10_architecture_results.json)
+> but 19/16 in
+> [`resnet_manifold_architecture_results.json`](benchmarks/canonical_tests/resnet_manifold_architecture_results.json),
+> whose preprocessing differs; MNIST is 27 in the efficiency run and 16 in the
+> UB run. The Universal Bottleneck table uses the per-class maximum of its own
+> run, which is what w\* is derived from. Every figure is traceable to the JSON
+> committed beside its script — the numbers are not interchangeable across rows.
+
+> **The CIFAR-100 standard baseline diverged.** The 5.21% figure is the
+> `Standard (1024→512)` arm of
+> [`cifar100_resnet_manifold_architecture_results.json`](benchmarks/canonical_tests/cifar100_resnet_manifold_architecture_results.json)
+> (30 epochs, 3 trials), and all three trials diverged — test losses of 23,371 /
+> 30,574 / 46,555 against a converged manifold arm's ~2.5. The 3.7M-parameter
+> dense net does not train at this setting, which is the point being made, but
+> it is a *failure-to-converge* baseline, not a converged one: the same
+> architecture reaches **21.31%** (loss 3.8) over 100 epochs in
+> [`cifar100_architecture_results.json`](benchmarks/canonical_tests/cifar100_architecture_results.json).
+> The "7× better accuracy" in the row above is computed against the diverged
+> 5.21%; against the converged run the manifold advantage is ~1.8×. Both
+> comparisons are defensible — they answer different questions — so the row
+> cites the run whose configuration the manifold arms share.
 
 ---
 
 ## The Dimension Probe
 
-When a network is given a bottleneck of exactly w\* = d\* + C − 1 neurons, it **spontaneously decomposes** that space into exactly d\* geometry dimensions and C−1 class-separation dimensions — with zero instruction.
+When a network is given a bottleneck of exactly w\* = d\* + C − 1 neurons, it
+**spontaneously partitions** that space — with zero instruction — into a geometry
+subspace plus exactly C−1 class-separation coordinates, and the two together
+recover d\* precisely.
 
-On CIFAR-10 (d\*=16, C=10, w\*=25): post-bottleneck PCA reveals 7 geometry principal components explaining 90% of variance (Whitney bound), and exactly 9 additional class-separation components — precisely C−1=9. The semantic content is interpretable: PC11 encodes four-legged animals, PC9 encodes flat objects, PC12 encodes wheeled vehicles.
+On CIFAR-10 (d\*=16, C=10, w\*=25), PCA on the w\*-dimensional bottleneck yields
+k₉₀ = 7 geometry components (the on-manifold subspace, Whitney bound) and
+n_extra = 9 class-separation coordinates. Both identities hold exactly:
+
+> **k₉₀ + n_extra = 7 + 9 = 16 = d\***  and  **n_extra = 9 = C − 1**
+
+The semantic content is interpretable: PC11 selects four-legged animals, PC9
+flat/low-profile objects, PC12 wheeled vehicles. *(Paper, Table 8.)*
 
 **Gradient descent independently discovers the theorem's decomposition.**
 
@@ -74,56 +134,43 @@ On CIFAR-10 (d\*=16, C=10, w\*=25): post-bottleneck PCA reveals 7 geometry princ
 
 ## Algorithms
 
+### Core geometry
+
 | Component | Class / Module | Description |
 |-----------|----------------|-------------|
 | **TurtleND** | `TurtleND` | N-dimensional position + orthonormal frame (navigation primitive) |
+| **Turtle3D** | `Turtle3D` | 3-D specialization of the navigation primitive |
+| **Vector3D** | `Vector3D` / `waverider.vector3D` | 3-D vector utilities — angles, dihedrals, distances, RMS difference |
 | **Manifold Walker** | `ManifoldWalker` | Riemannian gradient descent in discovered tangent space |
-| **Manifold Adam** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
+| **Manifold Adam Walker** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
 | **Manifold Model** | `ManifoldModel` | Zero-parameter classifier: the manifold *is* the model |
 | **Manifold Observer** | `ManifoldObserver` | (N+1)-dimensional extrinsic observer — hovers above the manifold surface |
+
+### Dimensionality and embedding
+
+| Component | Class / Module | Description |
+|-----------|----------------|-------------|
+| **Dimensionality Discovery** | `discover_dimensionality`, `discover_per_class_dimensionality` | Local-PCA measurement of intrinsic dimensionality d\* at threshold τ — the shared primitive behind every canonical benchmark |
+| **Universal Embedder** | `UniversalEmbedder` | Geometry-grounded, modality-agnostic reduction to d\* coordinates. Discovers d\* from local geometry, then branches on the Manifold Linearity Index. Drop-in for sklearn PCA — same `fit`/`transform`/`fit_transform` API |
+| **Geodesic Encoder** | `GeodesicEncoder` | Encodes ambient points as tangent-projected geodesic distances in d\* dimensions |
+| **Manifold Adam (optimizer)** | `ManifoldAdam` | Keras optimizer that projects gradients onto the top-d principal directions before each update, zeroing the noise dimensions. Distinct from `ManifoldAdamWalker` above |
+
+### Domain applications
+
+| Component | Class / Module | Description |
+|-----------|----------------|-------------|
+| **Backbone Angles** | `BackboneResidue`, `BackboneAngleList` | Protein backbone (φ, ψ, ω) dihedral representation |
+| **Backbone Embedder** | `BackboneEmbedder` | Maps (φ, ψ) pairs to vectors — three embedding strategies |
+| **Backbone Manifold** | `fit_backbone_manifold` | End-to-end protein backbone latent-space discovery over the WaveRider stack |
+| **Graph Reasoner** | `KnowledgeGraph` / `waverider.graph_reasoner` | Semantic reasoning over knowledge graphs — navigates semantically weighted edges, with pluggable edge discoverers (radius, kNN, directed) and steering strategies |
+
+### Rendering
+
+| Component | Class / Module | Description |
+|-----------|----------------|-------------|
 | **Voxel Visualizer** | `waverider.voxel_viz` / `waverider-voxel-viz` | Two modes: (1) projects the observer's geometric fields into 3-D, voxelises them, and renders interactive orthogonal slice planes in PyVista; (2) `--ct-demo` loads real CT/MRI volumes and renders layered isosurfaces interactively or as an HLD turntable video |
-
----
-
-## Voxel Visualizer
-
-The `waverider-voxel-viz` command ships two rendering modes:
-
-**Manifold mode** — high-dimensional manifolds are invisible. The `ManifoldObserver`
-measures curvature, height above the tangent plane, and local intrinsic
-dimensionality at every node. The Voxel Visualizer projects those fields into a
-3-D PCA subspace, rasterises them onto a uniform voxel grid, and opens a PyVista
-viewer where you drag three orthogonal slice planes through the volume in real time.
-
-**CT / MRI demo mode** (`--ct-demo`) — loads one of PyVista's built-in biomedical
-volumes (T1 MRI brain, CT head, or whole-body CT), extracts layered isosurfaces
-for skin / tissue / bone, and opens an interactive viewer or encodes a 10-second
-HLD turntable video — no ManifoldModel fitting required.
-
-![Manifold Voxel Visualizer — pipeline, scalar fields, datasets, controls](docs/waverider/manifold_voxel_viz.png)
-
-```bash
-poetry install --with viz                          # PyVista + SciPy + Pillow
-
-# Manifold mode
-waverider-voxel-viz                                # default: synthetic helix
-waverider-voxel-viz --dataset iris --multi-scalar  # 2×2 panel: all scalar fields
-waverider-voxel-viz --dataset cifar10 --n-points 1000 --pre-pca 40
-waverider-voxel-viz --dataset breast_cancer --hld --out bc_hld  # HLD video
-
-# CT / MRI demo mode
-waverider-voxel-viz --ct-demo                              # T1 MRI brain, interactive
-waverider-voxel-viz --ct-demo --ct-dataset full_head       # CT head, interactive
-waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # HLD video
-```
-
-**Manifold scalar fields:** `density`, `curvature`, `height`, `intrinsic_dim`, `class_vote`.
-**Manifold datasets:** synthetic (helix, swiss_roll, torus), tabular (iris, wine, breast_cancer, digits), large (mnist, cifar10, cifar100), or `--dataset load` for your own.
-**CT / MRI datasets:** `brain` (181³ T1 MRI), `full_head` / `head_2` (256² CT), `whole_body_ct_male` / `whole_body_ct_female` (160² whole-body CT).
-
-- **Full CLI + API reference:** [docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)
-- **Worked code examples:** [docs/USAGE.md § Voxel Visualizer](docs/USAGE.md#manifold-voxel-visualizer--interactive-3-d-manifold-anatomy)
-- **Method paper:** [papers/voxel_viz/voxel_viz.pdf](papers/voxel_viz/voxel_viz.pdf)
+| **Light-Field Renderer** | `waverider.lfd` | Looking Glass quilt output — off-axis asymmetric-frustum view sweep, 9 device presets, stills, MP4, and live casting via Bridge |
+| **HLD Renderer** | `waverider.hld` | Hololuminescent Display output — 4K turntable video to the official master spec, safe-area framing, contact shadow |
 
 ---
 
@@ -190,6 +237,48 @@ See **[docs/USAGE.md](docs/USAGE.md)** for complete code examples covering all c
 
 ---
 
+## Voxel Visualizer
+
+The `waverider-voxel-viz` command ships two rendering modes:
+
+**Manifold mode** — high-dimensional manifolds are invisible. The `ManifoldObserver`
+measures curvature, height above the tangent plane, and local intrinsic
+dimensionality at every node. The Voxel Visualizer projects those fields into a
+3-D PCA subspace, rasterises them onto a uniform voxel grid, and opens a PyVista
+viewer where you drag three orthogonal slice planes through the volume in real time.
+
+**CT / MRI demo mode** (`--ct-demo`) — loads one of PyVista's built-in biomedical
+volumes (T1 MRI brain, CT head, or whole-body CT), extracts layered isosurfaces
+for skin / tissue / bone, and opens an interactive viewer or encodes a 10-second
+HLD turntable video — no ManifoldModel fitting required.
+
+![Manifold Voxel Visualizer — pipeline, scalar fields, datasets, controls](docs/waverider/manifold_voxel_viz.png)
+
+```bash
+poetry install --with viz                          # PyVista + SciPy + Pillow
+
+# Manifold mode
+waverider-voxel-viz                                # default: synthetic helix
+waverider-voxel-viz --dataset iris --multi-scalar  # 2×2 panel: all scalar fields
+waverider-voxel-viz --dataset cifar10 --n-points 1000 --pre-pca 40
+waverider-voxel-viz --dataset breast_cancer --hld --out bc_hld  # HLD video
+
+# CT / MRI demo mode
+waverider-voxel-viz --ct-demo                              # T1 MRI brain, interactive
+waverider-voxel-viz --ct-demo --ct-dataset full_head       # CT head, interactive
+waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # HLD video
+```
+
+**Manifold scalar fields:** `density`, `curvature`, `height`, `intrinsic_dim`, `class_vote`.
+**Manifold datasets:** synthetic (helix, swiss_roll, torus), tabular (iris, wine, breast_cancer, digits), large (mnist, cifar10, cifar100), or `--dataset load` for your own.
+**CT / MRI datasets:** `brain` (181³ T1 MRI), `full_head` / `head_2` (256² CT), `whole_body_ct_male` / `whole_body_ct_female` (160² whole-body CT).
+
+- **Full CLI + API reference:** [docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)
+- **Worked code examples:** [docs/USAGE.md § Voxel Visualizer](docs/USAGE.md#manifold-voxel-visualizer--interactive-3-d-manifold-anatomy)
+- **Method paper:** [papers/voxel_viz/voxel_viz.pdf](papers/voxel_viz/voxel_viz.pdf)
+
+---
+
 ## Method
 
 ### Gradient-Diversity PCA
@@ -253,6 +342,16 @@ python benchmarks/canonical_tests/mnist_ub_phase_boundary.py
 
 Seed-locked results (seeds 42–51, 3–10 trials) are committed as JSON alongside each script. The committed JSONs are the locked numbers cited in the papers. See **[docs/INDEX.md](docs/INDEX.md)** for the full benchmark report index.
 
+Each benchmark ships a rendered report in three forms — `*_report.md`,
+`*_report.tex`, and a typeset `*_report.pdf` — all generated from the committed
+results JSON by `report_generator.py`. The tables above link the Markdown, which
+renders inline on github.com; the PDF is the print/citation copy. To regenerate
+after a new run:
+
+```bash
+python benchmarks/canonical_tests/report_generator.py <dataset>_architecture_results.json
+```
+
 ---
 
 ## Project Structure
@@ -278,7 +377,7 @@ waverider/
 │       ├── manifold_observer.py      # (N+1)-dim extrinsic observer
 │       ├── manifold_model.py         # Zero-parameter manifold classifier
 │       ├── voxel_viz.py              # 3-D voxel visualizer + waverider-voxel-viz CLI
-│       ├── lfd.py          # Light-field quilt renderer (LFD line)
+│       ├── lfd.py                    # Light-field quilt renderer (LFD line)
 │       └── hld.py                    # Hololuminescent Display video renderer
 ├── tests/
 ├── benchmarks/
