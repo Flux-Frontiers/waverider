@@ -109,3 +109,6 @@ drafts/
 
 # Scratch file for `git commit -F` — never a project artifact
 commit.txt
+
+# Rendered quilt output (waverider.povray / lfd)
+out/

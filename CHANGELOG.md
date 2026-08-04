@@ -11,7 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Holographic output moved to [quiltwright](https://github.com/suchanek/quiltwright).**
+  `waverider.lfd`, `waverider.hld` and `waverider.povray` are now the
+  `quiltwright` package, a new BSD-3 dependency. The code never imported
+  anything from waverider — `lfd.py` needed only stdlib, numpy and pillow —
+  while three unrelated consumers had grown around it: manifold
+  visualisation, molecular rendering via proteusPy, and a POV-Ray scene
+  archive. None of them should have to depend on the others.
+
+  `from waverider import render_quilt, QUILT_PRESETS, cast_quilt, ...`
+  continues to work: `waverider/__init__` re-exports the full holographic
+  surface from quiltwright. Code importing the submodules directly
+  (`from waverider.lfd import ...`) must switch to `quiltwright.lfd`.
+  `waverider.voxel_viz` and its CLI are unchanged.
+
+  Git history for the moved files is preserved in the quiltwright repository.
+
 ### Removed
+
+- `src/waverider/lfd.py`, `src/waverider/hld.py`, `src/waverider/povray.py`
+  and their tests and docs — see Changed, above.
 
 ### Fixed
 

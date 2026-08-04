@@ -39,7 +39,7 @@ packages = [{include = "waverider", from = "src"}]
 # ---------------------------------------------------------------------------
 [project]
 name = "waverider"
-version = "0.12.0"
+version = "0.13.0"
 description = "Manifold-aware geometric ML stack: TurtleND, ManifoldWalker, ManifoldModel, ManifoldObserver"
 readme = "README.md"
 license = "Elastic-2.0"
@@ -57,6 +57,9 @@ classifiers = [
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy>=1.26,<2",
+    # Holographic output, split out of this package at 0.13.0.  Core is
+    # numpy + pillow only; the PyVista backend comes in via the viz group.
+    "quiltwright>=0.1.0",
     "scikit-learn>=1.3",
     "tensorflow==2.21.0",
     "tf-keras>=2.16.0",
@@ -111,7 +114,7 @@ scipy     = ">=1.11"
 streamlit = ">=1.35"
 plotly    = ">=6.0"
 pillow    = ">=10.0"
-# Bundled ffmpeg for Looking Glass quilt video encoding (lfd.py)
+# Bundled ffmpeg for quilt video encoding (quiltwright.lfd)
 imageio-ffmpeg = ">=0.5"
 
 # ---------------------------------------------------------------------------

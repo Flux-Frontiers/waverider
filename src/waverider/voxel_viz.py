@@ -154,6 +154,13 @@ from pathlib import Path
 from typing import NamedTuple
 
 import numpy as np
+from quiltwright.lfd import (
+    QUILT_PRESETS,
+    cast_quilt,
+    render_quilt,
+    render_quilt_video,
+    save_quilt,
+)
 from sklearn.datasets import (
     load_breast_cancer,
     load_digits,
@@ -167,13 +174,6 @@ from sklearn.preprocessing import StandardScaler
 from waverider.dimensionality_discovery import (
     discover_dimensionality,
     discover_per_class_dimensionality,
-)
-from waverider.lfd import (
-    QUILT_PRESETS,
-    cast_quilt,
-    render_quilt,
-    render_quilt_video,
-    save_quilt,
 )
 from waverider.manifold_model import ManifoldModel
 from waverider.manifold_observer import ManifoldObserver
@@ -941,7 +941,7 @@ def render_quilt_single(
     :param pf: :class:`PointField` from :func:`fit_and_observe`.
     :param scalar: Which scalar field to display.
     :param out_path: Output stem; the quilt suffix + extension are appended.
-    :param device: Key into :data:`waverider.lfd.QUILT_PRESETS`
+    :param device: Key into :data:`quiltwright.lfd.QUILT_PRESETS`
         (e.g. ``"portrait"``, ``"go"``, ``"16-landscape"``).
     :param view_cone: Override the preset's view cone in degrees.
     :param show_points: Overlay scatter of raw training points.
@@ -1040,7 +1040,7 @@ def render_hld_single(
     official HLD master spec (3840×2160 landscape HEVC bt709).
 
     Run the output through Looking Glass's HLD Author app, then copy it to
-    the display's USB media player.  See :mod:`waverider.hld`.
+    the display's USB media player.  See :mod:`quiltwright.hld`.
 
     Requires ``pyvista`` + ``pillow`` + ffmpeg (``poetry install --with viz``).
 
@@ -1063,7 +1063,7 @@ def render_hld_single(
         subjects in the 16:9 frame).
     :return: Path of the MP4 written.
     """
-    from waverider.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
+    from quiltwright.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
 
     _require_viz("render_hld_single")
 
@@ -1188,7 +1188,7 @@ def render_ct_hld(
         Increase for taller subjects (e.g. 2.2 for whole-body CT).
     :return: Path of the MP4 written.
     """
-    from waverider.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
+    from quiltwright.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
 
     _require_viz("render_ct_hld")
 
@@ -1241,7 +1241,7 @@ def render_ct_quilt(
 
     :param ct_dataset: Dataset key from :data:`CT_PRESETS`.
     :param out_path: Output stem; the quilt suffix + extension are appended.
-    :param device: Key into :data:`waverider.lfd.QUILT_PRESETS`
+    :param device: Key into :data:`quiltwright.lfd.QUILT_PRESETS`
         (e.g. ``"portrait"``, ``"go"``, ``"16-landscape"``).
     :param view_cone: Override the preset's view cone in degrees.
     :param smooth_iters: Surface-smoothing iterations (``None`` uses preset).
@@ -1323,7 +1323,7 @@ def render_ct_still(
     :param zoom: Camera zoom after safe-area framing (default 1.8).
     :return: Path of the PNG written.
     """
-    from waverider.hld import add_floor_shadow, render_hld_still, style_plotter_for_hld
+    from quiltwright.hld import add_floor_shadow, render_hld_still, style_plotter_for_hld
 
     _require_viz("render_ct_still")
 
@@ -1369,7 +1369,7 @@ def render_ct_viewer(
     :param smooth_iters: Surface-smoothing iterations (``None`` = preset).
     :param isovalues: Override isovalue thresholds (``None`` = preset).
     """
-    from waverider.hld import add_floor_shadow
+    from quiltwright.hld import add_floor_shadow
 
     _require_viz("render_ct_viewer")
 
