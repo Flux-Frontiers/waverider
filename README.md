@@ -133,11 +133,34 @@ in `papers/`.
 
 ## Visualization & Holographic Output
 
+### Looking Glass holographic displays — new in v0.10.0
+
+**WaveRider renders any PyVista scene to real Looking Glass holographic
+hardware**, validated end-to-end on a physical Gen3 16″ panel. Both device
+families are supported — they take different media, so render for the display
+you own:
+
+- **`waverider.lfd` — light-field quilts.** Off-axis asymmetric-frustum view
+  sweep tiled into a quilt; 9 official device presets (Portrait, Go, 16″–65″),
+  stills, MP4, and **live casting** to a connected display via Looking Glass
+  Bridge. → [docs/waverider/lfd.md](docs/waverider/lfd.md)
+- **`waverider.hld` — Hololuminescent video.** 4K turntable masters to the
+  official spec (3840×2160, HEVC, bt709); white renders invisible, so the
+  subject floats. → [docs/waverider/hld.md](docs/waverider/hld.md)
+
+```bash
+waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast   # light-field, live cast
+waverider-voxel-viz --dataset iris --hld --out iris                     # HLD video
+```
+
+### Voxel Visualizer
+
 `waverider-voxel-viz` makes high-dimensional manifolds visible: the
 `ManifoldObserver`'s scalar fields (curvature, height, local intrinsic
 dimensionality, …) are projected into a 3-D PCA subspace, voxelised, and served
 as interactive orthogonal slice planes in PyVista. A CT/MRI demo mode
-(`--ct-demo`) renders real biomedical volumes with no model fitting.
+(`--ct-demo`) renders real biomedical volumes with no model fitting — and both
+modes output straight to the holographic paths above.
 
 ![Manifold Voxel Visualizer — pipeline, scalar fields, datasets, controls](docs/waverider/manifold_voxel_viz.png)
 
@@ -148,7 +171,6 @@ waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # MRI �
 ```
 
 - **Full CLI + API reference** (all datasets, scalar fields, flags): [docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)
-- **Light-field quilts / HLD video:** [docs/waverider/lfd.md](docs/waverider/lfd.md) · [docs/waverider/hld.md](docs/waverider/hld.md)
 - **Worked examples:** [docs/USAGE.md](docs/USAGE.md#manifold-voxel-visualizer--interactive-3-d-manifold-anatomy) · **Method paper:** [papers/voxel_viz/voxel_viz.pdf](papers/voxel_viz/voxel_viz.pdf)
 
 ---
