@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`docs/RESULTS.md`** — single landing page for all three headline results
+  tables (Universal Bottleneck, zero-parameter classifiers, parameter
+  efficiency) plus the two provenance notes (why d differs between tables; the
+  CIFAR-100 cross-run baseline caveat) and the report-regeneration command.
+  Linked from the README and `docs/INDEX.md`.
+
+### Changed
+
+- **README halved: 429 → 229 lines, no information deleted — relocated.**
+  Headline Results keeps only the flagship Universal Bottleneck table; the
+  other two tables and both provenance notes moved to `docs/RESULTS.md`, each
+  represented inline by a one-line claim. The Algorithms section became "The
+  Stack": one row per layer with all 17 module names inline, linking the
+  existing per-component stack summary. Quick Start / Installation / Usage
+  merged into one Getting Started. The Voxel Visualizer deep-dive shrank to a
+  summary + image + three commands (dataset and scalar-field tables were
+  already in `docs/waverider/voxel_viz.md`). Method condensed to one paragraph
+  linking the paper and walker spec. Benchmarks kept three representative
+  commands. Project Structure dropped — GitHub renders the tree and
+  `docs/INDEX.md` maps the docs; the src/benchmarks/papers pointers moved into
+  Getting Started.
+
 - **README "Breaking News" section** — a short summary of the v0.10.0
   holographic output paths (`waverider.lfd` light-field quilts,
   `waverider.hld` Hololuminescent video, and the `--ct-demo` CT/MRI mode) with
@@ -40,12 +62,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ManifoldAdamWalker`, now explicitly distinguished), the three `backbone_*`
   modules, and `KnowledgeGraph`. Split into Core geometry / Dimensionality and
   embedding / Domain applications / Rendering.
-- **README notes that the CIFAR-100 standard baseline diverged.** The 5.21%
-  figure comes from a 30-epoch run in which all three trials diverged (test
-  losses 23,371 / 30,574 / 46,555). The same architecture reaches 21.31% over
-  100 epochs in `cifar100_architecture_results.json`, against which the manifold
-  advantage is ~1.8× rather than 7×. Both comparisons are stated, with why the
-  row cites the run it does.
+- **CIFAR-100 parameter-efficiency row now cites the converged baseline.** It
+  quoted 5.21% at 3.7M params, the `Standard (1024→512)` arm of the 30-epoch
+  `cifar100_resnet_manifold_architecture_results.json` — a run in which all
+  three trials diverged (test losses 23,371 / 30,574 / 46,555, against ~2.5 for
+  the manifold arms). That made the comparison same-run, but measured the
+  manifold against a network that failed to train. The row now cites the
+  converged **21.31%** (loss 3.8, 100 epochs) from
+  `cifar100_architecture_results.json`, so the accuracy ratio is **1.8×** rather
+  than 7×; the 5.8× parameter reduction is unchanged. The accompanying note is
+  rewritten as a plain caveat: it states that the baseline and manifold figures
+  come from different runs, records the divergence as a finding in its own right
+  (the 3.7M-parameter dense net is unstable at the 30-epoch setting), and no
+  longer frames the diverged number as the point being made.
 - **README documents why `d` differs between results tables.** Each benchmark
   run reports both a per-class maximum (`intrinsic_dim`) and a global mean
   (`global_dim`) at τ=0.90, and the tables cite different runs — CIFAR-10 is

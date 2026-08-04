@@ -9,8 +9,9 @@
 | Resource | Description |
 |----------|-------------|
 | [README](../README.md) | Overview, headline results, quick start |
+| [RESULTS.md](RESULTS.md) | All benchmark results tables, with provenance notes |
 | [USAGE.md](USAGE.md) | Code examples for all components |
-| [Quick Start](../README.md#quick-start) | Install in 3 commands |
+| [Getting Started](../README.md#getting-started) | Install in 3 commands |
 
 ---
 
