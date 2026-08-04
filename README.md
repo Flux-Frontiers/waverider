@@ -96,6 +96,20 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 > run, which is what w\* is derived from. Every figure is traceable to the JSON
 > committed beside its script — the numbers are not interchangeable across rows.
 
+> **The CIFAR-100 standard baseline diverged.** The 5.21% figure is the
+> `Standard (1024→512)` arm of
+> [`cifar100_resnet_manifold_architecture_results.json`](benchmarks/canonical_tests/cifar100_resnet_manifold_architecture_results.json)
+> (30 epochs, 3 trials), and all three trials diverged — test losses of 23,371 /
+> 30,574 / 46,555 against a converged manifold arm's ~2.5. The 3.7M-parameter
+> dense net does not train at this setting, which is the point being made, but
+> it is a *failure-to-converge* baseline, not a converged one: the same
+> architecture reaches **21.31%** (loss 3.8) over 100 epochs in
+> [`cifar100_architecture_results.json`](benchmarks/canonical_tests/cifar100_architecture_results.json).
+> The "7× better accuracy" in the row above is computed against the diverged
+> 5.21%; against the converged run the manifold advantage is ~1.8×. Both
+> comparisons are defensible — they answer different questions — so the row
+> cites the run whose configuration the manifold arms share.
+
 ---
 
 ## The Dimension Probe
@@ -120,13 +134,40 @@ flat/low-profile objects, PC12 wheeled vehicles. *(Paper, Table 8.)*
 
 ## Algorithms
 
+### Core geometry
+
 | Component | Class / Module | Description |
 |-----------|----------------|-------------|
 | **TurtleND** | `TurtleND` | N-dimensional position + orthonormal frame (navigation primitive) |
+| **Turtle3D** | `Turtle3D` | 3-D specialization of the navigation primitive |
+| **Vector3D** | `Vector3D` / `waverider.vector3D` | 3-D vector utilities — angles, dihedrals, distances, RMS difference |
 | **Manifold Walker** | `ManifoldWalker` | Riemannian gradient descent in discovered tangent space |
-| **Manifold Adam** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
+| **Manifold Adam Walker** | `ManifoldAdamWalker` | Adam momentum in tangent space — state preserved across re-orientations |
 | **Manifold Model** | `ManifoldModel` | Zero-parameter classifier: the manifold *is* the model |
 | **Manifold Observer** | `ManifoldObserver` | (N+1)-dimensional extrinsic observer — hovers above the manifold surface |
+
+### Dimensionality and embedding
+
+| Component | Class / Module | Description |
+|-----------|----------------|-------------|
+| **Dimensionality Discovery** | `discover_dimensionality`, `discover_per_class_dimensionality` | Local-PCA measurement of intrinsic dimensionality d\* at threshold τ — the shared primitive behind every canonical benchmark |
+| **Universal Embedder** | `UniversalEmbedder` | Geometry-grounded, modality-agnostic reduction to d\* coordinates. Discovers d\* from local geometry, then branches on the Manifold Linearity Index. Drop-in for sklearn PCA — same `fit`/`transform`/`fit_transform` API |
+| **Geodesic Encoder** | `GeodesicEncoder` | Encodes ambient points as tangent-projected geodesic distances in d\* dimensions |
+| **Manifold Adam (optimizer)** | `ManifoldAdam` | Keras optimizer that projects gradients onto the top-d principal directions before each update, zeroing the noise dimensions. Distinct from `ManifoldAdamWalker` above |
+
+### Domain applications
+
+| Component | Class / Module | Description |
+|-----------|----------------|-------------|
+| **Backbone Angles** | `BackboneResidue`, `BackboneAngleList` | Protein backbone (φ, ψ, ω) dihedral representation |
+| **Backbone Embedder** | `BackboneEmbedder` | Maps (φ, ψ) pairs to vectors — three embedding strategies |
+| **Backbone Manifold** | `fit_backbone_manifold` | End-to-end protein backbone latent-space discovery over the WaveRider stack |
+| **Graph Reasoner** | `KnowledgeGraph` / `waverider.graph_reasoner` | Semantic reasoning over knowledge graphs — navigates semantically weighted edges, with pluggable edge discoverers (radius, kNN, directed) and steering strategies |
+
+### Rendering
+
+| Component | Class / Module | Description |
+|-----------|----------------|-------------|
 | **Voxel Visualizer** | `waverider.voxel_viz` / `waverider-voxel-viz` | Two modes: (1) projects the observer's geometric fields into 3-D, voxelises them, and renders interactive orthogonal slice planes in PyVista; (2) `--ct-demo` loads real CT/MRI volumes and renders layered isosurfaces interactively or as an HLD turntable video |
 | **Light-Field Renderer** | `waverider.lfd` | Looking Glass quilt output — off-axis asymmetric-frustum view sweep, 9 device presets, stills, MP4, and live casting via Bridge |
 | **HLD Renderer** | `waverider.hld` | Hololuminescent Display output — 4K turntable video to the official master spec, safe-area framing, contact shadow |

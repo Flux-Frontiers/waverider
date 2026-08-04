@@ -33,6 +33,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and Installation, so a first-time reader met a feature reference before any
   install instructions; it now follows Usage, keeping the get-running path
   contiguous.
+- **Algorithms table completed and grouped.** It listed 8 of the 17 modules in
+  `src/waverider`; the missing 9 are now present — `Turtle3D`, `Vector3D`,
+  `discover_dimensionality`, `UniversalEmbedder`, `GeodesicEncoder`,
+  `ManifoldAdam` (the Keras optimizer, previously easy to confuse with
+  `ManifoldAdamWalker`, now explicitly distinguished), the three `backbone_*`
+  modules, and `KnowledgeGraph`. Split into Core geometry / Dimensionality and
+  embedding / Domain applications / Rendering.
+- **README notes that the CIFAR-100 standard baseline diverged.** The 5.21%
+  figure comes from a 30-epoch run in which all three trials diverged (test
+  losses 23,371 / 30,574 / 46,555). The same architecture reaches 21.31% over
+  100 epochs in `cifar100_architecture_results.json`, against which the manifold
+  advantage is ~1.8× rather than 7×. Both comparisons are stated, with why the
+  row cites the run it does.
 - **README documents why `d` differs between results tables.** Each benchmark
   run reports both a per-class maximum (`intrinsic_dim`) and a global mean
   (`global_dim`) at τ=0.90, and the tables cite different runs — CIFAR-10 is
