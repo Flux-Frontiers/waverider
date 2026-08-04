@@ -1,32 +1,24 @@
-# Release Notes — v0.10.0
+# Release Notes — v0.10.1
 
-> Released: 2026-08-02
+> Released: 2026-08-04
 
-WaveRider manifolds now render as true holograms. This release adds two output paths for Looking Glass hardware — `waverider.lfd` for the light-field line, which consumes multi-view quilts, and `waverider.hld` for the Hololuminescent line, which plays ordinary video into a fixed optical volume. Any PyVista scene can drive either. The whole path was validated end to end against a physical Gen3 16″ landscape panel, which is how three bugs that had never been exercised came to light.
+A documentation-integrity release. v0.10.0 shipped the holographic output paths but left a README that had outgrown itself and drifted from the repository it describes: 429 lines, half the modules missing from the Algorithms table, four result links pointing at files git had never tracked, and a flagship CIFAR-100 comparison measured against a network that failed to train. Everything a reader meets first is now half the length and checked against the artifact it describes. No public API, CLI, or on-disk format changed.
 
 ## What changed
 
-**Holographic output.** The quilt renderer sweeps a camera across the device's view cone using off-axis asymmetric-frustum projections rather than orbiting it. That distinction matters: rotating the camera ("toe-in") shears the focal plane differently in each view, and a lenticular display cannot fuse views that disagree about where the focal plane sits. Keeping it pixel-identical across all views is what makes a quilt work. Output covers still quilts, turntable quilt videos, and live casting to a connected display through Looking Glass Bridge.
+**The README is half its former size, with nothing deleted.** It went from 429 to 229 lines by relocating detail rather than dropping it: the zero-parameter-classifier and parameter-efficiency tables and both provenance notes moved to the new `docs/RESULTS.md`, each left behind as a one-line claim with a link; Quick Start, Installation, and Usage merged into one Getting Started; the Algorithms table became "The Stack", one row per layer naming all 17 modules inline — it previously listed 8 of them, omitting `Turtle3D`, `Vector3D`, `discover_dimensionality`, `UniversalEmbedder`, `GeodesicEncoder`, the Keras `ManifoldAdam` optimizer (now explicitly distinguished from `ManifoldAdamWalker`), the three `backbone_*` modules, `KnowledgeGraph`, and the two new rendering modules.
 
-**Hardware truth over documentation.** The published quilt table and the panel on the desk disagreed. The `16-landscape` preset described a 7×7 grid at 5999², where a Gen3 panel reports 8×6 at 7680×4320 with a 50° view cone rather than the 35° default — meaning roughly a third of the available parallax was being discarded. The preset now matches what Bridge reports, and the docs carry the probe command so you can confirm your own hardware instead of trusting a table that has no generation column.
+**The CIFAR-100 headline now cites a baseline that converged.** The parameter-efficiency row quoted 5.21% at 3.7M parameters — the standard arm of a 30-epoch run in which all three trials diverged, with test losses of 23,371 / 30,574 / 46,555 against roughly 2.5 for the manifold arms. Keeping the comparison same-run had the side effect of measuring the manifold against a network that never trained. The row now cites the converged 21.31% from the 100-epoch results, which puts the accuracy advantage at 1.8× rather than 7×; the 5.8× parameter reduction is unchanged. The divergence is recorded as a finding in its own right — the 3.7M-parameter dense net is unstable at the 30-epoch setting — rather than as the point being made. Alongside it, the intrinsic-dimension and noise figures were reconciled with the results JSONs, and the dimension-probe claim was corrected to match Table 8 of the paper: the geometry and class-separation components *sum* to d\*, they do not sit beside it.
 
-**Casting used to fail silently.** Bridge's HTTP API requires `PUT`. The client sent `POST`, which Bridge answers with `200 OK` and an empty body — so the orchestration token came back empty, every subsequent call quietly did nothing, and `--cast` reported success while the display stayed dark. An empty token now raises.
+**Benchmark reports are tracked and current.** `benchmarks/canonical_tests/*.pdf` was gitignored, so the CIFAR result rows linked to PDFs that could never resolve on github.com. The 11 typeset `*_report.pdf` files are now committed through a narrow gitignore negation that still excludes ad-hoc build output, CIFAR-10 and CIFAR-100 gained the Markdown reports every other dataset already had, and both CIFAR reports were regenerated after drifting from an April run.
 
-**Framing as a depth budget.** Perceived depth scales with how much of each view the subject fills, so the default framing was wasting both resolution and parallax. Quilt rendering now dollies the camera in by default, which preserves the field of view the parallax geometry assumes. On the iris manifold this moved subject coverage from 35% to 85% of frame width and more than tripled the measured difference between extreme views. The colour scale bar is off by default for quilts — a 2-D overlay has no parallax, so the display pins it to the focal plane where it reads as a flat pane through the middle of the hologram.
+**`pytest` works on headless machines again.** A rendering-capability probe ran at module import time in two test files, and VTK aborts with SIGSEGV rather than raising when no OpenGL implementation is reachable — so a `try/except` could not contain it and a bare `pytest` died during collection, exit 139, before any test ran. The probe now executes in a subprocess, turning the crash into an inspectable exit code: 281 passed / 9 skipped without a display, all 290 under `xvfb-run -a pytest`.
 
-**CT and MRI mode.** `--ct-demo` bypasses manifold fitting entirely and renders layered isosurfaces from PyVista's built-in biomedical volumes, either interactively or as a display-ready turntable.
-
-**Project infrastructure.** GitHub Actions CI now runs lint, type-check, and tests on every push and pull request, and tagged releases build and publish automatically. Type checking moved from mypy to `ty` and pylint was dropped in favour of ruff alone, matching the pycode_kg and doc_kg repos. `pyproject.toml` migrated to PEP 621. Building the CI surfaced a latent defect: `graph_reasoner` imported `TurtleND` from `proteusPy`, an optional extra, so its test module could not be collected in a lean install.
+**The private `agent-kg` dependency is gone.** The optional `kgdeps` group pointed at a private git repository, so any resolution touching it — including a plain `poetry lock` — failed for anyone without access. Nothing in `waverider` imports `agent_kg`.
 
 ## Upgrading
 
-Rendering needs the viz extras — `poetry install --with viz` — plus ffmpeg for video, which `imageio-ffmpeg` now supplies. Casting to a display additionally needs Looking Glass Bridge 2.2 or newer running on the machine the panel is plugged into.
-
-If you imported `waverider.looking_glass`, it is now `waverider.lfd`. The rename pairs it with `waverider.hld` so each module names the display technology it targets rather than the vendor, since HLDs are Looking Glass products too. There is no compatibility shim, because that module had not appeared in a tagged release.
-
-Before your first quilt, ask the panel what it wants rather than trusting the preset table — the procedure is in `docs/waverider/lfd.md`. Two new knobs are worth knowing: `--quilt-zoom` controls framing (1.6 by default) and `--quilt-scalar-bar` restores the colour bar if you need the values more than the depth.
-
-Nothing changes for existing manifold or classifier code.
+Nothing to do. If you previously installed with `--with kgdeps`, that group no longer exists — drop the flag; plain `poetry install` was never affected by it. Readers who miss the detail that left the README will find it in `docs/RESULTS.md` and `docs/INDEX.md`.
 
 ---
 

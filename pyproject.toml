@@ -1,7 +1,7 @@
 # pyproject.toml — waverider package configuration
 #
 # Author: Eric G. Suchanek, PhD
-# Last Revision: 2026-08-02
+# Last Revision: 2026-08-04
 #
 # Quick install (poetry)
 # ----------------------
@@ -39,7 +39,7 @@ packages = [{include = "waverider", from = "src"}]
 # ---------------------------------------------------------------------------
 [project]
 name = "waverider"
-version = "0.10.0"
+version = "0.10.1"
 description = "Manifold-aware geometric ML stack: TurtleND, ManifoldWalker, ManifoldModel, ManifoldObserver"
 readme = "README.md"
 license = "Elastic-2.0"
