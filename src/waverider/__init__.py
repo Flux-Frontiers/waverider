@@ -15,27 +15,35 @@
 # License: Elastic 2.0
 # "The only way I know to predict the future is to write it." — EGS
 
-from .backbone_angles import BackboneAngleList, BackboneResidue, quantize_angle
-from .backbone_embedder import BackboneEmbedder
-from .backbone_manifold import BackboneManifoldResult, fit_backbone_manifold
-from .geodesic_coords import GeodesicEncoder
-from .hld import (
+# Holographic output lives in quiltwright, which was extracted from this
+# package at 0.13.0.  Re-exported below so existing `from waverider import
+# render_quilt` code keeps working; new code should import from quiltwright.
+from quiltwright import (
     HLD_RESOLUTION,
     HLD_SAFE_MARGINS,
-    render_hld_video,
-    style_plotter_for_hld,
-)
-from .lfd import (
     QUILT_PRESETS,
+    PovCamera,
     QuiltSpec,
+    assemble_quilt,
     cast_quilt,
+    focal_distance_for_range,
     pause_quilt,
+    render_hld_video,
+    render_pov_quilt,
     render_quilt,
     render_quilt_video,
     resume_quilt,
     save_quilt,
     stop_quilt,
+    style_plotter_for_hld,
+    view_disparity,
+    view_offsets,
 )
+
+from .backbone_angles import BackboneAngleList, BackboneResidue, quantize_angle
+from .backbone_embedder import BackboneEmbedder
+from .backbone_manifold import BackboneManifoldResult, fit_backbone_manifold
+from .geodesic_coords import GeodesicEncoder
 from .manifold_model import ManifoldModel
 from .manifold_observer import ManifoldObserver
 from .manifold_walker import ManifoldWalker
@@ -55,7 +63,7 @@ from .voxel_viz import (
     voxelize,
 )
 
-__version__ = "0.12.0"
+__version__ = "0.13.0"
 __all__ = [
     # Protein backbone
     "BackboneResidue",
@@ -87,11 +95,18 @@ __all__ = [
     "render_quilt",
     "render_quilt_video",
     "render_quilt_single",
+    "assemble_quilt",
+    "view_offsets",
+    "view_disparity",
+    "focal_distance_for_range",
     "save_quilt",
     "cast_quilt",
     "pause_quilt",
     "resume_quilt",
     "stop_quilt",
+    # POV-Ray holographic output
+    "PovCamera",
+    "render_pov_quilt",
     # Hololuminescent Display (HLD) output
     "HLD_RESOLUTION",
     "HLD_SAFE_MARGINS",
