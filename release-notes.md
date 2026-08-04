@@ -1,18 +1,16 @@
-# Release Notes — v0.11.0
+# Release Notes — v0.12.0
 
 > Released: 2026-08-04
 
-CT/MRI demo mode can now render straight to a Looking Glass light-field display, closing a gap where that path only reached the Hololuminescent line. The README's Looking Glass section also gained links to the vendor and an explicit non-affiliation disclaimer.
+The Looking Glass Bridge integration now covers a full playback lifecycle, not just casting: pause, resume, and stop are real functions with real Bridge endpoints behind them, discovered the hard way after two plausible-sounding endpoint names turned out not to exist.
 
 ## What changed
 
-**CT/MRI demo mode reaches light-field displays.** `--ct-demo` previously only reached the Hololuminescent (HLD) line via `--hld`; the light-field (LFD) quilt path was manifold-mode-only. A new `render_ct_quilt()` mirrors `render_quilt_single()` for the CT isosurface scene, and `--ct-demo --quilt <device>` now renders a still or, with `--quilt-video`, a turntable MP4 — reusing the same `--quilt-grid`, `--quilt-zoom`, `--cast`, and video-timing flags manifold mode already had. `--hld` and `--quilt` remain mutually exclusive, and that guard now covers CT demo mode too.
-
-**Looking Glass attribution.** The README's holographic-display sections now link to Looking Glass Factory's site and documentation (the quilt spec, Bridge, and HLD spec) and close with a disclaimer: WaveRider's author is a customer and user of the hardware, not affiliated with, sponsored by, or endorsed by Looking Glass Factory.
+**Quilt playback controls.** `waverider.lfd` gains `pause_quilt()`, `resume_quilt()`, and `stop_quilt()` alongside the existing `cast_quilt()`, all exported from the top-level `waverider` package. Bridge has no `stop_playlist` or `pause_playlist` endpoint — calling one silently returns `200 OK` with an empty body instead of erroring, which looks identical to a slow success until you notice the response has no `status` field. The real control group is Bridge's *transport control* API (`transport_control_play`/`_pause`, plus `delete_playlist` to remove a playlist outright), confirmed against the official [bridge.js](https://github.com/Looking-Glass/bridge.js) SDK source rather than guessed from naming conventions. All three functions were verified live against a physical Looking Glass. `docs/waverider/lfd.md` gained a "Control playback" section documenting the full endpoint reference and the trap itself, so the next person doesn't have to reverse-engineer it again.
 
 ## Upgrading
 
-Nothing to do — this is additive. Existing `--hld` usage and manifold-mode `--quilt` usage are unchanged.
+Nothing to do — this is additive. Existing `cast_quilt()` / `--cast` usage is unchanged.
 
 ---
 

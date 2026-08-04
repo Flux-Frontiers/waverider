@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.12.0] - 2026-08-04
+
+### Added
+
 - **`pause_quilt()` / `resume_quilt()` / `stop_quilt()`** in `waverider.lfd`
   (exported from `waverider`) — Bridge transport controls to complement
   `cast_quilt()`. Bridge has no `stop_playlist`/`pause_playlist` endpoint;
@@ -16,12 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   real endpoints (`transport_control_play`/`_pause`, `delete_playlist`)
   are confirmed against the [bridge.js](https://github.com/Looking-Glass/bridge.js)
   SDK source and documented in `docs/waverider/lfd.md` ("Control playback").
-
-### Changed
-
-### Removed
-
-### Fixed
 
 ## [0.11.0] - 2026-08-04
 

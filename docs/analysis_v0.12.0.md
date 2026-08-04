@@ -1,16 +1,16 @@
 > **Analysis Report Metadata**  
-> - **Generated:** 2026-08-04T15:33:55Z  
+> - **Generated:** 2026-08-04T18:01:54Z  
 > - **Version:** pycode-kg 0.19.2  
-> - **Commit:** 2de0d32 (main)  
+> - **Commit:** 16ab94e (main)  
 > - **Platform:** macOS 27.0 | arm64 (arm) | turing | Python 3.12.13  
-> - **Graph:** 16275 nodes · 16338 edges (798 meaningful)  
+> - **Graph:** 16302 nodes · 16365 edges (802 meaningful)  
 > - **Included directories:** benchmarks, src  
 > - **Excluded directories:** none  
-> - **Elapsed time:** 8s  
+> - **Elapsed time:** 9s  
 
 # waverider Analysis
 
-**Generated:** 2026-08-04 15:33:55 UTC
+**Generated:** 2026-08-04 18:01:54 UTC
 
 ---
 
@@ -28,10 +28,10 @@ This report provides a comprehensive architectural analysis of the **waverider**
 
 | Metric | Value |
 |--------|-------|
-| **Total Nodes** | 16275 |
-| **Total Edges** | 16338 |
+| **Total Nodes** | 16302 |
+| **Total Edges** | 16365 |
 | **Modules** | 55 (of 55 total) |
-| **Functions** | 375 |
+| **Functions** | 379 |
 | **Classes** | 48 |
 | **Methods** | 320 |
 
@@ -39,10 +39,10 @@ This report provides a comprehensive architectural analysis of the **waverider**
 
 | Relationship Type | Count |
 |-------------------|-------|
-| CALLS | 6215 |
-| CONTAINS | 743 |
-| IMPORTS | 597 |
-| ATTR_ACCESS | 5618 |
+| CALLS | 6226 |
+| CONTAINS | 747 |
+| IMPORTS | 600 |
+| ATTR_ACCESS | 5619 |
 | INHERITS | 19 |
 
 ---
@@ -156,11 +156,11 @@ value only when a docstring is present.
 
 | Kind | Documented | Total | Coverage |
 |------|-----------|-------|----------|
-| `function` | 233 | 375 | [WARN] 62.1% |
+| `function` | 237 | 379 | [WARN] 62.5% |
 | `method` | 230 | 320 | [WARN] 71.9% |
 | `class` | 45 | 48 | [OK] 93.8% |
 | `module` | 54 | 55 | [OK] 98.2% |
-| **total** | **562** | **798** | **[WARN] 70.4%** |
+| **total** | **566** | **802** | **[WARN] 70.6%** |
 
 > **Recommendation:** 236 nodes lack docstrings. Prioritize documenting high-fan-in functions and public API surface first — these have the highest impact on query accuracy.
 
@@ -172,21 +172,21 @@ Weighted PageRank aggregated by module — reveals architectural spine. Cross-mo
 
 | Rank | Score | Members | Module |
 |------|-------|---------|--------|
-| 1 | 0.152628 | 27 | `src/waverider/vector3D.py` |
-| 2 | 0.101946 | 59 | `src/waverider/graph_reasoner.py` |
-| 3 | 0.071880 | 34 | `src/waverider/backbone_angles.py` |
-| 4 | 0.062512 | 39 | `src/waverider/manifold_model.py` |
-| 5 | 0.045885 | 35 | `src/waverider/voxel_viz.py` |
-| 6 | 0.036764 | 32 | `src/waverider/turtleND.py` |
-| 7 | 0.035140 | 25 | `benchmarks/canonical_tests/manifold_voxel_viz.py` |
-| 8 | 0.031392 | 19 | `src/waverider/universal_embedder.py` |
-| 9 | 0.030086 | 36 | `benchmarks/canonical_tests/iris_adam_vs_manifold.py` |
-| 10 | 0.028201 | 12 | `src/waverider/backbone_embedder.py` |
-| 11 | 0.024466 | 31 | `src/waverider/turtle3D.py` |
-| 12 | 0.024212 | 24 | `src/model_builder.py` |
-| 13 | 0.023693 | 28 | `benchmarks/canonical_tests/iris_manifold_adam_walker.py` |
-| 14 | 0.023644 | 26 | `src/waverider/manifold_observer.py` |
-| 15 | 0.021130 | 10 | `src/waverider/geodesic_coords.py` |
+| 1 | 0.151847 | 27 | `src/waverider/vector3D.py` |
+| 2 | 0.101425 | 59 | `src/waverider/graph_reasoner.py` |
+| 3 | 0.071504 | 34 | `src/waverider/backbone_angles.py` |
+| 4 | 0.062189 | 39 | `src/waverider/manifold_model.py` |
+| 5 | 0.045633 | 35 | `src/waverider/voxel_viz.py` |
+| 6 | 0.036574 | 32 | `src/waverider/turtleND.py` |
+| 7 | 0.034946 | 25 | `benchmarks/canonical_tests/manifold_voxel_viz.py` |
+| 8 | 0.031227 | 19 | `src/waverider/universal_embedder.py` |
+| 9 | 0.029933 | 36 | `benchmarks/canonical_tests/iris_adam_vs_manifold.py` |
+| 10 | 0.028052 | 12 | `src/waverider/backbone_embedder.py` |
+| 11 | 0.024341 | 31 | `src/waverider/turtle3D.py` |
+| 12 | 0.024276 | 24 | `src/waverider/lfd.py` |
+| 13 | 0.024089 | 24 | `src/model_builder.py` |
+| 14 | 0.023572 | 28 | `benchmarks/canonical_tests/iris_manifold_adam_walker.py` |
+| 15 | 0.023520 | 26 | `src/waverider/manifold_observer.py` |
 
 
 
@@ -194,7 +194,7 @@ Weighted PageRank aggregated by module — reveals architectural spine. Cross-mo
 
 ## Code Quality Issues
 
-- [WARN] Moderate docstring coverage (70.4%) — semantic retrieval quality is degraded for undocumented nodes; BM25 is as effective as embeddings without docstrings
+- [WARN] Moderate docstring coverage (70.6%) — semantic retrieval quality is degraded for undocumented nodes; BM25 is as effective as embeddings without docstrings
 - [WARN] 1 orphaned functions found (`main`) -- consider archiving or documenting
 - [WARN] `graph_reasoner.py` has 58 functions/methods/classes -- consider splitting into focused submodules
 - [WARN] `manifold_model.py` has 38 functions/methods/classes -- consider splitting into focused submodules
@@ -281,26 +281,26 @@ Weighted PageRank over CALLS + IMPORTS + INHERITS edges (test paths excluded). S
 
 | Rank | Score | Kind | Name | Module |
 |------|-------|------|------|--------|
-| 1 | 0.000376 | class | `Vector3D` | src/waverider/vector3D.py |
+| 1 | 0.000375 | class | `Vector3D` | src/waverider/vector3D.py |
 | 2 | 0.000210 | function | `_load_ucimlrepo` | benchmarks/canonical_tests/clinical/disease_manifold_architecture.py |
-| 3 | 0.000209 | method | `TurtleND._rotate` | src/waverider/turtleND.py |
+| 3 | 0.000208 | method | `TurtleND._rotate` | src/waverider/turtleND.py |
 | 4 | 0.000202 | function | `quantize_angle` | src/waverider/backbone_angles.py |
-| 5 | 0.000174 | method | `Turtle3D.unit` | src/waverider/turtle3D.py |
-| 6 | 0.000172 | function | `_compile` | benchmarks/canonical_tests/mnist_manifold_architecture.py |
-| 7 | 0.000143 | class | `BackboneAngleList` | src/waverider/backbone_angles.py |
-| 8 | 0.000142 | method | `KnowledgeGraph.node_ids` | src/waverider/graph_reasoner.py |
-| 9 | 0.000141 | function | `_require_viz` | src/waverider/voxel_viz.py |
-| 10 | 0.000133 | function | `_compile` | benchmarks/canonical_tests/backbone_mlp_benchmark.py |
-| 11 | 0.000131 | function | `_prep` | benchmarks/canonical_tests/clinical/kan_clinical.py |
-| 12 | 0.000130 | method | `ManifoldObserver._compute_curvature` | src/waverider/manifold_observer.py |
-| 13 | 0.000127 | class | `ReasoningPath` | src/waverider/graph_reasoner.py |
-| 14 | 0.000121 | function | `_hr` | benchmarks/canonical_tests/protein_backbone_manifold.py |
-| 15 | 0.000119 | function | `_uci` | benchmarks/canonical_tests/clinical/kan_clinical.py |
-| 16 | 0.000116 | method | `ManifoldAdamOptimizer._set_flat_weights` | benchmarks/canonical_tests/iris_adam_vs_manifold.py |
-| 17 | 0.000115 | function | `_scale` | benchmarks/canonical_tests/clinical/gen_voxel_viz.py |
-| 18 | 0.000111 | method | `StandaloneManifoldAdam._set_flat_weights` | benchmarks/canonical_tests/iris_manifold_adam_walker.py |
-| 19 | 0.000109 | function | `build_manifold_resnet` | src/model_builder.py |
-| 20 | 0.000109 | method | `ManifoldModel.n_nodes` | src/waverider/manifold_model.py |
+| 5 | 0.000191 | function | `_bridge_post` | src/waverider/lfd.py |
+| 6 | 0.000174 | method | `Turtle3D.unit` | src/waverider/turtle3D.py |
+| 7 | 0.000171 | function | `_compile` | benchmarks/canonical_tests/mnist_manifold_architecture.py |
+| 8 | 0.000143 | class | `BackboneAngleList` | src/waverider/backbone_angles.py |
+| 9 | 0.000143 | function | `_enter_orchestration` | src/waverider/lfd.py |
+| 10 | 0.000142 | method | `KnowledgeGraph.node_ids` | src/waverider/graph_reasoner.py |
+| 11 | 0.000141 | function | `_require_viz` | src/waverider/voxel_viz.py |
+| 12 | 0.000133 | function | `_compile` | benchmarks/canonical_tests/backbone_mlp_benchmark.py |
+| 13 | 0.000130 | function | `_prep` | benchmarks/canonical_tests/clinical/kan_clinical.py |
+| 14 | 0.000129 | method | `ManifoldObserver._compute_curvature` | src/waverider/manifold_observer.py |
+| 15 | 0.000126 | class | `ReasoningPath` | src/waverider/graph_reasoner.py |
+| 16 | 0.000120 | function | `_hr` | benchmarks/canonical_tests/protein_backbone_manifold.py |
+| 17 | 0.000119 | function | `_uci` | benchmarks/canonical_tests/clinical/kan_clinical.py |
+| 18 | 0.000116 | method | `ManifoldAdamOptimizer._set_flat_weights` | benchmarks/canonical_tests/iris_adam_vs_manifold.py |
+| 19 | 0.000115 | function | `_scale` | benchmarks/canonical_tests/clinical/gen_voxel_viz.py |
+| 20 | 0.000110 | method | `StandaloneManifoldAdam._set_flat_weights` | benchmarks/canonical_tests/iris_manifold_adam_walker.py |
 
 ---
 
@@ -352,4 +352,4 @@ Top structurally-dominant nodes per architectural concern (0.60 × semantic + 0.
 
 ---
 
-*Report generated by PyCodeKG Thorough Analysis Tool — analysis completed in 9.0s*
+*Report generated by PyCodeKG Thorough Analysis Tool — analysis completed in 9.4s*
