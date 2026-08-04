@@ -9,7 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **README "Breaking News" section** covering the v0.10.0 holographic output
+  paths — `waverider.lfd` (Looking Glass light-field quilts: off-axis
+  asymmetric-frustum sweep, 9 device presets, stills/MP4, live Bridge casting)
+  and `waverider.hld` (Hololuminescent Display 4K turntable masters) — plus the
+  `--ct-demo` CT/MRI mode. `lfd` and `hld` were also missing from the Algorithms
+  table and are now listed there.
+
 ### Changed
+
+- **README reorganised.** The Voxel Visualizer deep-dive ran before Quick Start
+  and Installation, so a first-time reader met a feature reference before any
+  install instructions; it now follows Usage, keeping the get-running path
+  contiguous.
+- **README documents why `d` differs between results tables.** Each benchmark
+  run reports both a per-class maximum (`intrinsic_dim`) and a global mean
+  (`global_dim`) at τ=0.90, and the tables cite different runs — CIFAR-10 is
+  34/29 in `cifar10_architecture_results.json` but 19/16 in
+  `resnet_manifold_architecture_results.json`. Previously the same dataset
+  appeared with several different dimensions and no explanation.
 
 ### Removed
 
@@ -21,6 +39,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Four permanently-broken README links.** The CIFAR-10 and CIFAR-100 result
+  rows linked to `cifar10_report.pdf` / `cifar100_report.pdf`, but
+  `benchmarks/canonical_tests/*.pdf` is gitignored (`.gitignore:21`), so those
+  files were never tracked and the links could not resolve on github.com. They
+  now point at the tracked `cifar10_analysis.md` / `cifar100_analysis.md`.
+- **README intrinsic-dimension and noise figures corrected against the committed
+  JSONs.** The opening paragraph claimed CIFAR-10 occupies a 33-dimensional
+  manifold, a figure no committed result supports (34 per-class max / 29 global
+  mean); the parameter-efficiency table paired an intrinsic d of 34 with a noise
+  figure of 99.1% derived from the *global* dimension of 29 (98.9% at d=34), and
+  rounded Tiny ImageNet's 99.84% up to 99.9%.
+- **README dimension-probe claim corrected to match the paper.** The section
+  stated the w\*-neuron bottleneck decomposes into "d\* geometry dimensions and
+  C−1 class-separation dimensions". Per Table 8 of `waverider_jmlr.pdf`, the
+  geometry and class components *sum* to d\*: k₉₀ = 7 and n_extra = 9, with
+  7 + 9 = 16 = d\* and 9 = C − 1. The worked example directly below the claim
+  already gave 7, contradicting it.
 - **Rendering-capability probe no longer crashes collection on headless
   machines.** `tests/test_hld.py` and `tests/test_lfd.py` each ran an identical
   `_can_render()` probe at module import time, wrapped in `try/except
