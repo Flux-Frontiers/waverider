@@ -40,12 +40,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ManifoldAdamWalker`, now explicitly distinguished), the three `backbone_*`
   modules, and `KnowledgeGraph`. Split into Core geometry / Dimensionality and
   embedding / Domain applications / Rendering.
-- **README notes that the CIFAR-100 standard baseline diverged.** The 5.21%
-  figure comes from a 30-epoch run in which all three trials diverged (test
-  losses 23,371 / 30,574 / 46,555). The same architecture reaches 21.31% over
-  100 epochs in `cifar100_architecture_results.json`, against which the manifold
-  advantage is ~1.8× rather than 7×. Both comparisons are stated, with why the
-  row cites the run it does.
+- **CIFAR-100 parameter-efficiency row now cites the converged baseline.** It
+  quoted 5.21% at 3.7M params, the `Standard (1024→512)` arm of the 30-epoch
+  `cifar100_resnet_manifold_architecture_results.json` — a run in which all
+  three trials diverged (test losses 23,371 / 30,574 / 46,555, against ~2.5 for
+  the manifold arms). That made the comparison same-run, but measured the
+  manifold against a network that failed to train. The row now cites the
+  converged **21.31%** (loss 3.8, 100 epochs) from
+  `cifar100_architecture_results.json`, so the accuracy ratio is **1.8×** rather
+  than 7×; the 5.8× parameter reduction is unchanged. The accompanying note is
+  rewritten as a plain caveat: it states that the baseline and manifold figures
+  come from different runs, records the divergence as a finding in its own right
+  (the 3.7M-parameter dense net is unstable at the 30-epoch setting), and no
+  longer frames the diverged number as the point being made.
 - **README documents why `d` differs between results tables.** Each benchmark
   run reports both a per-class maximum (`intrinsic_dim`) and a global mean
   (`global_dim`) at τ=0.90, and the tables cite different runs — CIFAR-10 is

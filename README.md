@@ -80,7 +80,7 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 | Dataset | Ambient Dim | Intrinsic d | Noise | Standard baseline | Manifold result | Param reduction |
 |---------|-------------|-------------|-------|-------------------|-----------------|-----------------|
 | [**Tiny ImageNet**](benchmarks/canonical_tests/tiny_imagenet_report.md) | 12,288 | 20 | 99.8% | 2.66% @ 13.2M params | **3.36% @ 80,400 params** | **164×** |
-| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 3,072 | 19 | 99.4% | 5.21% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 7× better acc |
+| [**CIFAR-100**](benchmarks/canonical_tests/cifar100_report.md) | 3,072 | 19 | 99.4% | 21.31% @ 3.7M params | **38.3% @ 644K params** | 5.8× + 1.8× better acc |
 | [**CIFAR-10**](benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 34 | 98.9% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
 | [**MNIST**](benchmarks/canonical_tests/mnist_report.md) | 784 | 27 | 96.6% | 97.42% @ 109,386 params | 95.11% @ 1,036 params | **105×** at −2.3 pp |
 
@@ -96,19 +96,19 @@ Measure the intrinsic dimensionality d\*. Count the classes C. That's your optim
 > run, which is what w\* is derived from. Every figure is traceable to the JSON
 > committed beside its script — the numbers are not interchangeable across rows.
 
-> **The CIFAR-100 standard baseline diverged.** The 5.21% figure is the
-> `Standard (1024→512)` arm of
+> **Caveat: the CIFAR-100 baseline and manifold figures come from different
+> runs.** The 21.31% baseline is the `Standard (1024→512)` arm of
+> [`cifar100_architecture_results.json`](benchmarks/canonical_tests/cifar100_architecture_results.json)
+> (100 epochs, 3 trials, test loss 3.8); the 38.3% manifold result is
+> `ManifoldResNet-UB` from
 > [`cifar100_resnet_manifold_architecture_results.json`](benchmarks/canonical_tests/cifar100_resnet_manifold_architecture_results.json)
-> (30 epochs, 3 trials), and all three trials diverged — test losses of 23,371 /
-> 30,574 / 46,555 against a converged manifold arm's ~2.5. The 3.7M-parameter
-> dense net does not train at this setting, which is the point being made, but
-> it is a *failure-to-converge* baseline, not a converged one: the same
-> architecture reaches **21.31%** (loss 3.8) over 100 epochs in
-> [`cifar100_architecture_results.json`](benchmarks/canonical_tests/cifar100_architecture_results.json).
-> The "7× better accuracy" in the row above is computed against the diverged
-> 5.21%; against the converged run the manifold advantage is ~1.8×. Both
-> comparisons are defensible — they answer different questions — so the row
-> cites the run whose configuration the manifold arms share.
+> (30 epochs). The same-configuration baseline inside that second run reaches
+> only 5.21%, because all three of its trials diverged — test losses of 23,371 /
+> 30,574 / 46,555, against ~2.5 for the manifold arms. Quoting 5.21% would
+> make the comparison same-run but would measure the manifold against a network
+> that failed to train, so the row cites the converged 21.31% instead and the
+> accuracy ratio is 1.8×, not 7×. The divergence is itself worth knowing: the
+> 3.7M-parameter dense net is unstable at the 30-epoch setting.
 
 ---
 
