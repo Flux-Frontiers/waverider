@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Removed
+
+### Fixed
+
+## [0.13.0] - 2026-08-09
+
+### Changed
+
 - **Holographic output moved to [quiltwright](https://github.com/suchanek/quiltwright).**
   `waverider.lfd`, `waverider.hld` and `waverider.povray` are now the
   `quiltwright` package, a new BSD-3 dependency. The code never imported
@@ -26,6 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `waverider.voxel_viz` and its CLI are unchanged.
 
   Git history for the moved files is preserved in the quiltwright repository.
+
+- **`kg` extra floors raised to the versions already in use.**
+  `doc-kg>=0.15.3` → `>=0.21.1` and `pycode-kg>=0.19.2` → `>=0.21.4`. The lock
+  file already resolved both to these versions; the declared minimums had drifted
+  several minor releases behind, so a downstream consumer could have resolved the
+  extra against a much older KG. No resolved version changed.
 
 ### Removed
 
@@ -44,6 +58,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `transport_control_pause` + `show_window(false)` only, both independently
   verified safe. Confirmed against a live device: Bridge stayed responsive
   and the display went blank.
+
+### Security
+
+- **Known-vulnerable transitive and direct dependencies bumped in
+  `poetry.lock`.** OSV.dev flagged pinned versions of `aiohttp`, `bleach`,
+  `cryptography`, `gitpython`, `jupyter-server`, `mcp`, `mistune`, `msgpack`,
+  `onnx`, `pillow`, `pydantic-settings`, `python-multipart`, `setuptools`,
+  `soupsieve`, `starlette`, `torch` and `tornado`. Resolved via
+  `poetry update --lock`; no `pyproject.toml` version bounds needed changing,
+  so this is lock-only and does not affect downstream resolution. Re-verified
+  clean against OSV.dev.
 
 ## [0.12.0] - 2026-08-04
 

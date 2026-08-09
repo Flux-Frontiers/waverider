@@ -94,8 +94,9 @@ jobs:
           key: test-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
 
       # The viz group (pyvista/VTK) and the kg extras are deliberately omitted.
-      # Tests that need a render window or ffmpeg skip themselves; the quilt
-      # geometry, view-offset, and encode-spec tests all still run headless.
+      # Tests that need a render window skip themselves.  The quilt geometry
+      # tests this comment used to point at moved to quiltwright at 0.13.0 and
+      # are covered by that repo's CI.
       - name: Install dependencies
         run: poetry install --only main,dev --no-interaction
 
