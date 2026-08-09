@@ -2,7 +2,7 @@
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
 [![Version](https://img.shields.io/badge/version-0.13.0-blue.svg)](https://github.com/Flux-Frontiers/waverider/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20383651.svg)](https://doi.org/10.5281/zenodo.20383651)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20383650.svg)](https://doi.org/10.5281/zenodo.20383650)
 
 
 # WaveRider
@@ -236,9 +236,9 @@ all results tables and provenance notes: **[docs/RESULTS.md](docs/RESULTS.md)**.
 
 If you use WaveRider in your research or project, please cite it. Citation metadata is also provided machine-readably in [CITATION.cff](CITATION.cff).
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20383651.svg)](https://doi.org/10.5281/zenodo.20383651)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20383650.svg)](https://doi.org/10.5281/zenodo.20383650)
 
-> Suchanek, E. G. (2026). *WaveRider: Manifold-Aware Geometric Machine Learning* (Version 0.13.0) [Software]. Flux-Frontiers. https://doi.org/10.5281/zenodo.20383651
+> Suchanek, E. G. (2026). *WaveRider: Manifold-Aware Geometric Machine Learning* (Version 0.13.0) [Software]. Flux-Frontiers. https://doi.org/10.5281/zenodo.20383650
 
 ```bibtex
 @software{suchanek_waverider,
@@ -248,7 +248,7 @@ If you use WaveRider in your research or project, please cite it. Citation metad
   year      = {2026},
   publisher = {Flux-Frontiers},
   url       = {https://github.com/Flux-Frontiers/waverider},
-  doi       = {10.5281/zenodo.20383651}
+  doi       = {10.5281/zenodo.20383650}
 }
 ```
 
