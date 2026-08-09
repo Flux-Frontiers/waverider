@@ -66,6 +66,8 @@ papers/clinical_manifolds/kan_*/sp_*.png
 .pycodekg/graph.sqlite
 .pycodekg/graph.sqlite*
 .pycodekg/models
+.pycodekg/vectors.sqlite
+
 
 # DocKG — entire directory is generated/local
 .dockg/
