@@ -156,7 +156,7 @@ CLI usage — TVB brain demo
 --------------------------
 Real brain geometry from `The Virtual Brain <https://www.thevirtualbrain.org/>`_.
 The ~337 MB ``tvb-data`` archive is downloaded from Zenodo on first use and
-cached; see :mod:`waverider.tvb_data`.
+cached; see :mod:`quiltwright.tvb_data`.
 ::
 
     # Interactive viewer — cortex coloured by 76-region parcellation
@@ -1616,7 +1616,7 @@ def _compose_tvb_scene(
     :param quiet: Suppress download progress output.
     :return: Scene bounds, for shadow placement.
     """
-    from waverider.tvb_data import connectome_polydata, surface_polydata
+    from quiltwright.tvb_data import connectome_polydata, surface_polydata
 
     kind = preset["kind"]
     n_smooth = smooth_iters if smooth_iters is not None else preset.get("smooth_iters", 0)
@@ -1725,7 +1725,7 @@ def render_tvb_hld(
 ) -> Path:
     """Render a TVB brain dataset as a Hololuminescent Display video.
 
-    Downloads ``tvb-data`` on first use (see :mod:`waverider.tvb_data`),
+    Downloads ``tvb-data`` on first use (see :mod:`quiltwright.tvb_data`),
     composes the preset's scene, and renders a slow turntable orbit to the
     official HLD master spec (3840×2160 HEVC bt709).
 
@@ -2233,7 +2233,7 @@ def main() -> None:
     args = parse_args()
 
     if args.tvb_clear_cache:
-        from waverider.tvb_data import clear_cache
+        from quiltwright.tvb_data import clear_cache
 
         clear_cache()
         return
@@ -2245,7 +2245,7 @@ def main() -> None:
 
     # ---- TVB brain demo (short-circuit — no ManifoldModel) ---------------
     if args.tvb_demo:
-        from waverider.tvb_data import TVB_DATA_DOI
+        from quiltwright.tvb_data import TVB_DATA_DOI
 
         preset = TVB_PRESETS[args.tvb_dataset]
         print("=" * 60)

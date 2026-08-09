@@ -9,24 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **TVB brain datasets — real brain geometry on holographic hardware.**
-  New `waverider.tvb_data` module downloads and parses demonstration data
-  from [The Virtual Brain](https://www.thevirtualbrain.org/), and a new
-  `--tvb-demo` mode in `waverider-voxel-viz` renders it to LFD quilts and
-  HLD video through the same quiltwright back end as the CT/MRI presets.
-
-  `tvb-root` ships no data of its own; the datasets live in `tvb-data`, a
-  337 MB archive on Zenodo ([doi:10.5281/zenodo.10128131][tvb-doi], GPL-3.0).
-  It is fetched on first use, MD5-verified, and cached in the platform's
-  native per-user cache directory (`~/Library/Caches/waverider/tvb` on
-  macOS, `$XDG_CACHE_HOME/waverider/tvb` on Linux,
-  `%LOCALAPPDATA%\waverider\Cache\tvb` on Windows), overridable with
-  `$WAVERIDER_TVB_CACHE`. It is never vendored, keeping the GPL data out of
-  this Elastic-2.0 source tree, the same way `pyvista.examples` handles its
-  downloads. Individual files are read straight from the zip.
+- **TVB brain scenes — real brain geometry on holographic hardware.**
+  A new `--tvb-demo` mode in `waverider-voxel-viz` renders cortical surfaces
+  and structural connectomes from
+  [The Virtual Brain](https://www.thevirtualbrain.org/) to LFD quilts and HLD
+  video, alongside the existing `--ct-demo` biomedical presets.
 
   Eight scene presets: `cortex`, `cortex_80k`, `cortex_hires`, `connectome`,
-  `connectome_998`, `head_layers`, `macaque`, `macaque_connectome`.
+  `connectome_998`, `head_layers`, `macaque`, `macaque_connectome`, with
+  `--tvb-percentile`, `--tvb-decimate`, `--tvb-smooth` and
+  `--tvb-clear-cache`. The shared `--hld` / `--quilt` / `--still` / `--cast`
+  flags behave exactly as they do for `--ct-demo`.
 
   ```bash
   waverider-voxel-viz --tvb-demo                                     # interactive
@@ -35,15 +28,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       --quilt portrait --out connectome --cast
   ```
 
-  Loader API: `load_surface`, `load_connectivity`, `load_region_mapping`,
-  `load_sensors`, plus `surface_polydata` / `connectome_polydata` for
-  PyVista meshes. Covers 11 surfaces, 8 connectomes, 4 parcellations and 9
-  sensor sets. Full reference in
+  The datasets themselves are loaded by **`quiltwright.tvb_data`**, new in
+  quiltwright 0.3.0 — brain geometry is a scene source, like POV-Ray scenes
+  and PyVista's example datasets, not manifold science, and quiltwright
+  already downloads real subjects to put on a display. The ~337 MB
+  `tvb-data` archive ([doi:10.5281/zenodo.10128131][tvb-doi], GPL-3.0) is
+  fetched on demand and cached there; nothing is vendored into either
+  package. Renderers exported here are `render_tvb_viewer`,
+  `render_tvb_quilt`, `render_tvb_hld` and `render_tvb_still`, plus
+  `TVB_PRESETS`. Full reference in
   [docs/waverider/tvb_data.md](docs/waverider/tvb_data.md).
 
   [tvb-doi]: https://doi.org/10.5281/zenodo.10128131
 
 ### Changed
+
+- **Minimum `quiltwright` is now 0.3.0**, which introduces
+  `quiltwright.tvb_data`.
 
 ### Removed
 

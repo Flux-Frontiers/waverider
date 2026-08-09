@@ -48,17 +48,6 @@ from .manifold_model import ManifoldModel
 from .manifold_observer import ManifoldObserver
 from .manifold_walker import ManifoldWalker
 from .turtleND import TurtleND
-from .tvb_data import (
-    CONNECTIVITIES,
-    REGION_MAPPINGS,
-    SURFACES,
-    Connectome,
-    connectome_polydata,
-    load_connectivity,
-    load_region_mapping,
-    load_surface,
-    surface_polydata,
-)
 from .universal_embedder import UniversalEmbedder
 from .voxel_viz import (
     CMAP_MAP,
@@ -129,16 +118,8 @@ __all__ = [
     "render_hld_video",
     "render_hld_single",
     "style_plotter_for_hld",
-    # The Virtual Brain datasets
-    "SURFACES",
-    "CONNECTIVITIES",
-    "REGION_MAPPINGS",
-    "Connectome",
-    "load_surface",
-    "load_connectivity",
-    "load_region_mapping",
-    "surface_polydata",
-    "connectome_polydata",
+    # The Virtual Brain scenes.  The loaders themselves live in
+    # quiltwright.tvb_data; only the scene presets and renderers are here.
     "TVB_PRESETS",
     "render_tvb_viewer",
     "render_tvb_quilt",
