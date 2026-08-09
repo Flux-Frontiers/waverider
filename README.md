@@ -31,11 +31,15 @@ for the display you own:
   **[docs/waverider/hld.md](docs/waverider/hld.md)**
 - **CT / MRI demo mode** — real biomedical volumes, no model fitting
   → **[docs/waverider/voxel_viz.md](docs/waverider/voxel_viz.md)**
+- **TVB brain mode** — cortical surfaces and structural connectomes from
+  [The Virtual Brain](https://www.thevirtualbrain.org/), downloaded on demand
+  → **[docs/waverider/tvb_data.md](docs/waverider/tvb_data.md)**
 
 ```bash
 waverider-voxel-viz --dataset iris --quilt portrait --out iris --cast   # light-field, live cast
 waverider-voxel-viz --dataset iris --hld --out iris                     # HLD video
 waverider-voxel-viz --ct-demo --ct-dataset brain --hld --out brain_hld  # MRI brain → HLD
+waverider-voxel-viz --tvb-demo --tvb-dataset connectome --quilt portrait # connectome → quilt
 ```
 
 Needs the viz extras (`poetry install --with viz`); `--quilt` and `--hld` are

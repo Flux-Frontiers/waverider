@@ -23,6 +23,7 @@
 | [WaveRider Stack Summary](waverider/waverider_stack_summary.md) | One-page component overview |
 | [WaveRider Infographic](waverider/waverider_infographic_summary.md) | Visual summary of the stack |
 | [Voxel Visualizer](waverider/voxel_viz.md) | Full CLI and API reference for 3-D visualization (manifold + CT/MRI modes) |
+| [TVB Brain Datasets](waverider/tvb_data.md) | Real brain geometry from The Virtual Brain — download, cache, presets, `--tvb-demo` |
 | [Holographic Output (Quiltwright)](https://github.com/suchanek/quiltwright/tree/main/docs) | Looking Glass quilts, POV-Ray backend, HLD video — moved to the [quiltwright](https://github.com/suchanek/quiltwright) package at 0.13.0 |
 | [ManifoldObserver Spec](manifold_observer/manifold_observer.md) | (N+1)-dimensional extrinsic observer design |
 | [ManifoldWalker Spec](manifold_walker_spec/manifold_walker_spec.md) | Riemannian gradient descent specification |

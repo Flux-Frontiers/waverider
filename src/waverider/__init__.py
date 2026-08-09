@@ -48,9 +48,21 @@ from .manifold_model import ManifoldModel
 from .manifold_observer import ManifoldObserver
 from .manifold_walker import ManifoldWalker
 from .turtleND import TurtleND
+from .tvb_data import (
+    CONNECTIVITIES,
+    REGION_MAPPINGS,
+    SURFACES,
+    Connectome,
+    connectome_polydata,
+    load_connectivity,
+    load_region_mapping,
+    load_surface,
+    surface_polydata,
+)
 from .universal_embedder import UniversalEmbedder
 from .voxel_viz import (
     CMAP_MAP,
+    TVB_PRESETS,
     PCAInfo,
     PointField,
     build_grid,
@@ -60,6 +72,10 @@ from .voxel_viz import (
     render_multi,
     render_quilt_single,
     render_single,
+    render_tvb_hld,
+    render_tvb_quilt,
+    render_tvb_still,
+    render_tvb_viewer,
     voxelize,
 )
 
@@ -113,4 +129,19 @@ __all__ = [
     "render_hld_video",
     "render_hld_single",
     "style_plotter_for_hld",
+    # The Virtual Brain datasets
+    "SURFACES",
+    "CONNECTIVITIES",
+    "REGION_MAPPINGS",
+    "Connectome",
+    "load_surface",
+    "load_connectivity",
+    "load_region_mapping",
+    "surface_polydata",
+    "connectome_polydata",
+    "TVB_PRESETS",
+    "render_tvb_viewer",
+    "render_tvb_quilt",
+    "render_tvb_hld",
+    "render_tvb_still",
 ]

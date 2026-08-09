@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **TVB brain datasets — real brain geometry on holographic hardware.**
+  New `waverider.tvb_data` module downloads and parses demonstration data
+  from [The Virtual Brain](https://www.thevirtualbrain.org/), and a new
+  `--tvb-demo` mode in `waverider-voxel-viz` renders it to LFD quilts and
+  HLD video through the same quiltwright back end as the CT/MRI presets.
+
+  `tvb-root` ships no data of its own; the datasets live in `tvb-data`, a
+  337 MB archive on Zenodo ([doi:10.5281/zenodo.10128131][tvb-doi], GPL-3.0).
+  It is fetched on first use, MD5-verified, and cached under
+  `$WAVERIDER_TVB_CACHE` / `$XDG_CACHE_HOME/waverider/tvb` /
+  `~/.cache/waverider/tvb` — never vendored, keeping the GPL data out of
+  this Elastic-2.0 source tree, the same way `pyvista.examples` handles its
+  downloads. Individual files are read straight from the zip.
+
+  Eight scene presets: `cortex`, `cortex_80k`, `cortex_hires`, `connectome`,
+  `connectome_998`, `head_layers`, `macaque`, `macaque_connectome`.
+
+  ```bash
+  waverider-voxel-viz --tvb-demo                                     # interactive
+  waverider-voxel-viz --tvb-demo --tvb-dataset cortex --hld --out cortex
+  waverider-voxel-viz --tvb-demo --tvb-dataset connectome \
+      --quilt portrait --out connectome --cast
+  ```
+
+  Loader API: `load_surface`, `load_connectivity`, `load_region_mapping`,
+  `load_sensors`, plus `surface_polydata` / `connectome_polydata` for
+  PyVista meshes. Covers 11 surfaces, 8 connectomes, 4 parcellations and 9
+  sensor sets. Full reference in
+  [docs/waverider/tvb_data.md](docs/waverider/tvb_data.md).
+
+  [tvb-doi]: https://doi.org/10.5281/zenodo.10128131
+
 ### Changed
 
 ### Removed
