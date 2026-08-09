@@ -44,11 +44,22 @@ platform; the requested citation is available as
 
 ### Caching
 
-The archive is downloaded once, to the first of:
+The archive is downloaded once, to `$WAVERIDER_TVB_CACHE` if set, otherwise
+to the platform's native per-user cache directory:
 
-1. `$WAVERIDER_TVB_CACHE`
-2. `$XDG_CACHE_HOME/waverider/tvb`
-3. `~/.cache/waverider/tvb`
+| Platform | Location |
+|---|---|
+| macOS | `~/Library/Caches/waverider/tvb` |
+| Linux | `$XDG_CACHE_HOME/waverider/tvb`, default `~/.cache/waverider/tvb` |
+| Windows | `%LOCALAPPDATA%\waverider\Cache\tvb` |
+
+This is resolved with [`platformdirs`](https://pypi.org/project/platformdirs/),
+matching PyVista — which caches its own downloads via `pooch.os_cache` and so
+puts them in `~/Library/Caches/pyvista_3` on macOS. Hard-coding `~/.cache`
+would drop a 337 MB file somewhere non-native on two of the three platforms.
+
+Set `$WAVERIDER_TVB_CACHE` to put the archive on a different volume, share
+one copy between checkouts, or pin it for CI.
 
 Downloads stream to a temporary file and are moved into place only after the
 MD5 check passes, so an interrupted transfer can never leave a truncated

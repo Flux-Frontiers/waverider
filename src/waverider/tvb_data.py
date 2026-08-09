@@ -250,9 +250,10 @@ def cache_dir() -> Path:
     Resolution order:
 
     1. ``$WAVERIDER_TVB_CACHE`` if set — useful for shared or read-only
-       installs, CI, and pointing several checkouts at one copy.
-    2. ``$XDG_CACHE_HOME/waverider/tvb`` if ``XDG_CACHE_HOME`` is set.
-    3. ``~/.cache/waverider/tvb`` otherwise.
+       installs, CI, putting a 337 MB archive on a different volume, and
+       pointing several checkouts at one copy.
+    2. The platform's native per-user cache directory, plus ``waverider/tvb``
+       — see :func:`_platform_cache_root`.
 
     The directory is created if it does not exist.
 
@@ -262,11 +263,34 @@ def cache_dir() -> Path:
     if override:
         path = Path(override).expanduser()
     else:
-        xdg = os.environ.get("XDG_CACHE_HOME")
-        base = Path(xdg).expanduser() if xdg else Path.home() / ".cache"
-        path = base / "waverider" / "tvb"
+        path = _platform_cache_root() / "tvb"
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def _platform_cache_root() -> Path:
+    """Return the per-user cache root for WaveRider on this OS.
+
+    Uses :mod:`platformdirs` when available so the archive lands where the
+    platform expects it — ``~/Library/Caches/waverider`` on macOS,
+    ``%LOCALAPPDATA%\\waverider\\Cache`` on Windows, and
+    ``$XDG_CACHE_HOME/waverider`` (default ``~/.cache/waverider``) on Linux.
+    This matches PyVista, which caches its own downloads via
+    ``pooch.os_cache``; hard-coding ``~/.cache`` would scatter a 337 MB file
+    into a non-native location on two of the three platforms.
+
+    ``platformdirs`` arrives transitively with the ``viz`` extras (pyvista →
+    pooch), so the XDG-style fallback below only runs on a core install that
+    could not render this data anyway.
+    """
+    try:
+        from platformdirs import user_cache_dir
+
+        return Path(user_cache_dir("waverider"))
+    except ImportError:
+        xdg = os.environ.get("XDG_CACHE_HOME")
+        base = Path(xdg).expanduser() if xdg else Path.home() / ".cache"
+        return base / "waverider"
 
 
 def archive_path() -> Path:

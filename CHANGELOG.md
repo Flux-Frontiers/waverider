@@ -17,9 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   `tvb-root` ships no data of its own; the datasets live in `tvb-data`, a
   337 MB archive on Zenodo ([doi:10.5281/zenodo.10128131][tvb-doi], GPL-3.0).
-  It is fetched on first use, MD5-verified, and cached under
-  `$WAVERIDER_TVB_CACHE` / `$XDG_CACHE_HOME/waverider/tvb` /
-  `~/.cache/waverider/tvb` — never vendored, keeping the GPL data out of
+  It is fetched on first use, MD5-verified, and cached in the platform's
+  native per-user cache directory (`~/Library/Caches/waverider/tvb` on
+  macOS, `$XDG_CACHE_HOME/waverider/tvb` on Linux,
+  `%LOCALAPPDATA%\waverider\Cache\tvb` on Windows), overridable with
+  `$WAVERIDER_TVB_CACHE`. It is never vendored, keeping the GPL data out of
   this Elastic-2.0 source tree, the same way `pyvista.examples` handles its
   downloads. Individual files are read straight from the zip.
 

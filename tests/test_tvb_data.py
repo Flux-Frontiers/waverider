@@ -129,17 +129,47 @@ def test_cache_dir_prefers_explicit_override(tmp_path, monkeypatch):
     assert tvb_data.cache_dir().is_dir()
 
 
-def test_cache_dir_falls_back_to_xdg(tmp_path, monkeypatch):
+def test_cache_dir_uses_platform_native_root(tmp_path, monkeypatch):
+    """Without an override, the archive lands under the platform cache root."""
     monkeypatch.delenv(tvb_data._CACHE_ENV, raising=False)
+    monkeypatch.setattr(tvb_data, "_platform_cache_root", lambda: tmp_path / "native")
+    assert tvb_data.cache_dir() == tmp_path / "native" / "tvb"
+
+
+def test_platform_cache_root_prefers_platformdirs(monkeypatch):
+    """platformdirs decides the root, so macOS/Windows get native paths."""
+    import platformdirs
+
+    monkeypatch.setattr(platformdirs, "user_cache_dir", lambda app: f"/somewhere/{app}")
+    assert tvb_data._platform_cache_root() == tvb_data.Path("/somewhere/waverider")
+
+
+def test_platform_cache_root_falls_back_to_xdg(tmp_path, monkeypatch):
+    """A core install without platformdirs still resolves somewhere sane."""
+    real_import = __import__
+
+    def _blocked(name, *args, **kwargs):
+        if name == "platformdirs":
+            raise ImportError("platformdirs disabled for this test")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.__import__", _blocked)
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg"))
-    assert tvb_data.cache_dir() == tmp_path / "xdg" / "waverider" / "tvb"
+    assert tvb_data._platform_cache_root() == tmp_path / "xdg" / "waverider"
 
 
-def test_cache_dir_falls_back_to_home(tmp_path, monkeypatch):
-    monkeypatch.delenv(tvb_data._CACHE_ENV, raising=False)
+def test_platform_cache_root_falls_back_to_home(tmp_path, monkeypatch):
+    real_import = __import__
+
+    def _blocked(name, *args, **kwargs):
+        if name == "platformdirs":
+            raise ImportError("platformdirs disabled for this test")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.__import__", _blocked)
     monkeypatch.delenv("XDG_CACHE_HOME", raising=False)
     monkeypatch.setattr(tvb_data.Path, "home", classmethod(lambda _cls: tmp_path))
-    assert tvb_data.cache_dir() == tmp_path / ".cache" / "waverider" / "tvb"
+    assert tvb_data._platform_cache_root() == tmp_path / ".cache" / "waverider"
 
 
 def test_fetch_archive_uses_cache_without_network(fake_archive, no_network):
