@@ -9,7 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **TVB brain scenes — real brain geometry on holographic hardware.**
+  A new `--tvb-demo` mode in `waverider-voxel-viz` renders cortical surfaces
+  and structural connectomes from
+  [The Virtual Brain](https://www.thevirtualbrain.org/) to LFD quilts and HLD
+  video, alongside the existing `--ct-demo` biomedical presets.
+
+  Eight scene presets: `cortex`, `cortex_80k`, `cortex_hires`, `connectome`,
+  `connectome_998`, `head_layers`, `macaque`, `macaque_connectome`, with
+  `--tvb-percentile`, `--tvb-decimate`, `--tvb-smooth` and
+  `--tvb-clear-cache`. The shared `--hld` / `--quilt` / `--still` / `--cast`
+  flags behave exactly as they do for `--ct-demo`.
+
+  ```bash
+  waverider-voxel-viz --tvb-demo                                     # interactive
+  waverider-voxel-viz --tvb-demo --tvb-dataset cortex --hld --out cortex
+  waverider-voxel-viz --tvb-demo --tvb-dataset connectome \
+      --quilt portrait --out connectome --cast
+  ```
+
+  The datasets themselves are loaded by **`quiltwright.tvb_data`**, new in
+  quiltwright 0.3.0 — brain geometry is a scene source, like POV-Ray scenes
+  and PyVista's example datasets, not manifold science, and quiltwright
+  already downloads real subjects to put on a display. The ~337 MB
+  `tvb-data` archive ([doi:10.5281/zenodo.10128131][tvb-doi], GPL-3.0) is
+  fetched on demand and cached there; nothing is vendored into either
+  package. Renderers exported here are `render_tvb_viewer`,
+  `render_tvb_quilt`, `render_tvb_hld` and `render_tvb_still`, plus
+  `TVB_PRESETS`. Full reference in
+  [docs/waverider/tvb_data.md](docs/waverider/tvb_data.md).
+
+  [tvb-doi]: https://doi.org/10.5281/zenodo.10128131
+
 ### Changed
+
+- **Minimum `quiltwright` is now 0.3.0**, which introduces
+  `quiltwright.tvb_data`.
 
 ### Removed
 

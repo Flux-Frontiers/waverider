@@ -82,6 +82,17 @@ head_2              256 × 256 × 94,  CT head alternate (12-bit)
 whole_body_ct_male  160 × 160 × 273, CT full body male (Hounsfield units)
 whole_body_ct_female 160 × 160 × 271, CT full body female (Hounsfield units)
 
+TVB brain datasets (The Virtual Brain, auto-downloaded on first use)
+--------------------------------------------------------------------
+cortex              16 384-vertex cortex, coloured by 76-region parcellation
+cortex_80k          81 924-vertex cortex, coloured by 80-region parcellation
+cortex_hires        283 380-vertex two-hemisphere cortex (decimated)
+connectome          76-region structural connectome in a translucent cortex
+connectome_998      998-region connectome, top 1% of tracts
+head_layers         nested shells — cortex, inner/outer skull, scalp
+macaque             147 460-vertex macaque cortex, 84-region parcellation
+macaque_connectome  84-region macaque connectome in a translucent cortex
+
 CLI usage — manifold mode
 -------------------------
 ::
@@ -140,6 +151,42 @@ CLI usage — CT / MRI demo mode
     # Looking Glass quilt turntable video (Go device)
     waverider-voxel-viz --ct-demo --ct-dataset full_head \\
         --quilt go --quilt-video --out head
+
+CLI usage — TVB brain demo
+--------------------------
+Real brain geometry from `The Virtual Brain <https://www.thevirtualbrain.org/>`_.
+The ~337 MB ``tvb-data`` archive is downloaded from Zenodo on first use and
+cached; see :mod:`quiltwright.tvb_data`.
+::
+
+    # Interactive viewer — cortex coloured by 76-region parcellation
+    waverider-voxel-viz --tvb-demo
+
+    # Interactive viewer — structural connectome in a translucent cortex
+    waverider-voxel-viz --tvb-demo --tvb-dataset connectome
+
+    # Denser connectome (more tracts survive the weight threshold)
+    waverider-voxel-viz --tvb-demo --tvb-dataset connectome --tvb-percentile 80
+
+    # Headless PNG screenshot
+    waverider-voxel-viz --tvb-demo --tvb-dataset head_layers --out head.png
+
+    # HLD turntable video (10-second loop)
+    waverider-voxel-viz --tvb-demo --tvb-dataset cortex --hld --out cortex
+
+    # Looking Glass quilt still (Portrait device), cast to the display
+    waverider-voxel-viz --tvb-demo --tvb-dataset connectome \\
+        --quilt portrait --out connectome --cast
+
+    # High-resolution cortex, decimated hard for a 48-view sweep
+    waverider-voxel-viz --tvb-demo --tvb-dataset cortex_hires \\
+        --tvb-decimate 0.7 --quilt portrait --out cortex_hires
+
+    # Macaque cortex
+    waverider-voxel-viz --tvb-demo --tvb-dataset macaque --hld --out macaque
+
+    # Drop the cached archive
+    waverider-voxel-viz --tvb-clear-cache
 
 Part of WaveRider — https://github.com/Flux-Frontiers/waverider
 Author: Eric G. Suchanek, PhD
@@ -1437,6 +1484,475 @@ def _compose_ct_scene(p, data, preset: dict, isos: list[float], n_smooth: int) -
 
 
 # ---------------------------------------------------------------------------
+# TVB brain demo
+# ---------------------------------------------------------------------------
+
+#: Per-dataset scene recipes for The Virtual Brain data.  Three scene kinds:
+#:
+#: ``surface``
+#:     One triangulated surface, optionally coloured by a parcellation.
+#: ``connectome``
+#:     Region centres as degree-scaled spheres plus the strongest tracts as
+#:     weight-coloured tubes, inside a translucent cortex for context.
+#: ``layers``
+#:     Nested head shells (cortex inside skull inside skin), each with its
+#:     own colour and opacity.
+#:
+#: As with :data:`CT_PRESETS`, colours avoid pure white so the scene stays
+#: visible on an HLD, where white renders as transparent.
+TVB_PRESETS: dict[str, dict] = {
+    "cortex": {
+        "kind": "surface",
+        "description": "16k-vertex cortical surface, coloured by 76-region parcellation",
+        "surface": "cortex_16384",
+        "region_mapping": "regionMapping_16k_76",
+        "cmap": "turbo",
+        "opacity": 1.0,
+        "smooth_iters": 30,
+    },
+    "cortex_80k": {
+        "kind": "surface",
+        "description": "82k-vertex cortical surface, coloured by 80-region parcellation",
+        "surface": "cortex_80k",
+        "region_mapping": "regionMapping_80k_80",
+        "cmap": "turbo",
+        "opacity": 1.0,
+        "smooth_iters": 20,
+    },
+    "cortex_hires": {
+        "kind": "surface",
+        "description": "283k-vertex two-hemisphere cortex (decimated for view sweeps)",
+        "surface": "cortex_2x120k",
+        "region_mapping": None,
+        "color": "#d8b0a0",
+        "cmap": None,
+        "opacity": 1.0,
+        "smooth_iters": 10,
+        "decimate": 0.5,
+    },
+    "connectome": {
+        "kind": "connectome",
+        "description": "76-region structural connectome inside a translucent cortex",
+        "connectivity": "connectivity_76",
+        "surface": "cortex_16384",
+        "percentile": 90.0,
+        "cmap": "autumn",
+        "node_color": "#ffe8a0",
+        "shell_color": "#4477aa",
+        "shell_opacity": 0.06,
+        "tube_radius": 1.1,
+        "node_radius": 4.5,
+        "smooth_iters": 30,
+    },
+    "connectome_998": {
+        "kind": "connectome",
+        "description": "998-region high-resolution connectome (top 1% of tracts)",
+        "connectivity": "connectivity_998",
+        "surface": "cortex_16384",
+        "percentile": 99.0,
+        "cmap": "autumn",
+        "node_color": "#ffe8a0",
+        "shell_color": "#4477aa",
+        "shell_opacity": 0.05,
+        "tube_radius": 0.5,
+        "node_radius": 2.2,
+        "smooth_iters": 30,
+    },
+    "head_layers": {
+        "kind": "layers",
+        "description": "Nested head shells — cortex, inner/outer skull, scalp",
+        "layers": [
+            {"surface": "cortex_16384", "color": "#e07030", "opacity": 1.00},
+            {"surface": "inner_skull_4096", "color": "#c8a878", "opacity": 0.22},
+            {"surface": "outer_skull_4096", "color": "#e8dcc0", "opacity": 0.16},
+            {"surface": "outer_skin_4096", "color": "#f0c8a8", "opacity": 0.12},
+        ],
+        "smooth_iters": 20,
+    },
+    "macaque": {
+        "kind": "surface",
+        "description": "147k-vertex macaque cortex, coloured by 84-region parcellation",
+        "surface": "macaque_147k",
+        "region_mapping": "regionMapping_147k_84",
+        "cmap": "turbo",
+        "opacity": 1.0,
+        "smooth_iters": 20,
+        "decimate": 0.4,
+    },
+    "macaque_connectome": {
+        "kind": "connectome",
+        "description": "84-region macaque connectome inside a translucent macaque cortex",
+        "connectivity": "macaque_84",
+        "surface": "macaque_147k",
+        "percentile": 92.0,
+        "cmap": "autumn",
+        "node_color": "#ffe8a0",
+        "shell_color": "#4477aa",
+        "shell_opacity": 0.07,
+        "tube_radius": 0.6,
+        "node_radius": 3.0,
+        "smooth_iters": 15,
+        "decimate": 0.6,
+    },
+}
+
+
+def _compose_tvb_scene(
+    p,
+    preset: dict,
+    *,
+    percentile: float | None = None,
+    decimate: float | None = None,
+    smooth_iters: int | None = None,
+    quiet: bool = False,
+) -> tuple[float, float, float, float, float, float]:
+    """Add a TVB scene to an existing plotter and return its bounds.
+
+    :param p: Target ``pv.Plotter``.
+    :param preset: Entry from :data:`TVB_PRESETS`.
+    :param percentile: Connectome edge threshold override.
+    :param decimate: Triangle-decimation fraction override.
+    :param smooth_iters: Smoothing-iteration override.
+    :param quiet: Suppress download progress output.
+    :return: Scene bounds, for shadow placement.
+    """
+    from quiltwright.tvb_data import connectome_polydata, surface_polydata
+
+    kind = preset["kind"]
+    n_smooth = smooth_iters if smooth_iters is not None else preset.get("smooth_iters", 0)
+    n_decimate = decimate if decimate is not None else preset.get("decimate", 0.0)
+
+    if kind == "surface":
+        mesh = surface_polydata(
+            preset["surface"],
+            region_mapping=preset.get("region_mapping"),
+            smooth_iters=n_smooth,
+            decimate=n_decimate,
+            quiet=quiet,
+        )
+        if preset.get("region_mapping"):
+            p.add_mesh(
+                mesh,
+                scalars="region",
+                cmap=preset.get("cmap", "turbo"),
+                opacity=preset.get("opacity", 1.0),
+                smooth_shading=True,
+                show_scalar_bar=False,
+            )
+        else:
+            p.add_mesh(
+                mesh,
+                color=preset.get("color", "#d8b0a0"),
+                opacity=preset.get("opacity", 1.0),
+                smooth_shading=True,
+                show_scalar_bar=False,
+            )
+        print(f"    surface {preset['surface']}: {mesh.n_points:,} pts, {mesh.n_cells:,} tris")
+        return mesh.bounds
+
+    if kind == "connectome":
+        pct = percentile if percentile is not None else preset.get("percentile", 90.0)
+        shell = surface_polydata(
+            preset["surface"], smooth_iters=n_smooth, decimate=n_decimate, quiet=quiet
+        )
+        p.add_mesh(
+            shell,
+            color=preset.get("shell_color", "#4477aa"),
+            opacity=preset.get("shell_opacity", 0.06),
+            smooth_shading=True,
+            show_scalar_bar=False,
+        )
+        nodes, edges = connectome_polydata(
+            preset["connectivity"],
+            percentile=pct,
+            tube_radius=preset.get("tube_radius", 1.1),
+            node_radius=preset.get("node_radius", 4.5),
+            quiet=quiet,
+        )
+        p.add_mesh(
+            edges, scalars="weight", cmap=preset.get("cmap", "autumn"), show_scalar_bar=False
+        )
+        p.add_mesh(nodes, color=preset.get("node_color", "#ffe8a0"), show_scalar_bar=False)
+        print(
+            f"    shell {preset['surface']}: {shell.n_points:,} pts\n"
+            f"    connectome {preset['connectivity']}: {edges.n_cells:,} tube cells "
+            f"above weight percentile {pct:g}"
+        )
+        return shell.bounds
+
+    if kind == "layers":
+        layers = preset["layers"]
+        if not layers:
+            raise ValueError(f"Layered preset '{preset['description']}' declares no layers.")
+        bounds = None
+        for layer in layers:
+            mesh = surface_polydata(layer["surface"], smooth_iters=n_smooth, quiet=quiet)
+            p.add_mesh(
+                mesh,
+                color=layer["color"],
+                opacity=layer["opacity"],
+                smooth_shading=True,
+                show_scalar_bar=False,
+            )
+            print(
+                f"    layer {layer['surface']}: {mesh.n_points:,} pts  "
+                f"color={layer['color']}  opacity={layer['opacity']}"
+            )
+            # The outermost shell (last, largest) defines the scene extent.
+            bounds = mesh.bounds
+        assert bounds is not None  # guaranteed: the empty case raised above
+        return bounds
+
+    raise ValueError(f"Unknown TVB scene kind '{kind}'.")
+
+
+def _tvb_preset(tvb_dataset: str) -> dict:
+    """Look up a TVB preset, raising a helpful error for unknown keys."""
+    if tvb_dataset not in TVB_PRESETS:
+        raise ValueError(
+            f"Unknown tvb_dataset '{tvb_dataset}'.  Choose from: {sorted(TVB_PRESETS)}"
+        )
+    return TVB_PRESETS[tvb_dataset]
+
+
+def render_tvb_hld(
+    tvb_dataset: str = "cortex",
+    out_path: Path | str = "tvb_demo",
+    n_frames: int = 300,
+    fps: int = 30,
+    orbit: float = 360.0,
+    shadow: bool = True,
+    percentile: float | None = None,
+    decimate: float | None = None,
+    smooth_iters: int | None = None,
+    zoom: float = 1.8,
+) -> Path:
+    """Render a TVB brain dataset as a Hololuminescent Display video.
+
+    Downloads ``tvb-data`` on first use (see :mod:`quiltwright.tvb_data`),
+    composes the preset's scene, and renders a slow turntable orbit to the
+    official HLD master spec (3840×2160 HEVC bt709).
+
+    Requires ``pyvista`` + ``pillow`` + ffmpeg (``poetry install --with viz``).
+
+    :param tvb_dataset: Key from :data:`TVB_PRESETS`.
+    :param out_path: Output stem; ``_hld.mp4`` is appended.
+    :param n_frames: Frame count (default 300 @ 30 fps = 10 s loop).
+    :param fps: 30 or 60 per the HLD media spec.
+    :param orbit: Total turntable rotation in degrees (360 loops seamlessly).
+    :param shadow: Paint a soft contact shadow under the brain.
+    :param percentile: Connectome edge threshold override.
+    :param decimate: Triangle-decimation fraction override.
+    :param smooth_iters: Smoothing-iteration override.
+    :param zoom: Camera zoom applied after safe-area framing.
+    :return: Path of the MP4 written.
+    """
+    from quiltwright.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
+
+    _require_viz("render_tvb_hld")
+    preset = _tvb_preset(tvb_dataset)
+
+    p = pv.Plotter(off_screen=True, theme=pv.themes.DocumentTheme())
+    bounds = _compose_tvb_scene(
+        p, preset, percentile=percentile, decimate=decimate, smooth_iters=smooth_iters
+    )
+
+    if shadow:
+        add_floor_shadow(p, bounds)
+    style_plotter_for_hld(p, zoom=zoom)
+
+    saved = render_hld_video(p, out_path, n_frames=n_frames, fps=fps, orbit_degrees=orbit)
+    p.close()
+    print(
+        f"  Saved HLD video {saved}  ({n_frames} frames, {n_frames / fps:.1f}s loop)\n"
+        "  Next: open in HLD Author to encode for the display's USB player."
+    )
+    return saved
+
+
+def render_tvb_quilt(
+    tvb_dataset: str = "cortex",
+    out_path: Path | str = "tvb_demo",
+    device: str = "portrait",
+    view_cone: float | None = None,
+    percentile: float | None = None,
+    decimate: float | None = None,
+    smooth_iters: int | None = None,
+    cast: bool = False,
+    quilt_grid: tuple[int, int] | None = None,
+    video: bool = False,
+    n_frames: int = 180,
+    fps: int = 24,
+    orbit: float = 360.0,
+    zoom: float = 1.6,
+) -> Path:
+    """Render a TVB brain dataset as a Looking Glass quilt (PNG or MP4).
+
+    Composes the same scene as :func:`render_tvb_hld`, then sweeps the camera
+    across the device's view cone with off-axis projections and tiles the
+    views into a quilt.
+
+    Requires ``pyvista`` + ``pillow`` (``poetry install --with viz``);
+    video additionally needs ffmpeg.
+
+    :param tvb_dataset: Key from :data:`TVB_PRESETS`.
+    :param out_path: Output stem; the quilt suffix + extension are appended.
+    :param device: Key into :data:`quiltwright.lfd.QUILT_PRESETS`.
+    :param view_cone: Override the preset's view cone in degrees.
+    :param percentile: Connectome edge threshold override.
+    :param decimate: Triangle-decimation fraction override.  Raise this for
+        the dense surfaces — every extra triangle is paid for once per view.
+    :param smooth_iters: Smoothing-iteration override.
+    :param cast: Also send the quilt to a connected Looking Glass via Bridge.
+    :param quilt_grid: Optional ``(columns, rows)`` override of the preset grid.
+    :param video: Render a turntable quilt video instead of a still.
+    :param n_frames: Video frame count.
+    :param fps: Video frame rate.
+    :param orbit: Total camera orbit in degrees over the clip.
+    :param zoom: Camera dolly factor.
+    :return: Path of the quilt PNG/MP4 written.
+    """
+    _require_viz("render_tvb_quilt")
+    preset = _tvb_preset(tvb_dataset)
+
+    spec = QUILT_PRESETS[device]
+    if quilt_grid is not None:
+        spec = spec.with_grid(*quilt_grid)
+
+    p = pv.Plotter(off_screen=True)
+    _compose_tvb_scene(
+        p, preset, percentile=percentile, decimate=decimate, smooth_iters=smooth_iters
+    )
+
+    if video:
+        saved = render_quilt_video(
+            p,
+            spec,
+            out_path,
+            n_frames=n_frames,
+            fps=fps,
+            orbit_degrees=orbit,
+            view_cone=view_cone,
+            zoom=zoom,
+        )
+        p.close()
+        print(
+            f"  Saved quilt video {saved}  "
+            f"({n_frames} frames x {spec.n_views} views, {n_frames / fps:.1f}s loop)"
+        )
+    else:
+        quilt = render_quilt(p, spec, view_cone=view_cone, zoom=zoom)
+        p.close()
+        saved = save_quilt(quilt, out_path, spec)
+        print(f"  Saved quilt {saved}  ({spec.n_views} views, {spec.columns}x{spec.rows})")
+
+    if cast:
+        cast_quilt(saved, spec)
+        print("  Cast to Looking Glass via Bridge")
+    return saved
+
+
+def render_tvb_still(
+    tvb_dataset: str = "cortex",
+    out_path: Path | str = "tvb_demo",
+    shadow: bool = True,
+    percentile: float | None = None,
+    decimate: float | None = None,
+    smooth_iters: int | None = None,
+    zoom: float = 1.8,
+) -> Path:
+    """Render a single HLD-resolution PNG of a TVB brain scene.
+
+    Same scene as :func:`render_tvb_hld` (white background, safe-area
+    framing, optional contact shadow) but exports one ``*_hld.png`` at
+    3840×2160 instead of a video.  No ffmpeg required.
+
+    :param tvb_dataset: Key from :data:`TVB_PRESETS`.
+    :param out_path: Output stem; ``_hld.png`` is appended.
+    :param shadow: Paint a soft contact shadow under the brain.
+    :param percentile: Connectome edge threshold override.
+    :param decimate: Triangle-decimation fraction override.
+    :param smooth_iters: Smoothing-iteration override.
+    :param zoom: Camera zoom after safe-area framing.
+    :return: Path of the PNG written.
+    """
+    from quiltwright.hld import add_floor_shadow, render_hld_still, style_plotter_for_hld
+
+    _require_viz("render_tvb_still")
+    preset = _tvb_preset(tvb_dataset)
+
+    p = pv.Plotter(off_screen=True, theme=pv.themes.DocumentTheme())
+    bounds = _compose_tvb_scene(
+        p, preset, percentile=percentile, decimate=decimate, smooth_iters=smooth_iters
+    )
+
+    if shadow:
+        add_floor_shadow(p, bounds)
+    style_plotter_for_hld(p, zoom=zoom)
+
+    saved = render_hld_still(p, out_path)
+    p.close()
+    print(f"  Saved HLD still {saved}  (3840×2160, white background)")
+    return saved
+
+
+def render_tvb_viewer(
+    tvb_dataset: str = "cortex",
+    off_screen: bool = False,
+    out_path: Path | str | None = None,
+    shadow: bool = False,
+    percentile: float | None = None,
+    decimate: float | None = None,
+    smooth_iters: int | None = None,
+) -> None:
+    """Interactive PyVista viewer for a TVB brain scene.
+
+    Opens an interactive window (rotate / zoom / pan) or, with *off_screen*
+    / *out_path*, saves a PNG screenshot.  Uses a dark background so
+    translucent shells and connectome tubes read clearly on screen.
+
+    Requires ``pyvista`` (``poetry install --with viz``).
+
+    :param tvb_dataset: Key from :data:`TVB_PRESETS`.
+    :param off_screen: Render headless (for PNG export).
+    :param out_path: PNG path; implies *off_screen*.
+    :param shadow: Add a contact shadow disc under the brain.
+    :param percentile: Connectome edge threshold override.
+    :param decimate: Triangle-decimation fraction override.
+    :param smooth_iters: Smoothing-iteration override.
+    """
+    from quiltwright.hld import add_floor_shadow
+
+    _require_viz("render_tvb_viewer")
+    preset = _tvb_preset(tvb_dataset)
+
+    if out_path is not None:
+        off_screen = True
+
+    p = pv.Plotter(off_screen=off_screen, title=f"TVB — {tvb_dataset}")
+    p.set_background("black")
+    bounds = _compose_tvb_scene(
+        p, preset, percentile=percentile, decimate=decimate, smooth_iters=smooth_iters
+    )
+
+    if shadow:
+        add_floor_shadow(p, bounds, dark_bg=True)
+
+    if not off_screen:
+        _add_nav_help(p)
+    p.add_title(f"{tvb_dataset}  —  {preset['description']}", font_size=10, color="white")
+    p.add_axes()
+
+    if off_screen and out_path:
+        p.show(auto_close=False)
+        p.screenshot(str(out_path))
+        p.close()
+        print(f"  Saved {out_path}")
+    else:
+        p.show()
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -1652,13 +2168,59 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated isovalue thresholds for CT demo (overrides preset). "
         "E.g. '400,1500' for a two-layer head CT.",
     )
+    # TVB brain demo — real brain geometry, also bypasses ManifoldModel
+    p.add_argument(
+        "--tvb-demo",
+        action="store_true",
+        help="Render a real brain dataset from The Virtual Brain directly to "
+        "HLD or a Looking Glass quilt (skips ManifoldModel; combine with "
+        "--tvb-dataset, --hld or --quilt, --frames, --fps, --orbit, "
+        "--no-shadow, --out).  Downloads ~337 MB of tvb-data on first use.",
+    )
+    p.add_argument(
+        "--tvb-dataset",
+        choices=sorted(TVB_PRESETS),
+        default="cortex",
+        help="Which TVB brain scene to render (default: cortex).",
+    )
+    p.add_argument(
+        "--tvb-percentile",
+        type=float,
+        default=None,
+        metavar="P",
+        help="Connectome scenes: keep only tracts at or above this percentile "
+        "of non-zero connection weights (preset default is 90–99 depending "
+        "on node count).  Lower values draw more edges.",
+    )
+    p.add_argument(
+        "--tvb-decimate",
+        type=float,
+        default=None,
+        metavar="F",
+        help="Fraction of triangles to remove from TVB surfaces, 0.0–1.0.  "
+        "Worth raising for --quilt, where every triangle is rendered once "
+        "per view (e.g. 0.7 for cortex_hires on a 48-view device).",
+    )
+    p.add_argument(
+        "--tvb-smooth",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Laplacian smoothing iterations for TVB surfaces (overrides preset).",
+    )
+    p.add_argument(
+        "--tvb-clear-cache",
+        action="store_true",
+        help="Delete the cached tvb-data archive and exit.",
+    )
+
     p.add_argument(
         "--zoom",
         type=float,
         default=None,
         help="Camera zoom applied after safe-area framing for HLD output.  "
-        "Default: 1.8 for --ct-demo (portrait subjects in 16:9 frame), "
-        "1.0 for manifold mode.  Values > 1 enlarge the subject; < 1 shrink it.",
+        "Default: 1.8 for --ct-demo / --tvb-demo (portrait subjects in a 16:9 "
+        "frame), 1.0 for manifold mode.  Values > 1 enlarge the subject.",
     )
     p.add_argument(
         "--still",
@@ -1673,10 +2235,106 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Entry point for the ``waverider-voxel-viz`` command."""
     args = parse_args()
+
+    if args.tvb_clear_cache:
+        from quiltwright.tvb_data import clear_cache
+
+        clear_cache()
+        return
+
     if args.out:
         args.off_screen = True
 
     out_path = Path(args.out) if args.out else None
+
+    # ---- TVB brain demo (short-circuit — no ManifoldModel) ---------------
+    if args.tvb_demo:
+        from quiltwright.tvb_data import TVB_DATA_DOI
+
+        preset = TVB_PRESETS[args.tvb_dataset]
+        print("=" * 60)
+        print("TVB BRAIN DEMO")
+        print(f"  dataset  : {args.tvb_dataset}")
+        print(f"  desc     : {preset['description']}")
+        print(f"  kind     : {preset['kind']}")
+        print(f"  source   : tvb-data, Zenodo doi:{TVB_DATA_DOI} (GPL-3.0)")
+        print("=" * 60)
+
+        if args.hld and args.quilt:
+            print("ERROR: --hld and --quilt are mutually exclusive (different device families).")
+            sys.exit(1)
+
+        stem = out_path if out_path else Path(f"tvb_{args.tvb_dataset}")
+
+        if args.hld and args.still:
+            print(f"  mode     : HLD still → {stem}_hld.png")
+            render_tvb_still(
+                tvb_dataset=args.tvb_dataset,
+                out_path=stem,
+                shadow=not args.no_shadow,
+                percentile=args.tvb_percentile,
+                decimate=args.tvb_decimate,
+                smooth_iters=args.tvb_smooth,
+                zoom=args.zoom if args.zoom is not None else 1.8,
+            )
+        elif args.hld:
+            print(f"  mode     : HLD video → {stem}_hld.mp4")
+            print(f"  frames   : {args.frames or 300}  fps={args.fps or 30}  orbit={args.orbit}°")
+            render_tvb_hld(
+                tvb_dataset=args.tvb_dataset,
+                out_path=stem,
+                n_frames=args.frames if args.frames is not None else 300,
+                fps=args.fps if args.fps is not None else 30,
+                orbit=args.orbit,
+                shadow=not args.no_shadow,
+                percentile=args.tvb_percentile,
+                decimate=args.tvb_decimate,
+                smooth_iters=args.tvb_smooth,
+                zoom=args.zoom if args.zoom is not None else 1.8,
+            )
+        elif args.quilt:
+            quilt_grid = None
+            if args.quilt_grid:
+                try:
+                    cols, rows = (int(v) for v in args.quilt_grid.lower().split("x"))
+                    quilt_grid = (cols, rows)
+                except ValueError:
+                    print(f"ERROR: --quilt-grid must look like '11x6', got '{args.quilt_grid}'")
+                    sys.exit(1)
+            kind = "video" if args.quilt_video else "still"
+            print(f"  mode     : LFD quilt {kind} ({args.quilt}) → {stem}_qs...")
+            render_tvb_quilt(
+                tvb_dataset=args.tvb_dataset,
+                out_path=stem,
+                device=args.quilt,
+                view_cone=args.view_cone,
+                percentile=args.tvb_percentile,
+                decimate=args.tvb_decimate,
+                smooth_iters=args.tvb_smooth,
+                cast=args.cast,
+                quilt_grid=quilt_grid,
+                video=args.quilt_video,
+                n_frames=args.frames if args.frames is not None else 180,
+                fps=args.fps if args.fps is not None else 24,
+                orbit=args.orbit,
+                zoom=args.quilt_zoom,
+            )
+        else:
+            print(f"  mode     : {'headless PNG' if args.off_screen else 'interactive viewer'}")
+            # No contact shadow here: it is an HLD device affordance that
+            # reads correctly against that mode's white background, but on
+            # the viewer's black background it renders as a bright halo.
+            render_tvb_viewer(
+                tvb_dataset=args.tvb_dataset,
+                off_screen=args.off_screen,
+                out_path=out_path,
+                shadow=False,
+                percentile=args.tvb_percentile,
+                decimate=args.tvb_decimate,
+                smooth_iters=args.tvb_smooth,
+            )
+        print("\nDone.")
+        return
 
     # ---- CT / MRI biomedical demo (short-circuit — no ManifoldModel) ------
     if args.ct_demo:

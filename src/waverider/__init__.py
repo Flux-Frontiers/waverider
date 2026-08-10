@@ -51,6 +51,7 @@ from .turtleND import TurtleND
 from .universal_embedder import UniversalEmbedder
 from .voxel_viz import (
     CMAP_MAP,
+    TVB_PRESETS,
     PCAInfo,
     PointField,
     build_grid,
@@ -60,6 +61,10 @@ from .voxel_viz import (
     render_multi,
     render_quilt_single,
     render_single,
+    render_tvb_hld,
+    render_tvb_quilt,
+    render_tvb_still,
+    render_tvb_viewer,
     voxelize,
 )
 
@@ -113,4 +118,11 @@ __all__ = [
     "render_hld_video",
     "render_hld_single",
     "style_plotter_for_hld",
+    # The Virtual Brain scenes.  The loaders themselves live in
+    # quiltwright.tvb_data; only the scene presets and renderers are here.
+    "TVB_PRESETS",
+    "render_tvb_viewer",
+    "render_tvb_quilt",
+    "render_tvb_hld",
+    "render_tvb_still",
 ]
