@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.14.0] - 2026-08-10
+
+### Added
+
 - **TVB brain scenes — real brain geometry on holographic hardware.**
   A new `--tvb-demo` mode in `waverider-voxel-viz` renders cortical surfaces
   and structural connectomes from

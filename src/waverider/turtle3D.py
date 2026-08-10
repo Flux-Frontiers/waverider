@@ -12,7 +12,7 @@ His big brother turtleNd does the realwork in Waverider though.
 
 License: CC 4.0
 
-Last revision 2026-08-02 16:54:42 -egs-
+Last revision 2026-08-04 10:28:04 -egs-
 """
 
 __pdoc__ = {"__all__": True}
