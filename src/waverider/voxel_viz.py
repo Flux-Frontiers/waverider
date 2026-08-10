@@ -1681,8 +1681,11 @@ def _compose_tvb_scene(
         return shell.bounds
 
     if kind == "layers":
+        layers = preset["layers"]
+        if not layers:
+            raise ValueError(f"Layered preset '{preset['description']}' declares no layers.")
         bounds = None
-        for layer in preset["layers"]:
+        for layer in layers:
             mesh = surface_polydata(layer["surface"], smooth_iters=n_smooth, quiet=quiet)
             p.add_mesh(
                 mesh,
@@ -1697,6 +1700,7 @@ def _compose_tvb_scene(
             )
             # The outermost shell (last, largest) defines the scene extent.
             bounds = mesh.bounds
+        assert bounds is not None  # guaranteed: the empty case raised above
         return bounds
 
     raise ValueError(f"Unknown TVB scene kind '{kind}'.")
