@@ -59,7 +59,7 @@ dependencies = [
     "numpy>=1.26,<2",
     # Holographic output, split out of this package at 0.13.0.  Core is
     # numpy + pillow only; the PyVista backend comes in via the viz group.
-    "quiltwright>=0.3.0",
+    "quiltwright>=0.3.1",
     "scikit-learn>=1.3",
     "tensorflow==2.21.0",
     "tf-keras>=2.16.0",
@@ -70,7 +70,7 @@ dependencies = [
 [project.optional-dependencies]
 kg = [
     "doc-kg>=0.21.1",
-    "pycode-kg>=0.21.4",
+    "pycode-kg>=0.22.0",
     "proteuspy>=0.100.0",
 ]
 
