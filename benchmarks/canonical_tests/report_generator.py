@@ -120,6 +120,14 @@ def _write_markdown(data, agg, git_info, report_dir, figure_path):
     dev_used = device.get("device_used", "?")
     generated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    # The two trailing spaces on each metadata line are Markdown *hard line
+    # breaks*, not stray whitespace: without them the whole block renders as
+    # one run-on paragraph. They are why generated reports are excluded from
+    # the trailing-whitespace pre-commit hook — see .pre-commit-config.yaml.
+    #
+    # If this block is ever reworked, the durable fix is to stop relying on
+    # hard breaks (a Markdown list, or explicit <br>) and drop the exclusion
+    # with it. Until then, do not "clean up" the trailing spaces below.
     lines = []
     lines.append(f"# Manifold-Informed Architecture Benchmark — {dataset}")
     lines.append(f"\n**Generated:** {generated}  ")
