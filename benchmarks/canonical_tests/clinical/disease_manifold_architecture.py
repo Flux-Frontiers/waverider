@@ -59,7 +59,6 @@ Part of WaveRider, https://github.com/flux-frontiers/waverider
 Author: Eric G. Suchanek, PhD
 Affiliation: Flux-Frontiers
 License: Elastic 2.0
-Last Revision: 2026-04-15 09:29:55
 """
 
 import argparse

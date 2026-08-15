@@ -51,7 +51,6 @@ Results are written next to the script as
 Part of WaveRider, https://github.com/Flux-Frontiers/waverider
 Author: Eric G. Suchanek, PhD
 Affiliation: Flux-Frontiers
-Last Revision: 2026-03-28
 
 Usage
 -----

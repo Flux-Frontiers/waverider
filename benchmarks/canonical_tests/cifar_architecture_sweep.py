@@ -60,7 +60,6 @@ Usage
         --metal --epochs 80 --trials 3
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-12 16:46:44
 License: Elastic 2.0
 """
 
