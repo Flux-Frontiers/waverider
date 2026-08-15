@@ -2,8 +2,24 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      # Generated reports are excluded from both whitespace hooks. Their
+      # trailing double-spaces are Markdown *hard line breaks*, so stripping
+      # them reflows every metadata header ("Generated:", "Machine:",
+      # "Commit:", ...) into a single run-on paragraph. Nothing hand-edits
+      # these files — regenerating a report would simply undo the hook.
+      #
+      # The generators emit those breaks deliberately; see the note in
+      # benchmarks/canonical_tests/report_generator.py.
       - id: trailing-whitespace
+        exclude: &generated_reports |
+          (?x)^(
+            benchmarks/canonical_tests/.*_report\.md|
+            benchmarks/canonical_tests/.*_results\.json|
+            papers/.*_report\.md|
+            docs/analysis_v.*\.md
+          )$
       - id: end-of-file-fixer
+        exclude: *generated_reports
       - id: check-yaml
       - id: check-toml
       - id: check-merge-conflict
@@ -17,7 +33,7 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.13
+    rev: v0.15.14
     hooks:
       - id: ruff-check
         args: [--fix]

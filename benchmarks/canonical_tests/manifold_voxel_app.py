@@ -25,7 +25,6 @@ Requires:
 
 Part of WaveRider, https://github.com/Flux-Frontiers/waverider
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-10 18:14:11
 License: Elastic 2.0
 
 """
