@@ -25,7 +25,9 @@ def _local_eigenvalues(neighbors: np.ndarray) -> np.ndarray:
     return (s**2) / max(len(neighbors) - 1, 1)
 
 
-def discover_dimensionality(X, n_samples=500, k=50, variance_thresholds=(0.95, 0.90, 0.85)):
+def discover_dimensionality(
+    X, n_samples=500, k=50, variance_thresholds=(0.95, 0.90, 0.85), seed=None
+):
     """Discover intrinsic dimensionality of the data manifold via local PCA.
 
     Samples n_samples random points, computes local PCA at each using thin
@@ -36,11 +38,20 @@ def discover_dimensionality(X, n_samples=500, k=50, variance_thresholds=(0.95, 0
     :param n_samples: Number of random points to sample.
     :param k: Neighborhood size for local PCA.
     :param variance_thresholds: Iterable of τ values to report.
+    :param seed: Seed for probe-point selection.  ``None`` draws from the
+        global NumPy RNG, preserving the historical behaviour; pass an int to
+        make the measurement reproducible.  The estimate moves by roughly a
+        dimension between draws at default settings, so an unseeded call is
+        not repeatable and should not be quoted as a measured constant.
     :returns: Dict mapping each τ to a statistics dict with keys
         mean, std, median, min, max.
     """
     n_points, _ = X.shape
-    sample_idx = np.random.choice(n_points, size=min(n_samples, n_points), replace=False)
+    size = min(n_samples, n_points)
+    if seed is None:
+        sample_idx = np.random.choice(n_points, size=size, replace=False)
+    else:
+        sample_idx = np.random.default_rng(seed).choice(n_points, size=size, replace=False)
     k_use = min(k, n_points - 1)
 
     results = {tau: [] for tau in variance_thresholds}
@@ -79,7 +90,7 @@ def discover_dimensionality(X, n_samples=500, k=50, variance_thresholds=(0.95, 0
     return report
 
 
-def discover_per_class_dimensionality(X, y, k=50, tau=0.90, n_samples_per_class=50):
+def discover_per_class_dimensionality(X, y, k=50, tau=0.90, n_samples_per_class=50, seed=None):
     """Discover intrinsic dimensionality per class via local PCA.
 
     For each class, samples n_samples_per_class points and estimates the
@@ -91,16 +102,23 @@ def discover_per_class_dimensionality(X, y, k=50, tau=0.90, n_samples_per_class=
     :param k: Neighborhood size for local PCA.
     :param tau: Variance threshold.
     :param n_samples_per_class: Number of random points to sample per class.
+    :param seed: Seed for probe-point selection.  ``None`` draws from the global
+        NumPy RNG, preserving the historical behaviour.  Note that the per-class
+        *maximum* is an order statistic over ``n_samples_per_class`` draws, so it
+        drifts upward as that budget grows and is not comparable across runs
+        with different budgets.
     :returns: Dict mapping class label to a statistics dict with keys
         mean, std, min, max.
     """
     classes = sorted(set(y))
     class_dims = {}
+    rng = None if seed is None else np.random.default_rng(seed)
 
     for c in classes:
         X_c = X[y == c]
         n_sample = min(n_samples_per_class, len(X_c))
-        sample_idx = np.random.choice(len(X_c), size=n_sample, replace=False)
+        chooser = np.random if rng is None else rng
+        sample_idx = chooser.choice(len(X_c), size=n_sample, replace=False)
         k_use = min(k, len(X_c) - 1)
 
         dims = []
