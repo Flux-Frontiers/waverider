@@ -77,8 +77,10 @@ from model_builder import (  # noqa: E402
     build_wide_manifold_model,
 )
 from waverider.dimensionality_discovery import (  # noqa: E402
+    DEFAULT_K_PCA,
     discover_dimensionality,
     discover_per_class_dimensionality,
+    estimator_params,
 )
 from waverider.manifold_optimizer import ManifoldAdam, make_basis  # noqa: E402
 
@@ -604,7 +606,19 @@ def main():
         default=500,
         help="Points to sample for dimensionality discovery",
     )
-    parser.add_argument("--k-pca", type=int, default=25, help="Neighborhood size for local PCA")
+    parser.add_argument(
+        "--k-pca", type=int, default=DEFAULT_K_PCA, help="Neighborhood size for local PCA"
+    )
+    parser.add_argument(
+        "--discovery-seed",
+        type=int,
+        default=0,
+        help=(
+            "Seed for local-PCA probe-point selection.  Discovery used to draw "
+            "from the global RNG, so d* moved by 1-2 between identical runs and "
+            "no committed d* is reproducible by re-running.  Seeded by default."
+        ),
+    )
     parser.add_argument(
         "--samples-per-class",
         type=int,
@@ -677,6 +691,7 @@ def main():
         n_samples=args.discovery_samples,
         k=args.k_pca,
         variance_thresholds=(0.95, 0.90, 0.85, 0.80),
+        seed=args.discovery_seed,
     )
     discovery_time = time.perf_counter() - t0
     print(f"\nDiscovery time: {discovery_time:.1f}s\n")
@@ -700,6 +715,7 @@ def main():
         k=args.k_pca,
         tau=args.tau,
         n_samples_per_class=args.samples_per_class,
+        seed=args.discovery_seed,
     )
     for c in sorted(class_dims.keys()):
         cd = class_dims[c]
@@ -950,6 +966,18 @@ def main():
         "epochs": args.epochs,
         "patience": args.patience,
         "trials": args.trials,
+        "estimator": estimator_params(
+            k=args.k_pca,
+            tau=args.tau,
+            variance_thresholds=(0.95, 0.90, 0.85, 0.80),
+            n_samples=args.discovery_samples,
+            n_samples_per_class=args.samples_per_class,
+            seed=args.discovery_seed,
+            aggregation="per_class_max",
+            preprocessing="StandardScaler",
+            n_points=int(X_train.shape[0]),
+            n_dims=int(X_train.shape[1]),
+        ),
         "dimensionality_report": {str(k): v for k, v in dim_report.items()},
         "per_class_dims": {
             str(k): {

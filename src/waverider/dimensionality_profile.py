@@ -175,6 +175,9 @@ def local_pca_dimension(X, k=None, radius=None, tau=0.90, n_probe=500, seed=None
     X = np.asarray(X)
     idx = _probe_indices(len(X), n_probe, seed)
     k_use = None if k is None else min(k, len(X) - 1)
+    # Bound once, after the exactly-one check above, so the radius branch works
+    # with a plain float rather than an Optional the type checker has to narrow.
+    radius_use = 0.0 if radius is None else float(radius)
 
     dims, used_radii, n_skipped = [], [], 0
     for _, rows in _distance_rows(X, idx):
@@ -183,11 +186,11 @@ def local_pca_dimension(X, k=None, radius=None, tau=0.90, n_probe=500, seed=None
                 nn = np.argpartition(row, k_use)[:k_use]
                 used_radii.append(float(np.partition(row, k_use)[k_use]))
             else:
-                nn = np.flatnonzero(row <= radius)
+                nn = np.flatnonzero(row <= radius_use)
                 if len(nn) < min_neighbors:
                     n_skipped += 1
                     continue
-                used_radii.append(float(radius))
+                used_radii.append(radius_use)
             d = _dim_at_tau(_eigenvalues(X[nn]), tau)
             if d is not None:
                 dims.append(d)

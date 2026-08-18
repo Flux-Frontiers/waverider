@@ -51,6 +51,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from waverider.dimensionality_discovery import (  # noqa: E402
     discover_dimensionality,
     discover_per_class_dimensionality,
+    estimator_params,
 )
 
 IRIS_CLASSES = ["setosa", "versicolor", "virginica"]
@@ -341,7 +342,20 @@ def main():
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--tau", type=float, default=0.90)
     parser.add_argument("--test-size", type=float, default=0.2)
+    # Deliberately below DEFAULT_K_PCA (25): iris is 4-dimensional with 50
+    # points per class, so a 25-neighbour ball is most of a class and local
+    # PCA stops being local.  Quote this k with any d* taken from this script.
     parser.add_argument("--k-pca", type=int, default=10)
+    parser.add_argument(
+        "--discovery-seed",
+        type=int,
+        default=0,
+        help=(
+            "Seed for local-PCA probe-point selection.  Discovery used to draw "
+            "from the global RNG, so d* moved by 1-2 between identical runs and "
+            "no committed d* is reproducible by re-running.  Seeded by default."
+        ),
+    )
     parser.add_argument("--plot", action="store_true", default=True)
     parser.add_argument(
         "--plot-only",
@@ -399,6 +413,7 @@ def main():
         n_samples=len(X_train),
         k=args.k_pca,
         variance_thresholds=(0.95, 0.90, 0.85, 0.80),
+        seed=args.discovery_seed,
     )
 
     print(f"\n{'τ':>6} {'Mean d':>8} {'Std':>6} {'Min':>5} {'Max':>5} {'Noise %':>8}")
@@ -418,6 +433,7 @@ def main():
         k=args.k_pca,
         tau=args.tau,
         n_samples_per_class=10,
+        seed=args.discovery_seed,
     )
     for c in sorted(class_dims.keys()):
         cd = class_dims[c]
@@ -632,6 +648,18 @@ def main():
         "trials": args.trials,
         "n_train": len(X_train),
         "n_test": len(X_test),
+        "estimator": estimator_params(
+            k=args.k_pca,
+            tau=args.tau,
+            variance_thresholds=(0.95, 0.90, 0.85, 0.80),
+            n_samples=len(X_train),
+            n_samples_per_class=10,
+            seed=args.discovery_seed,
+            aggregation="global_mean",
+            preprocessing="StandardScaler",
+            n_points=int(X_train.shape[0]),
+            n_dims=int(X_train.shape[1]),
+        ),
         "dimensionality_report": {str(k): v for k, v in dim_report.items()},
         "per_class_dims": {
             str(k): {

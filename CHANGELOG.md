@@ -9,11 +9,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Estimator provenance travels with every `d*`.** `estimator_params()` builds
+  a JSON-serialisable block naming the neighbourhood size `k`, the threshold
+  `tau`, the probe budgets, the seed, the aggregation and the preprocessing, and
+  every benchmark that writes a results JSON now writes it. The headline
+  `d* = 19 -> w* = 28` for CIFAR-10 was previously not reproducible from its own
+  artifact: `resnet_manifold_architecture_results.json` recorded `tau` and not
+  `k`, and `k` is what separates it from the 34 in
+  `cifar10_architecture_results.json`.
+
+- **`--discovery-seed` on every benchmark that measures `d*`, defaulting to 0.**
+  Probe-point selection drew from the global NumPy RNG, so `d*` moved by one to
+  two between identical runs and no committed `d*` could be reproduced by
+  re-running its script.
+
+- **Bootstrap confidence interval on the mean estimate.** Both estimators now
+  return `n_probe`, `mean_ci95_low` and `mean_ci95_high` alongside the point
+  estimate. Deliberately not offered for the per-class *maximum*: that is an
+  order statistic over the probe budget, and the bootstrap of a sample maximum
+  is inconsistent.
+
+- **`tests/test_dimensionality_calibration.py`** — the estimator measured
+  against manifolds whose intrinsic dimension is known by construction (uniform
+  cubes and spheres, rigidly embedded), with a committed bias table as a
+  regression guard. It pins three structural facts: the estimate rises
+  monotonically with `k`, it rises monotonically with `tau` toward a ceiling
+  near `tau * d`, and the per-class maximum drifts upward with the probe budget.
+  The previous tests covered only exactly flat, noiseless subspaces, where local
+  PCA is trivially exact.
+
 ### Changed
+
+- **`DEFAULT_K_PCA = 25` is now the shared `--k-pca` default** across the
+  benchmark scripts that prescribe a bottleneck width, replacing per-script
+  defaults of 25, 30 and 50. That single inconsistency produced CIFAR-10 reading
+  34 in one canonical artifact and 19 in another, which `docs/RESULTS.md`
+  attributed to differing preprocessing; both scripts in fact apply the same
+  `StandardScaler`, and the difference was `k`. Two scripts deviate on purpose
+  and now say so inline: `iris_manifold_architecture.py` (k=10, four features and
+  50 points per class) and `clinical/disease_manifold_architecture.py` (k=20).
+
+  **This changes results for scripts previously defaulting to 30 or 50.** Pass
+  `--k-pca 50` to reproduce a pre-existing artifact recorded at 50.
+
+- `docs/RESULTS.md` and `README.md` now state one canonical convention — local
+  PCA at k=25, tau=0.90, per-class maximum — with the other readings tabulated as
+  sensitivity rather than presented as competing measurements of one quantity.
+  The README previously gave three different CIFAR-10 `d*` values (34, 19, 16)
+  in three sections without saying they were different statistics.
 
 ### Removed
 
 ### Fixed
+
+- `docs/RESULTS.md` attributed the CIFAR-10 34-vs-19 gap to preprocessing. It is
+  the neighbourhood size.
+
+- `local_pca_dimension()` passed a possibly-`None` `radius` to `float()` on a
+  path the type checker could not narrow.
 
 ## [0.14.0] - 2026-08-10
 

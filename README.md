@@ -49,13 +49,27 @@ mutually exclusive.
 
 ## The Core Finding
 
-Machine learning spaces are **99% noise** by dimension. CIFAR-10 images live in a 34-dimensional manifold inside a 3,072-dimensional ambient space. Tiny ImageNet: 20 intrinsic dimensions inside 12,288. Standard algorithms treat every dimension equally — spending 99%+ of their compute on dimensions that carry no signal, while momentum, distance metrics, and gradient updates are polluted by that noise.
+Machine learning spaces are **99% noise** by dimension. CIFAR-10 images live in a roughly 19-dimensional manifold inside a 3,072-dimensional ambient space. Tiny ImageNet: 20 intrinsic dimensions inside 12,288. Pope et al. ([ICLR 2021](https://arxiv.org/abs/2104.08894)) reach the same conclusion from a different estimator, putting CIFAR-10 at 13–26 by Levina–Bickel MLE. Standard algorithms treat every dimension equally — spending 99%+ of their compute on dimensions that carry no signal, while momentum, distance metrics, and gradient updates are polluted by that noise.
 
 WaveRider measures the actual geometry, builds models constrained to the signal manifold, and derives a closed-form formula for optimal network width from first principles:
 
 > **w\* = d\* + C − 1**
 
-Measure the intrinsic dimensionality d\*. Count the classes C. That's your optimal bottleneck width. No grid search. No hyperparameter sweep.
+Measure the intrinsic dimensionality d\*. Count the classes C. That's your optimal
+bottleneck width. No grid search. No hyperparameter sweep.
+
+> **What d\* means here, exactly.** d\* is not a property of the dataset on its own — it
+> is the output of an estimator, and it moves with that estimator's settings. Every d\*
+> quoted below is **local PCA at k=25 neighbours, τ=0.90, taking the per-class maximum**
+> — the default the benchmark scripts now share, and the one that produced these rows,
+> though the older result JSONs record τ without recording k. Change any one of
+> those three and the number changes: CIFAR-10 reads 19 at k=25 and 34 at k=50 on
+> identical data with identical preprocessing, and 16 if you take the global mean instead
+> of the per-class maximum. Those are not conflicting measurements of one quantity, they
+> are three different quantities, and the sensitivity table is in
+> [docs/RESULTS.md](docs/RESULTS.md). Published estimators disagree at least this much:
+> Pope et al. report CIFAR-10 as 21 / 96 / 11 / 7 under MLE / GeoMLE / TwoNN / kNN-graph.
+> Quote k, τ and the aggregation with any d\* taken from this library.
 
 ---
 
@@ -88,11 +102,19 @@ When a network is given a bottleneck of exactly w\* = d\* + C − 1 neurons, it
 subspace plus exactly C−1 class-separation coordinates, and the two together
 recover d\* precisely.
 
-On CIFAR-10 (d\*=16, C=10, w\*=25), PCA on the w\*-dimensional bottleneck yields
-k₉₀ = 7 geometry components (the on-manifold subspace, Whitney bound) and
-n_extra = 9 class-separation coordinates. Both identities hold exactly:
+On CIFAR-10 the probe reads d\*=16 — the **global mean** of the same local-PCA field
+whose per-class maximum is the 19 in the table above, not a different measurement — so
+C=10 and w\*=25. PCA on the w\*-dimensional bottleneck yields k₉₀ = 7 geometry components
+(the on-manifold subspace) and n_extra = 9 class-separation coordinates:
 
 > **k₉₀ + n_extra = 7 + 9 = 16 = d\***  and  **n_extra = 9 = C − 1**
+
+Read those two carefully, because only one of them is a finding. n_extra is *defined* as
+w\* − k₉₀, so the first identity restates w\* = d\* + C − 1 rather than evidencing it. The
+substantive claim is the second: that exactly C−1 of the bottleneck directions fall
+outside the 90% variance shell. It is a one-dataset result, stated against the global-mean
+convention, and **untested under the per-class maximum** that every w\* in the table above
+is derived from. Both conventions are being re-run before this is claimed as confirmation.
 
 The semantic content is interpretable: PC11 selects four-legged animals, PC9
 flat/low-profile objects, PC12 wheeled vehicles. *(Paper, Table 8.)*

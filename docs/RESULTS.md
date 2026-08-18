@@ -43,21 +43,63 @@ benchmark script; each dataset links its rendered report. See
 | [**CIFAR-10**](../benchmarks/canonical_tests/cifar10_report.md) | 3,072 | 34 | 98.9% | 51.67% @ 3.7M params | 49.12% @ 5,076 params | **724×** at −2.6 pp |
 | [**MNIST**](../benchmarks/canonical_tests/mnist_report.md) | 784 | 27 | 96.6% | 97.42% @ 109,386 params | 95.11% @ 1,036 params | **105×** at −2.3 pp |
 
+*Mixed estimator settings, retained as-run.* The CIFAR-10 and MNIST rows are
+k=50 readings (34 and 27); CIFAR-100 is k=25 (19) and Tiny ImageNet does not
+record its k. Only the CIFAR-100 row is at the canonical convention. The
+parameter counts and accuracies are unaffected — d enters this table as the
+noise fraction, not as a trained width — but the "Intrinsic d" column is not
+comparable row-to-row and is not comparable with the Universal Bottleneck table
+above. See the provenance note below.
+
 ---
 
 ## Provenance notes
 
-> **Why d differs between tables.** The same dataset appears with different
-> intrinsic dimensions above because the tables cite different benchmark runs,
-> and each run reports two measures at τ=0.90: a **per-class maximum**
-> (`intrinsic_dim`) and a **global mean** (`global_dim`). CIFAR-10 is 34/29 in
-> [`cifar10_architecture_results.json`](../benchmarks/canonical_tests/cifar10_architecture_results.json)
-> but 19/16 in
-> [`resnet_manifold_architecture_results.json`](../benchmarks/canonical_tests/resnet_manifold_architecture_results.json),
-> whose preprocessing differs; MNIST is 27 in the efficiency run and 16 in the
-> UB run. The Universal Bottleneck table uses the per-class maximum of its own
-> run, which is what w\* is derived from. Every figure is traceable to the JSON
-> committed beside its script — the numbers are not interchangeable across rows.
+> **Why d differs between tables — and the canonical convention.** d\* is not a
+> property of a dataset. It is the output of local PCA under three choices —
+> the neighbourhood size **k**, the cumulative-variance threshold **τ**, and the
+> **aggregation** — and it moves with all three. The canonical convention for
+> this project is **k=25, τ=0.90, per-class maximum**; that is the default in
+> every benchmark script as of the estimator-provenance change, and it is what
+> the Universal Bottleneck table above reports. Everything else on this page is
+> a sensitivity reading and is labelled as one.
+>
+> | Dataset | Run | k | τ | Aggregation | d |
+> |---|---|---|---|---|---|
+> | CIFAR-10 | [`resnet_manifold_architecture_results.json`](../benchmarks/canonical_tests/resnet_manifold_architecture_results.json) — **canonical, UB table** | 25 | 0.90 | per-class max | **19** |
+> | CIFAR-10 | same run, other statistic | 25 | 0.90 | global mean | 16 |
+> | CIFAR-10 | [`cifar10_architecture_results.json`](../benchmarks/canonical_tests/cifar10_architecture_results.json) — efficiency table | 50 | 0.90 | per-class max | 34 |
+> | CIFAR-10 | same run, other statistic | 50 | 0.90 | global mean | 29 |
+> | CIFAR-10 | [`manifold_dim_probe_results.json`](../benchmarks/canonical_tests/manifold_dim_probe_results.json) — probe | 25 | 0.90 | global mean | 16 |
+> | MNIST | [`mnist_ub_phase_boundary_mnist_results.json`](../benchmarks/canonical_tests/mnist_ub_phase_boundary_mnist_results.json) — canonical, UB table | 25 | 0.90 | per-class max | **16** |
+> | MNIST | [`mnist_architecture_results.json`](../benchmarks/canonical_tests/mnist_architecture_results.json) — efficiency table | 50 | 0.90 | per-class max | 27 |
+>
+> **The 34-vs-19 gap is `k`, not preprocessing.** An earlier version of this note
+> attributed it to differing preprocessing. That was wrong: both scripts apply
+> the same `StandardScaler` before discovery
+> (`cifar_architecture_sweep.py` and `resnet_manifold_architecture.py`, each
+> immediately before its discovery call). The difference was the `--k-pca`
+> default — 50 in the sweep, 25 in the ResNet script — and a wider neighbourhood
+> probes a larger radius, at which local PCA stops measuring a tangent space and
+> starts mixing in curvature. On synthetic data with three regions of known
+> local dimension 8/16/24, moving k from 10 to 100 moved the reported per-class
+> maximum from 8 to 25 with the data held fixed. The defaults are now unified on
+> `DEFAULT_K_PCA = 25` and every run records k, τ, the aggregation, the probe
+> budget and the seed in an `"estimator"` block in its own JSON. Coverage in the
+> older artifacts is uneven — `cifar10_architecture_results.json` and
+> `mnist_architecture_results.json` do record `k_pca`, while
+> `resnet_manifold_architecture_results.json` records τ but not k, so the
+> headline `d*=19 → w*=28` was not reproducible from its own artifact. Where the
+> JSON is silent, the k column above is the script default that produced it,
+> read from the script.
+>
+> **Two caveats on the numbers themselves.** The per-class maximum is an order
+> statistic over the probe budget, so it drifts upward as that budget grows and
+> is not comparable across runs with different `samples_per_class`. And
+> discovery was unseeded until the same change, so no d\* on this page is
+> reproducible by re-running the script that produced it — repeats at the
+> shipped defaults moved the mean statistic by roughly a dimension. Discovery is
+> seeded by default now (`--discovery-seed`, default 0).
 
 > **Caveat: the CIFAR-100 baseline and manifold figures come from different
 > runs.** The 21.31% baseline is the `Standard (1024→512)` arm of
