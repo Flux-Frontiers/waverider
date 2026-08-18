@@ -68,6 +68,31 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
+# ---------------------------------------------------------------------------
+# TensorFlow setup
+# ---------------------------------------------------------------------------
+# At MODULE scope, before keras or any heavy numeric work -- which is what every
+# other canonical benchmark does (resnet_manifold_architecture.py:70,
+# cifar_architecture_sweep.py:79, manifold_dim_probe.py:52, and six others).
+#
+# This is not stylistic.  Bootstrapping TF lazily, after the estimator sweep had
+# already driven Accelerate's BLAS threadpool, deadlocked the prescription
+# experiment on the first model.fit(): the main thread sat in
+# ProcessFunctionLibraryRuntime::RunSync -> Notification::WaitForNotification
+# while every Eigen worker idled in WaitForWork.  Seven minutes at 0% CPU, no
+# error, no timeout.  The same fit takes 11 s when TF is set up at import.
+#
+# setup_tensorflow defaults to CPU deliberately -- per its docstring the
+# Accelerate/AMX path beats Metal for models this size.  CPU is also the device
+# every artifact this experiment must be commensurable with was produced on:
+# resnet_manifold_architecture_results.json, the source of d*=19 -> w*=28,
+# records device_used "CPU (forced)", as do both dimension-probe runs.
+# --metal (or the --gpu alias) opts in.
+from benchmarks.tf_setup import setup_tensorflow  # noqa: E402
+
+tf, DEVICE_INFO = setup_tensorflow(gpu_flag="--metal")
+import keras  # noqa: E402
+
 from waverider.dimensionality_discovery import (  # noqa: E402
     discover_dimensionality,
     discover_per_class_dimensionality,
@@ -261,7 +286,6 @@ def load_dataset(name, standardize=True):
         before dimension discovery.
     :returns: Tuple (X_train, y_train, X_test, y_test, n_classes, spatial_shape).
     """
-    import keras  # noqa: PLC0415
     from sklearn.preprocessing import StandardScaler  # noqa: PLC0415
 
     loaders = {
@@ -433,15 +457,16 @@ def run_noise(args):
 
 
 def _setup_tf():
-    from benchmarks.tf_setup import setup_tensorflow  # noqa: PLC0415
+    """Return the module-scope TF bootstrap.
 
-    return setup_tensorflow(gpu_flag="--gpu")
+    Kept as a function so the call sites read the same, but the work happens at
+    import time now.  See the module header for why that matters.
+    """
+    return tf, DEVICE_INFO
 
 
 def _train_at_width(build, X_train, y_train, X_test, y_test, width, args, tag):
     """Train n_trials models at one bottleneck width; return accuracy stats."""
-    import keras  # noqa: PLC0415
-
     accs, params = [], None
     for trial in range(args.n_trials):
         keras.utils.set_random_seed(DEFAULT_SEED + trial)
@@ -580,8 +605,6 @@ def run_prescription(args):
 def run_probe_convention(args):
     """Re-run the dimension probe under both aggregation conventions."""
     tf, device_info = _setup_tf()
-    import keras  # noqa: PLC0415
-
     from model_builder import build_manifold_resnet  # noqa: PLC0415
 
     print("=" * 76)
@@ -703,7 +726,18 @@ def main():
             help="Points used for dimension estimation (O(n) distance rows)",
         )
         if gpu:
-            p.add_argument("--gpu", action="store_true", help="Use GPU (CUDA or Metal)")
+            # --metal is what the rest of the canonical benchmarks call this flag
+            # (six scripts, including resnet_manifold_architecture.py, the source
+            # of every published w*).  --gpu is kept as an accepted alias because
+            # the handoff and the report use it.  Neither is needed for a valid
+            # run: see the TensorFlow setup note in the module header.
+            p.add_argument(
+                "--metal",
+                "--gpu",
+                dest="metal",
+                action="store_true",
+                help="Opt in to Metal/CUDA. CPU is the default and is faster for these model sizes.",
+            )
             p.add_argument("--epochs", type=int, default=60)
             p.add_argument("--batch-size", type=int, default=512)
             p.add_argument("--lr", type=float, default=0.001)

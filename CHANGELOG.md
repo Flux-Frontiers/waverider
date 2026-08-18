@@ -68,6 +68,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`estimator_calibration.py` deadlocked on the first `model.fit()`, silently.** It bootstrapped TensorFlow lazily, inside `run_prescription`, after the estimator sweep had already driven Accelerate's BLAS threadpool. Every other canonical benchmark calls `setup_tensorflow()` at **module scope, before importing keras** — `resnet_manifold_architecture.py:70`, `cifar_architecture_sweep.py:79`, `manifold_dim_probe.py:52` and six others. With the lazy version the main thread parked in `ProcessFunctionLibraryRuntime::RunSync → Notification::WaitForNotification` while every Eigen worker idled in `WaitForWork`: **seven minutes at 0% CPU, no error and no timeout**, which reads as a slow run rather than a hang. The same fit takes **11.3 s** with the bootstrap at import. Moved to module scope; the `prescription` smoke test now completes in about four minutes.
+
+- **The `--gpu` flag was off-convention** and is now `--metal`, with `--gpu` kept as an accepted alias. Six canonical benchmarks spell it `--metal`; only this script and one other used `--gpu`.
+
 - `docs/RESULTS.md` attributed the CIFAR-10 34-vs-19 gap to preprocessing. It is
   the neighbourhood size.
 

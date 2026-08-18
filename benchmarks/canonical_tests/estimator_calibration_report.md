@@ -4,11 +4,36 @@
 **Code:** `benchmarks/canonical_tests/estimator_calibration.py` @ `7b39a7a`
 **Artifacts:** `estimator_calibration_{synthetic,profile_cifar10,noise_cifar10}_results.json`
 
-Experiments 1–3 (CPU) ran. **Experiments 4 and 5 did not run: TensorFlow reports
-no GPU on this machine** — `tf.config.list_physical_devices('GPU')` returns `[]`
-under TF 2.21.0 with no `tensorflow-metal` installed, and the handoff says to
-stop and report rather than run them on CPU. Experiment 4 is ~45 trainings ×
-60 epochs; on CPU it is not a wait, it is a different project.
+Experiments 1–3 ran. Experiments 4 and 5 have not been run yet.
+
+**Correction to an earlier version of this file.** It said 4 and 5 were blocked
+because TensorFlow reports no GPU here. That was wrong, and it was wrong because
+it took the handoff's premise instead of checking the repo. **These benchmarks
+run on CPU by design.** `benchmarks/tf_setup.py` defaults to CPU and says why —
+the Accelerate/AMX path beats Metal for models this size, and per-op GPU sync
+dominates on small MLPs. More to the point,
+`resnet_manifold_architecture_results.json` — the run that produced
+`d* = 19 → w* = 28`, and the baseline this experiment's width sweep must be
+commensurable with — records `device_used: "CPU (forced)"`. So do both
+dimension-probe runs, the MNIST run and the Iris run. Running experiment 4 on
+CPU is not a compromise; it is the same device the numbers it is compared
+against came from.
+
+**Measured cost, rather than guessed:** one epoch of a `ManifoldResNet` at
+w=28 on CIFAR-10 takes **11.3 s** on this machine. The full experiment is
+30 widths × 3 trials × 60 epochs = **5,400 epochs, roughly 15–20 hours**. An
+overnight run, not a different project.
+
+**A deadlock in the harness had to be fixed first**, and it is worth knowing
+about because it fails silently. `estimator_calibration.py` bootstrapped
+TensorFlow lazily, inside `run_prescription`, after the estimator sweep had
+already driven Accelerate's BLAS threadpool. Every other canonical benchmark
+calls `setup_tensorflow()` at module scope before importing keras. With the lazy
+version the first `model.fit()` hung: main thread parked in
+`ProcessFunctionLibraryRuntime::RunSync → Notification::WaitForNotification`
+while every Eigen worker idled in `WaitForWork`. Seven minutes at 0% CPU, no
+error, no timeout — it would have looked like a slow run. Moving the bootstrap
+to module scope fixes it; the smoke test then completes in about four minutes.
 
 ---
 
@@ -201,17 +226,30 @@ in both labs.
    accuracy optimum sits in one place regardless, then `k=25` is a calibration
    constant and the rule survives with an honest caveat.
 
-## To run experiment 4 and 5
+   The smoke run makes one thing concrete: on CIFAR-10 the twelve estimator
+   settings prescribe `w` anywhere from the low twenties to **111**. Whatever the
+   accuracy curve does, it will not endorse all of them.
 
-Needs a GPU TensorFlow can see. Either install `tensorflow-metal` here and
-re-check `tf.config.list_physical_devices('GPU')`, or run on a CUDA box:
+## To run experiments 4 and 5
+
+CPU, no flags — the default, and the device the comparison baselines were
+produced on. `--metal` opts in to the GPU if you want to compare; `--gpu` is
+accepted as an alias.
 
 ```bash
+# smoke first: ~4 minutes, 5 widths x 1 trial x 3 epochs
 python benchmarks/canonical_tests/estimator_calibration.py prescription \
-    --dataset cifar10 --gpu --quick        # smoke first
-python benchmarks/canonical_tests/estimator_calibration.py prescription --dataset cifar10 --gpu
-python benchmarks/canonical_tests/estimator_calibration.py probe-convention --dataset cifar10 --gpu
+    --dataset cifar10 --quick
+
+# the real thing: 30 widths x 3 trials x 60 epochs, ~15-20 h
+nohup python benchmarks/canonical_tests/estimator_calibration.py \
+    prescription --dataset cifar10 > prescription.log 2>&1 &
+
+python benchmarks/canonical_tests/estimator_calibration.py probe-convention --dataset cifar10
 ```
+
+Use `nohup`; a run this long will not survive a terminal teardown, and the
+failure leaves no marker.
 
 If `prescription` returns `optimum_is_broad: true`, report it. Do not narrow the
 width grid or re-seed to sharpen the peak.
