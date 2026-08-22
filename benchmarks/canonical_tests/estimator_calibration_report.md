@@ -1,10 +1,17 @@
 # Estimator calibration — results
 
-**Run:** 2026-08-18, `tesla` (macOS 26.6, arm64), Python 3.12.13, NumPy 1.26.4
-**Code:** `benchmarks/canonical_tests/estimator_calibration.py` @ `7b39a7a`
-**Artifacts:** `estimator_calibration_{synthetic,profile_cifar10,noise_cifar10}_results.json`
+**Run:** 2026-08-18 through 2026-08-22, `tesla` (macOS 26.6, arm64), Python 3.12.13, NumPy 1.26.4
+**Code:** `benchmarks/canonical_tests/estimator_calibration.py` @ `7b39a7a` (1–3), `4aac9fd` (4)
+**Artifacts:** `estimator_calibration_{synthetic,profile_cifar10,noise_cifar10,prescription_cifar10}_results.json`
 
-Experiments 1–3 ran. Experiments 4 and 5 have not been run yet.
+Experiments 1–4 have run. Experiment 5 (`probe-convention`) has not.
+
+**Experiment 4 is the one that decides the paper, and the answer is not the
+good outcome.** See §4 below before anything else in this file: the shipped
+prescription (`w* = d̂ + C − 1` at the canonical `k=25` convention) lands **6.1
+accuracy points below the empirical optimum** on CIFAR-10, and the optimum is
+hit only by the two estimators independently known to be biased upward
+(large-`k` local PCA, TwoNN) — not by the one the paper actually uses.
 
 **Correction to an earlier version of this file.** It said 4 and 5 were blocked
 because TensorFlow reports no GPU here. That was wrong, and it was wrong because
@@ -37,19 +44,21 @@ to module scope fixes it; the smoke test then completes in about four minutes.
 
 ---
 
-## The one-line verdict
+## The two-line verdict
 
 **CIFAR-10 has no plateau.** The local-PCA estimate climbs monotonically from
 4 to 74 as `k` goes 5 → 200, and never stops climbing. There is no probed scale
 at which it stabilises, so **every `d*` in this repo is a function of the `k` it
-was measured at** rather than a property of the dataset. That is the more
-important of the two outcomes experiment 2 could have had, and it is not a failed
-run.
+was measured at** rather than a property of the dataset. The estimator is not
+broken — on synthetic manifolds of true dimension 5 and 10 it *does* saturate,
+and agrees with an independent MLE to within 0.2 dimensions — it stops
+saturating at true `d` ≥ 20, which is the regime the image estimates sit in.
 
-The estimator is not broken. On synthetic manifolds of true dimension 5 and 10 it
-*does* saturate, and the plateau value plus the τ-correction agrees with an
-independent MLE to within 0.2 dimensions. It stops saturating at true `d` ≥ 20 —
-which is the regime the image estimates sit in.
+**And the prescription built on it undershoots by 2×.** The empirical optimum
+on CIFAR-10 is w=59 (75.70% accuracy); the shipped convention prescribes w=28
+(69.59%) — a 6.1-point gap, not noise. Only the two estimators independently
+known to over-report (TwoNN, large-`k` local PCA) land near the true optimum.
+See §4.
 
 ---
 
@@ -204,6 +213,79 @@ in both labs.
 
 `plateau: none` at every level, including the un-injected baseline.
 
+## 4 · `prescription` (E2) — THE DECISIVE ONE
+
+CIFAR-10, 30 widths (union of every estimator's prescription and a step-4 grid
+from 8 to 64), 3 trials each, 60 epochs, CPU (the device every comparison
+baseline was produced on). ~29 hours wall-clock on this machine — well past
+the 15–20 h estimate, because the largest widths (up to 188K params) cost far
+more per epoch than the smallest (3K params), and the estimate was made before
+that spread was known.
+
+**`optimum_is_broad: false`.** This is not a case of "accuracy is flat, no
+formula deserves credit for precision it can't have." The optimum is genuinely
+sharp: of 30 widths tested, only **w = 48, 57, 59** are statistically
+indistinguishable from the best (within one standard deviation of it).
+
+| | width | accuracy |
+|---|---|---|
+| **Empirical optimum** | **w = 59** | **75.70% ± 1.41%** |
+| Shipped prescription (`k=25`, per-class max) | w = 28 | **69.59% ± 1.09%** |
+| Gap | | **6.1 pp** |
+
+The gap is not noise: w=28's own standard deviation is 1.1 points, so a 6.1-point
+shortfall is roughly 5–6 sigma, not a coin flip that went the wrong way.
+
+**Of the 27 estimator settings tested, exactly two land in the optimum band:**
+
+| Estimator | Prescribes `w` | Hits the optimum? |
+|---|---|---|
+| `local_pca_k100_tau0.9_median` | 57 | **yes** |
+| `twonn` | 59 | **yes** (exact) |
+| `shipped_per_class_max_k25_tau0.9` (**the paper's own convention**) | 28 | no |
+| `shipped_global_k25` | 25 | no |
+| `mle_k3` / `mle_k5` | 37 | no |
+| `mle_k10` | 35 | no |
+| `mle_k20` | 33 | no |
+| `local_pca_k25_tau0.9_median` | 25 | no |
+| `local_pca_k50_tau0.9_median` | 38 | no |
+| everything else (20 more settings, `w` from 12 to 115) | — | no |
+
+This is not a coincidence of which two estimators happen to land near 57–59.
+**TwoNN and large-`k` local PCA are exactly the two estimators experiment 1
+already showed are biased upward** — TwoNN systematically over-reports (§1
+above: 8.8 at true `d`=5, 15.0 at true `d`=10), and local PCA at `k=100` is deep
+in the regime where curvature and sampling density inflate the estimate rather
+than measuring a tangent space (§2: CIFAR-10's `d̂` never stops climbing with
+`k`, reaching 48 at `k=100`). The optimum is not validating the design rule; it
+is landing near where the over-estimating estimators happen to point, while
+every convention that tries to measure the *actual* local dimension —
+including the one the manuscript uses — undershoots by nearly 2×.
+
+**Reading this against the three outcomes named in advance** (handoff §4,
+checklist, this repo's strategy doc): this is **"sharp optimum, most
+estimators miss it"** — the worst case for the current draft and the best case
+for honesty. It is not evidence the prescription is meaningless (a real,
+narrow, reproducible optimum exists), and it is not evidence the prescription
+as currently computed finds it. The manuscript's claim needs to change from
+"the theorem prescribes the optimal width" to something that says, plainly,
+that the canonical estimator's prescription is a substantial (2×,
+6-percentage-point) underestimate on this dataset, and that only estimators
+known to over-report land close to the true optimum.
+
+**One honest caveat on the shape of the curve.** Only 3 trials per width, and
+several individual points are noisy (w=44 dips to 69.16% between w=42's 71.85%
+and w=45's 73.10%; w=60/63/64 wobble between 71.7% and 73.3% rather than
+continuing to climb). The optimum at w=59 sits near the top of the tested
+range (max_width=64), and the three widths above it (60, 63, 64) are flat-to-
+declining rather than still rising, which is some evidence the peak was
+captured rather than cut off — but with 3 trials and a noisy curve, that is
+suggestive, not certain. Per the handoff's own instruction, the width grid was
+not narrowed and no trial was re-run to sharpen this.
+
+Full data: `estimator_calibration_prescription_cifar10_results.json`
+(`verdict`, `prescriptions`, `sweep` keys).
+
 ---
 
 ## What this changes
@@ -218,38 +300,28 @@ in both labs.
    that has to be said rather than worked around.
 3. **The manuscript's estimator-sensitivity limitation is now backed by
    measurement**, not by citation of someone else's spread.
-4. **Experiment 4 is still the decision point and is now the only thing
-   outstanding.** Nothing here tells us whether the optimal bottleneck width is
-   invariant to which estimator you start from. Given that CIFAR-10 has no stable
-   `d̂` at all, that question is sharper than it was this morning, not softer: if
-   `w*` tracks whichever `k` was chosen, the prescription is circular; if the
-   accuracy optimum sits in one place regardless, then `k=25` is a calibration
-   constant and the rule survives with an honest caveat.
+4. **Experiment 4 is done, and it settles the question the strategy doc's §5
+   revision was waiting on — against the paper's current framing.** The
+   optimal width is emphatically *not* invariant to which estimator you start
+   from: 25 of 27 tested settings, including the manuscript's own, miss the
+   empirical optimum by a wide margin. `k=25` is not a calibration constant
+   that can be named and reported as such; it is a substantial (2×)
+   underestimate on this dataset. The two settings that do land near the
+   optimum are the two independently shown to be biased upward. This is the
+   "sharp optimum, most estimators miss it" outcome — publishable, but only if
+   the paper says so and names the gap. See §4 above for the numbers.
 
-   The smoke run makes one thing concrete: on CIFAR-10 the twelve estimator
-   settings prescribe `w` anywhere from the low twenties to **111**. Whatever the
-   accuracy curve does, it will not endorse all of them.
+## Remaining: experiment 5
 
-## To run experiments 4 and 5
-
-CPU, no flags — the default, and the device the comparison baselines were
-produced on. `--metal` opts in to the GPU if you want to compare; `--gpu` is
-accepted as an alias.
+`probe-convention` re-runs the dimension probe under both aggregation
+conventions (global mean vs. per-class max) and tests whether `n_extra = C−1`
+holds under each — the open question from `UB_PAPER_FIX_CHECKLIST.md` step 9.
+Not yet run.
 
 ```bash
-# smoke first: ~4 minutes, 5 widths x 1 trial x 3 epochs
-python benchmarks/canonical_tests/estimator_calibration.py prescription \
-    --dataset cifar10 --quick
-
-# the real thing: 30 widths x 3 trials x 60 epochs, ~15-20 h
-nohup python benchmarks/canonical_tests/estimator_calibration.py \
-    prescription --dataset cifar10 > prescription.log 2>&1 &
-
 python benchmarks/canonical_tests/estimator_calibration.py probe-convention --dataset cifar10
 ```
 
-Use `nohup`; a run this long will not survive a terminal teardown, and the
-failure leaves no marker.
-
-If `prescription` returns `optimum_is_broad: true`, report it. Do not narrow the
-width grid or re-seed to sharpen the peak.
+CPU, no flags needed (`--metal` opts in to GPU if wanted). Use `nohup` for
+anything long-running; a run this long will not survive a terminal teardown,
+and the failure leaves no marker.
