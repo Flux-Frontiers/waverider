@@ -77,7 +77,7 @@ dependencies = [
 kg = [
     "doc-kg>=0.21.2",
     "pycode-kg>=0.23.1",
-    "proteuspy>=0.100.0",
+    "proteuspy>=0.100.1",
 ]
 
 [project.urls]
