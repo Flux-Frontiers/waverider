@@ -603,7 +603,19 @@ def run_prescription(args):
 
 
 def run_probe_convention(args):
-    """Re-run the dimension probe under both aggregation conventions."""
+    """Re-run the dimension probe under both aggregation conventions.
+
+    Matches the construction in manifold_dim_probe.py, not the width sweep in
+    run_prescription: that script trains ManifoldResNet-d* at bottleneck width
+    ``d_star`` (manifold_dim_probe.py:718, "PHASE 2: TRAINING ManifoldResNet-d*"),
+    and defines ``n_extra = d_star - k_90`` (manifold_dim_probe.py:770) -- not
+    ``w_star - k_90``.  An earlier version of this function built the model at
+    ``w_star`` and used ``w_star - k_90``, which is a different construction
+    that cannot test the published claim: since ``w_star = d_star + C - 1``,
+    ``k_90 + (w_star - k_90) == d_star`` reduces to ``w_star == d_star``, false
+    by construction whenever ``C > 1``.  The "identity fails" result that
+    produced was not a measurement of anything.
+    """
     tf, device_info = _setup_tf()
     from model_builder import build_manifold_resnet  # noqa: PLC0415
 
@@ -634,15 +646,17 @@ def run_probe_convention(args):
         seed=DEFAULT_SEED,
     )
     per_class_max = int(max(c["max"] for c in per_class.values()))
-    print(f"\n  global mean d*   = {global_mean}  -> w* = {global_mean + C - 1}")
-    print(f"  per-class max d* = {per_class_max}  -> w* = {per_class_max + C - 1}\n")
+    print(f"\n  global mean d*   = {global_mean}")
+    print(f"  per-class max d* = {per_class_max}\n")
 
     conventions = []
     for name, d_star in (("global_mean", global_mean), ("per_class_max", per_class_max)):
-        w_star = d_star + C - 1
         keras.utils.set_random_seed(DEFAULT_SEED)
+        # spatial_shape and dropout are accepted for parity with the rest of this
+        # script's CLI, but default to manifold_dim_probe.py's own protocol
+        # (dropout=0.0) unless overridden -- see the probe-convention subparser.
         model = build_manifold_resnet(
-            input_dim, C, w_star, lr=args.lr, spatial_shape=shape, dropout=args.dropout
+            input_dim, C, d_star, lr=args.lr, spatial_shape=shape, dropout=args.dropout
         )
         model.fit(X_train, y_train, epochs=args.epochs, batch_size=args.batch_size, verbose=0)
         _, acc = model.evaluate(X_test, y_test, verbose=0)
@@ -657,12 +671,12 @@ def run_probe_convention(args):
         pca = skPCA().fit(acts)
         cum = np.cumsum(pca.explained_variance_ratio_)
         k_90 = int(np.searchsorted(cum, 0.90) + 1)
-        n_extra = w_star - k_90
+        n_extra = d_star - k_90
         conventions.append(
             {
                 "convention": name,
                 "d_star": d_star,
-                "w_star": w_star,
+                "w_star": d_star + C - 1,
                 "test_acc": float(acc),
                 "k_90": k_90,
                 "n_extra": n_extra,
@@ -673,17 +687,17 @@ def run_probe_convention(args):
             }
         )
         print(
-            f"  {name:15s}: d*={d_star:3d} w*={w_star:3d} acc={acc:.4f} "
+            f"  {name:15s}: d*={d_star:3d} acc={acc:.4f} "
             f"k_90={k_90:3d} n_extra={n_extra:3d} "
             f"| k_90+n_extra={k_90 + n_extra} {'==' if (k_90 + n_extra) == d_star else '!='} d* "
             f"| n_extra {'==' if n_extra == C - 1 else '!='} C-1"
         )
         keras.backend.clear_session()
 
-    print("\n  NOTE: k_90 + n_extra = w* by construction, since n_extra is defined")
-    print("  as w* - k_90.  The identity is therefore a restatement of w* = d* + C - 1,")
-    print("  not independent evidence for it.  The substantive claim is n_extra == C-1,")
-    print("  i.e. that exactly C-1 bottleneck directions fall outside the 90% variance")
+    print("\n  NOTE: k_90 + n_extra = d* by construction, since n_extra is defined")
+    print("  as d* - k_90.  The identity is therefore not independent evidence for")
+    print("  anything on its own.  The substantive claim is n_extra == C-1, i.e. that")
+    print("  exactly C-1 of the d* on-manifold dimensions fall outside the 90% variance")
     print("  shell.  That is what the two rows above test.")
 
     _write(
@@ -764,6 +778,12 @@ def main():
     p = common(sub.add_parser("probe-convention", help="Probe under both aggregations"), gpu=True)
     p.add_argument("--k-pca", type=int, default=25)
     p.add_argument("--n-trials", type=int, default=1)
+    # Match manifold_dim_probe.py's own protocol (epochs=30, batch=256, no
+    # dropout) rather than the prescription sweep's defaults inherited from
+    # common(gpu=True) -- this experiment replicates that script's construction
+    # under a different aggregation convention, so its hyperparameters should
+    # match, not the width-sweep's.
+    p.set_defaults(epochs=30, batch_size=256, dropout=0.0)
 
     args = parser.parse_args()
     if getattr(args, "quick", False):
