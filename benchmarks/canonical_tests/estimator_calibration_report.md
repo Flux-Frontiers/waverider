@@ -1,10 +1,10 @@
 # Estimator calibration — results
 
 **Run:** 2026-08-18 through 2026-08-22, `tesla` (macOS 26.6, arm64), Python 3.12.13, NumPy 1.26.4
-**Code:** `benchmarks/canonical_tests/estimator_calibration.py` @ `7b39a7a` (1–3), `4aac9fd` (4)
-**Artifacts:** `estimator_calibration_{synthetic,profile_cifar10,noise_cifar10,prescription_cifar10}_results.json`
+**Code:** `benchmarks/canonical_tests/estimator_calibration.py` @ `7b39a7a` (1–3), `4aac9fd` (4), `3c14b06` (5)
+**Artifacts:** `estimator_calibration_{synthetic,profile_cifar10,noise_cifar10,prescription_cifar10,probe_convention_cifar10}_results.json`
 
-Experiments 1–4 have run. Experiment 5 (`probe-convention`) has not.
+All five experiments have run.
 
 **Experiment 4 is the one that decides the paper, and the answer is not the
 good outcome.** See §4 below before anything else in this file: the shipped
@@ -44,7 +44,7 @@ to module scope fixes it; the smoke test then completes in about four minutes.
 
 ---
 
-## The two-line verdict
+## The three-line verdict
 
 **CIFAR-10 has no plateau.** The local-PCA estimate climbs monotonically from
 4 to 74 as `k` goes 5 → 200, and never stops climbing. There is no probed scale
@@ -54,11 +54,17 @@ broken — on synthetic manifolds of true dimension 5 and 10 it *does* saturate,
 and agrees with an independent MLE to within 0.2 dimensions — it stops
 saturating at true `d` ≥ 20, which is the regime the image estimates sit in.
 
-**And the prescription built on it undershoots by 2×.** The empirical optimum
+**The prescription built on it undershoots by 2×.** The empirical optimum
 on CIFAR-10 is w=59 (75.70% accuracy); the shipped convention prescribes w=28
 (69.59%) — a 6.1-point gap, not noise. Only the two estimators independently
 known to over-report (TwoNN, large-`k` local PCA) land near the true optimum.
 See §4.
+
+**And the dimension-probe identity does not survive the convention its own
+`w*` uses.** `n_extra = C-1` matches exactly under the aggregation the probe
+was published with (9 = 9), and fails under the aggregation the rest of the
+project actually uses for `w*` (11 ≠ 9) — same dataset, same script, only the
+convention changed. See §5.
 
 ---
 
@@ -286,6 +292,55 @@ not narrowed and no trial was re-run to sharpen this.
 Full data: `estimator_calibration_prescription_cifar10_results.json`
 (`verdict`, `prescriptions`, `sweep` keys).
 
+## 5 · `probe-convention` — the dimension probe under both aggregations
+
+**A bug in this experiment's first run is part of the record and worth
+reading before the result.** The published dimension probe
+(`manifold_dim_probe.py`) trains `ManifoldResNet-d*` at bottleneck width
+`d_star` (`:718`) and defines `n_extra = d_star - k_90` (`:770`). The first
+version of `run_probe_convention` instead built the model at `w_star` and set
+`n_extra = w_star - k_90` — a different construction, not a replication of the
+published one. Since `w_star = d_star + C - 1`, that makes
+`k_90 + (w_star - k_90) == d_star` reduce algebraically to `w_star == d_star`,
+false whenever `C > 1` regardless of anything measured. The first run's output
+(`n_extra=18` and `21` against a target of `C-1=9`) was not a measurement of
+anything and was caught before being reported. Fixed (public `3c14b06`) to
+train at `d_star` and use the published `n_extra` definition, and the CLI
+defaults corrected to match `manifold_dim_probe.py`'s actual protocol
+(epochs=30, batch=256, no dropout) rather than the width-sweep's inherited
+defaults, which this experiment had never overridden.
+
+**The corrected result: the substantive identity holds under the convention
+the probe was published with, and fails under the convention every `w*` in
+this project is actually derived from.**
+
+| Convention | `d*` | `k₉₀` | `n_extra` | `C−1` | `n_extra == C−1`? |
+|---|---|---|---|---|---|
+| global mean (as published) | 16 | 7 | **9** | 9 | ✅ **matches exactly** |
+| per-class max (what every `w*` uses) | 19 | 8 | **11** | 9 | ❌ fails |
+
+The global-mean row reproduces the committed `manifold_dim_probe_results.json`
+exactly — same `d*=16`, same `k₉₀=7`, same `n_extra=9` — from an independent
+training run with a different script, which is real corroboration that the
+published number is not a fluke of one training run. But the per-class-max
+row, run under the identical protocol and differing only in which convention
+supplied `d*`, gives `k₉₀=8` and `n_extra=11` — two off from `C−1=9`.
+
+**Read against checklist step 9's question — "does the identity survive the
+convention every `w*` is actually derived from?" — the answer is no.** The
+identity `k₉₀ + n_extra = d*` holds in both rows, but that half is true by
+construction (`n_extra` is defined as `d* - k₉₀`) and is not evidence of
+anything. The one substantive claim, `n_extra = C-1`, is convention-specific:
+it holds for the aggregation the probe paper reports its headline number
+under, and fails for the aggregation the companion paper's `w*` values are
+built from — on the *same dataset*, with nothing else changed. This is a
+stronger and more specific finding than "needs replication on more datasets":
+it shows the identity is not even stable across two statistics of the *same*
+local-PCA field on the *same* data.
+
+Full data: `estimator_calibration_probe_convention_cifar10_results.json`
+(`conventions` key, one entry per aggregation).
+
 ---
 
 ## What this changes
@@ -311,17 +366,12 @@ Full data: `estimator_calibration_prescription_cifar10_results.json`
    "sharp optimum, most estimators miss it" outcome — publishable, but only if
    the paper says so and names the gap. See §4 above for the numbers.
 
-## Remaining: experiment 5
+5. **Experiment 5 is done, and it answers checklist step 9 against keeping the
+   probe section's "mechanistic confirmation" framing as-is.** The identity
+   `n_extra = C-1` holds under the aggregation the probe was published with
+   (global mean: 9 = 9, exact) and fails under the aggregation every `w*` in
+   the companion paper is derived from (per-class max: 11 ≠ 9). Both numbers
+   come from the same dataset, the same script, the same protocol — only the
+   convention differs. See §5 above.
 
-`probe-convention` re-runs the dimension probe under both aggregation
-conventions (global mean vs. per-class max) and tests whether `n_extra = C−1`
-holds under each — the open question from `UB_PAPER_FIX_CHECKLIST.md` step 9.
-Not yet run.
-
-```bash
-python benchmarks/canonical_tests/estimator_calibration.py probe-convention --dataset cifar10
-```
-
-CPU, no flags needed (`--metal` opts in to GPU if wanted). Use `nohup` for
-anything long-running; a run this long will not survive a terminal teardown,
-and the failure leaves no marker.
+All five experiments in the original handoff have now run.
