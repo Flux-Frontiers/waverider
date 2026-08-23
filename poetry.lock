@@ -756,7 +756,6 @@ files = [
     {file = "click-8.4.1-py3-none-any.whl", hash = "sha256:482be17c6991b8c19c5429a1e995d9b0efdbb63172824c41f99965dc0ade8ec2"},
     {file = "click-8.4.1.tar.gz", hash = "sha256:918b5633eddf6b41c32d4f454bf0de810065c74e3f7dbf8ee5452f8be88d3e96"},
 ]
-markers = {main = "extra == \"kg\""}
 
 [package.dependencies]
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
@@ -772,7 +771,7 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-markers = {main = "extra == \"kg\"", dev = "sys_platform == \"win32\"", viz = "platform_system == \"Windows\" or sys_platform == \"win32\""}
+markers = {main = "platform_system == \"Windows\" or extra == \"kg\"", dev = "sys_platform == \"win32\"", viz = "platform_system == \"Windows\" or sys_platform == \"win32\""}
 
 [[package]]
 name = "comm"
@@ -1283,20 +1282,20 @@ files = [
 
 [[package]]
 name = "doc-kg"
-version = "0.21.2"
+version = "0.22.0"
 description = "A tool to build a semantically searchable knowledge graph from markdown and text documents"
 optional = true
 python-versions = "<3.14,>=3.12"
 groups = ["main"]
 markers = "extra == \"kg\""
 files = [
-    {file = "doc_kg-0.21.2-py3-none-any.whl", hash = "sha256:56a9daca368d96c782b96bc5e238c3b1ea03ec84a35784b0e2c469badbe723f2"},
-    {file = "doc_kg-0.21.2.tar.gz", hash = "sha256:d02fa9b25b50512bf0fbbf574861cd28c6a8a82f0602528f8e8e212940dca363"},
+    {file = "doc_kg-0.22.0-py3-none-any.whl", hash = "sha256:9ad50cad83ac37518ff916b44342c72cbb1972034963b3ab4ebbfd21e8361a43"},
+    {file = "doc_kg-0.22.0.tar.gz", hash = "sha256:77ccf66da16dee6c79ce22cebd08d9c27f1ec907f5f9bb32c67f096cb258dcc0"},
 ]
 
 [package.dependencies]
 click = ">=8.1.0,<9"
-kgmodule-utils = {version = ">=0.12.1", extras = ["semantic"]}
+kgmodule-utils = {version = ">=0.18.0", extras = ["semantic"]}
 mcp = ">=1.0.0,<2"
 pymupdf4llm = ">=0.0.17"
 pyyaml = ">=6.0.0"
@@ -1304,9 +1303,7 @@ rich = ">=14.3.3,<15"
 tqdm = ">=4.60"
 
 [package.extras]
-all = ["detect-secrets (>=1.5.0)", "joblib (>=1.4.0)", "pdoc (>=14.0.0)", "pre-commit (>=4.5.1)", "pytest (>=9.0.3)", "pytest-cov (>=5.0.0)", "pyvis (>=0.3.2)", "ruff (>=0.4.0,<0.16)", "scikit-learn (>=1.3.0)", "streamlit (>=1.35.0)", "ty (>=0.0.41)"]
 analysis = ["joblib (>=1.4.0)", "scikit-learn (>=1.3.0)"]
-dev = ["detect-secrets (>=1.5.0)", "pdoc (>=14.0.0)", "pre-commit (>=4.5.1)", "pytest (>=9.0.3)", "pytest-cov (>=5.0.0)", "ruff (>=0.4.0,<0.16)", "ty (>=0.0.41)"]
 lancedb = ["lancedb (>=0.29.0)"]
 viz = ["pyvis (>=0.3.2)", "streamlit (>=1.35.0)"]
 
@@ -2535,15 +2532,15 @@ rich = "*"
 
 [[package]]
 name = "kgmodule-utils"
-version = "0.13.2"
+version = "0.18.0"
 description = "Shared types, graph store, semantic index, and pipeline base for the KGModule SDK"
 optional = true
 python-versions = "<3.14,>=3.12"
 groups = ["main"]
 markers = "extra == \"kg\""
 files = [
-    {file = "kgmodule_utils-0.13.2-py3-none-any.whl", hash = "sha256:379f6a6f47ed3523375a53895fb310830272b6782e057492c4b2b089f5464890"},
-    {file = "kgmodule_utils-0.13.2.tar.gz", hash = "sha256:43d6797f7dec305ee841cd997f4ea0e55de7d04546e15ae6199865bbdf58ea86"},
+    {file = "kgmodule_utils-0.18.0-py3-none-any.whl", hash = "sha256:230adc9bdeb517867c18d9f357d25f619f66a64aee7fef0ee9a7cc125553a818"},
+    {file = "kgmodule_utils-0.18.0.tar.gz", hash = "sha256:b8b02d1f5397e39d1459b8f05af0ae29b218ea183ad21f2a37b533fbe75725c7"},
 ]
 
 [package.dependencies]
@@ -2555,6 +2552,7 @@ torch = {version = ">=2.5.1", optional = true, markers = "extra == \"semantic\""
 transformers = {version = ">=5.5.0,<6", optional = true, markers = "extra == \"semantic\""}
 
 [package.extras]
+ingest = ["firecrawl-anydoc (>=0.1.9)"]
 lancedb = ["lancedb (>=0.19.0)"]
 semantic = ["numpy (>=1.24.0)", "rich (>=13.0.0,<15.0.0)", "sentence-transformers (>=5.4.1)", "sqlite-vec (==0.1.9)", "torch (>=2.5.1)", "transformers (>=5.5.0,<6)"]
 sqlite-vec = ["sqlite-vec (==0.1.9)"]
@@ -2562,6 +2560,7 @@ synthesis = ["httpx (>=0.27.0)", "openai (>=1.30.0)", "pillow (>=10.0.0)"]
 synthesis-mflux = ["httpx (>=0.27.0)", "mflux (>=0.9.0)", "openai (>=1.30.0)", "pillow (>=10.0.0)"]
 viz = ["pyvis (>=0.3.2)"]
 viz3d = ["numpy (>=1.24.0)"]
+viz3d-qt = ["PyQt5 (>=5.15.0)", "numpy (>=1.24.0)", "pyvista (>=0.44.0)", "quiltwright (>=0.6.0)"]
 viz3d-render = ["numpy (>=1.24.0)", "pyvista (>=0.44.0)"]
 
 [[package]]
@@ -5594,17 +5593,18 @@ cffi = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "quiltwright"
-version = "0.4.0"
+version = "0.7.0"
 description = "Holographic output for Looking Glass displays: off-axis multi-view quilts from PyVista or POV-Ray scenes"
 optional = false
 python-versions = "<3.14,>=3.12"
 groups = ["main"]
 files = [
-    {file = "quiltwright-0.4.0-py3-none-any.whl", hash = "sha256:d256218cf888fd0c91ce7142cffe0289ad6cffa9e5f08cc00f066ab57fa9c178"},
-    {file = "quiltwright-0.4.0.tar.gz", hash = "sha256:c42c6e53185ddf085c046f2e90cd92ea7075ded697fd820b657cbe6c930e0cfa"},
+    {file = "quiltwright-0.7.0-py3-none-any.whl", hash = "sha256:10c9e11d609ca1ab988648da776c0f4964b37d32dda4b4964cf4366d9c6674cb"},
+    {file = "quiltwright-0.7.0.tar.gz", hash = "sha256:532110b204cb822df686d05a37baa8502d8dddadf80a84b22ce0c689d49f23f0"},
 ]
 
 [package.dependencies]
+click = ">=8.1.0,<9"
 numpy = ">=1.26"
 pillow = ">=10.0"
 
@@ -7739,4 +7739,4 @@ kg = ["doc-kg", "proteuspy", "pycode-kg"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "b3518af9fe13c6c4797096b7eee81a7c8787593ba591e92b0924f8c4c6c201ba"
+content-hash = "a8affba4c7fd21f221a86f9dd9f15e61cb6741bdabbcd60b2d5e708410872ad2"

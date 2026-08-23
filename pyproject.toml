@@ -65,7 +65,7 @@ dependencies = [
     # to <3.14 and supplies depth_report(). Earlier versions pinned <3.13 and
     # needed a `; python_version < '3.13'` marker to lock at all — that marker
     # is obsolete and must not come back.
-    "quiltwright>=0.4.0",
+    "quiltwright>=0.7.0",
     "scikit-learn>=1.3",
     "tensorflow==2.21.0",
     "tf-keras>=2.16.0",
@@ -75,7 +75,7 @@ dependencies = [
 
 [project.optional-dependencies]
 kg = [
-    "doc-kg>=0.21.2",
+    "doc-kg>=0.22.0",
     "pycode-kg>=0.23.1",
     "proteuspy>=0.100.1",
 ]
