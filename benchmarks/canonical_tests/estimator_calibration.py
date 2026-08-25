@@ -508,6 +508,7 @@ def _train_at_width(build, X_train, y_train, X_test, y_test, width, args, tag):
     """Train n_trials models at one bottleneck width; return accuracy stats."""
     accs, params = [], None
     for trial in range(args.n_trials):
+        t0 = time.perf_counter()
         keras.utils.set_random_seed(DEFAULT_SEED + trial)
         model = build(width)
         params = sum(int(np.prod(w.shape)) for w in model.trainable_weights)
@@ -522,6 +523,11 @@ def _train_at_width(build, X_train, y_train, X_test, y_test, width, args, tag):
         _, acc = model.evaluate(X_test, y_test, verbose=0)
         accs.append(float(acc))
         keras.backend.clear_session()
+        print(
+            f"      {tag} w={width:<4d} trial {trial + 1}/{args.n_trials}: "
+            f"acc={acc:.4f}  ({time.perf_counter() - t0:.0f}s)",
+            flush=True,
+        )
     return {
         "width": int(width),
         "tag": tag,

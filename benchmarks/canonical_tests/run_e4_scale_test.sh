@@ -47,6 +47,10 @@ fi
 
 cd "$REPO"
 
+# Python block-buffers stdout when piped (as through tee below), which holds
+# printed lines back for minutes during training; force line-by-line output.
+export PYTHONUNBUFFERED=1
+
 for ds in "${DATASETS[@]}"; do
     stamp="$(date +%Y%m%d_%H%M%S)"
     log="$LOGDIR/e4_${ds}_${stamp}.log"
