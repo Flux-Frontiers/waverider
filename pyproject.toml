@@ -120,6 +120,17 @@ optional = true
 matplotlib = ">=3.7"
 scipy      = ">=1.11"
 openpyxl   = ">=3.1"
+# Real-embedding KV-cache extraction for manifold_reach_calibration.py's
+# Phase 2 (MANIFOLD_REACH_QUANTIZATION_PLAN.md). CPU-only PyTorch is enough:
+# the models here (GPT-2 small and similar) only need a forward pass, not
+# training, over a few hundred short sequences.
+transformers = ">=4.45"
+torch        = ">=2.4"
+# Reads the WikiText-2 parquet directly from the HF Hub (transformers'
+# huggingface_hub does the download) -- pulling in the full `datasets`
+# package just for one file would be a much heavier dependency for the
+# same result.
+pyarrow      = ">=17.0"
 
 [tool.poetry.group.viz]
 optional = true

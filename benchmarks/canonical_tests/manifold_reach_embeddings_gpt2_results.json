@@ -1,0 +1,2006 @@
+{
+  "model": "gpt2",
+  "n_sequences": 200,
+  "max_length": 64,
+  "n_layers": 12,
+  "n_heads": 12,
+  "head_dim": 64,
+  "layers_probed": [
+    0,
+    6,
+    11
+  ],
+  "heads_probed": [
+    0,
+    1
+  ],
+  "layers_skipped": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9,
+    10
+  ],
+  "heads_skipped": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "k_values": [
+    8,
+    16,
+    32
+  ],
+  "n_holdout": 150,
+  "turboquant_mse_floor": {
+    "1": 0.36,
+    "2": 0.117,
+    "3": 0.03,
+    "4": 0.009
+  },
+  "cases": [
+    {
+      "layer": 0,
+      "head": 0,
+      "kind": "key",
+      "k": 8,
+      "gap_best": NaN,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.2502834449111817,
+      "mse_global_real": 0.1900431059294261,
+      "mse_global_null": 0.20282447694282382,
+      "by_radius": [
+        {
+          "radius": 0.12514172245559085,
+          "gap_real": 0.18995414341552858,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 56,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.18771258368338628,
+          "gap_real": 0.18993823405327562,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 57,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.2502834449111817,
+          "gap_real": 0.18991513908741461,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 60,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.37542516736677256,
+          "gap_real": 0.18688350436827184,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 70,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5005668898223634,
+          "gap_real": 0.17096839776881245,
+          "gap_null": 0.13410301341034525,
+          "gap_corrected": 0.0368653843584672,
+          "n_used_real": 94,
+          "n_used_null": 1
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 0,
+      "kind": "key",
+      "k": 16,
+      "gap_best": 0.11044670434576946,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.4825420257656995,
+      "mse_global_real": 0.14671330951495978,
+      "mse_global_null": 0.1486866912257713,
+      "by_radius": [
+        {
+          "radius": 0.24127101288284974,
+          "gap_real": 0.14666079609028634,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 56,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.36190651932427464,
+          "gap_real": 0.1465700229782689,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 62,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.4825420257656995,
+          "gap_real": 0.14097572544410653,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 77,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7238130386485493,
+          "gap_real": 0.07411451336906145,
+          "gap_null": -0.036332190976708006,
+          "gap_corrected": 0.11044670434576946,
+          "n_used_real": 140,
+          "n_used_null": 150
+        },
+        {
+          "radius": 0.965084051531399,
+          "gap_real": 0.0014754861693765942,
+          "gap_null": -0.012810654136031607,
+          "gap_corrected": 0.014286140305408201,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 0,
+      "kind": "key",
+      "k": 32,
+      "gap_best": 0.10186490247785407,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.5138967327308994,
+      "mse_global_real": 0.08603442282375297,
+      "mse_global_null": 0.08662206901818993,
+      "by_radius": [
+        {
+          "radius": 0.2569483663654497,
+          "gap_real": 0.08602873210454332,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 45,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.38542254954817456,
+          "gap_real": 0.08554508799252973,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 60,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5138967327308994,
+          "gap_real": 0.08274688320517286,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 80,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7708450990963491,
+          "gap_real": 0.02593338063753877,
+          "gap_null": -0.0759315218403153,
+          "gap_corrected": 0.10186490247785407,
+          "n_used_real": 141,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.0277934654617988,
+          "gap_real": -0.018185884879477462,
+          "gap_null": -0.003379851332208139,
+          "gap_corrected": -0.014806033547269323,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 0,
+      "kind": "value",
+      "k": 8,
+      "gap_best": NaN,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.07832808951746625,
+      "mse_global_real": 0.40404942404031763,
+      "mse_global_null": 0.40920056974605473,
+      "by_radius": [
+        {
+          "radius": 0.03916404475873313,
+          "gap_real": 0.4039184545860418,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 56,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.05874606713809969,
+          "gap_real": 0.4038884223319545,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 58,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.07832808951746625,
+          "gap_real": 0.40386423179578385,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 61,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.11749213427619938,
+          "gap_real": 0.4038155495809951,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 63,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.1566561790349325,
+          "gap_real": 0.4038200695716758,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 66,
+          "n_used_null": 0
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 0,
+      "kind": "value",
+      "k": 16,
+      "gap_best": 0.1155964044514401,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.8018148127066185,
+      "mse_global_real": 0.2994434987327513,
+      "mse_global_null": 0.2949509205024229,
+      "by_radius": [
+        {
+          "radius": 0.40090740635330924,
+          "gap_real": 0.29931528690656645,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 59,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6013611095299638,
+          "gap_real": 0.29928692034752424,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 64,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.8018148127066185,
+          "gap_real": 0.28785635615773647,
+          "gap_null": 0.11324441235721203,
+          "gap_corrected": 0.17461194380052444,
+          "n_used_real": 79,
+          "n_used_null": 24
+        },
+        {
+          "radius": 1.2027222190599276,
+          "gap_real": 0.027962926754137918,
+          "gap_null": -0.08763347769730218,
+          "gap_corrected": 0.1155964044514401,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.603629625413237,
+          "gap_real": -0.0013680156803674848,
+          "gap_null": -0.004885155500172489,
+          "gap_corrected": 0.003517139819805004,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 0,
+      "kind": "value",
+      "k": 32,
+      "gap_best": 0.19495862411326995,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.885319542366912,
+      "mse_global_real": 0.17542452821014404,
+      "mse_global_null": 0.16927063396633352,
+      "by_radius": [
+        {
+          "radius": 0.442659771183456,
+          "gap_real": 0.1753887409519091,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 54,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.663989656775184,
+          "gap_real": 0.17536285505960358,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 61,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.885319542366912,
+          "gap_real": 0.16282674052387558,
+          "gap_null": -0.03213188358939437,
+          "gap_corrected": 0.19495862411326995,
+          "n_used_real": 79,
+          "n_used_null": 105
+        },
+        {
+          "radius": 1.327979313550368,
+          "gap_real": -0.10001604762739424,
+          "gap_null": -0.03252605427614333,
+          "gap_corrected": -0.06748999335125092,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.770639084733824,
+          "gap_real": -1.0232172326096745e-06,
+          "gap_null": -0.000397568746883431,
+          "gap_corrected": 0.00039654552965082135,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 1,
+      "kind": "key",
+      "k": 8,
+      "gap_best": 0.1373031507266363,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7174973224535556,
+      "mse_global_real": 0.41545383394275004,
+      "mse_global_null": 0.39906610069098924,
+      "by_radius": [
+        {
+          "radius": 0.3587486612267778,
+          "gap_real": 0.4153659650715596,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 57,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5381229918401667,
+          "gap_real": 0.4153608310914728,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 58,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7174973224535556,
+          "gap_real": 0.41510588663487896,
+          "gap_null": 0.24140045428587037,
+          "gap_corrected": 0.1737054323490086,
+          "n_used_real": 71,
+          "n_used_null": 3
+        },
+        {
+          "radius": 1.0762459836803333,
+          "gap_real": 0.11495072300848569,
+          "gap_null": -0.022352427718150603,
+          "gap_corrected": 0.1373031507266363,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.4349946449071111,
+          "gap_real": -0.0008024976737550649,
+          "gap_null": -0.015686716766982356,
+          "gap_corrected": 0.014884219093227291,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 1,
+      "kind": "key",
+      "k": 16,
+      "gap_best": 0.08920320894587486,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7683824989629462,
+      "mse_global_real": 0.28918983210973775,
+      "mse_global_null": 0.29811029451916776,
+      "by_radius": [
+        {
+          "radius": 0.3841912494814731,
+          "gap_real": 0.28913726532270556,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 61,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5762868742222096,
+          "gap_real": 0.28913736404943735,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 63,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7683824989629462,
+          "gap_real": 0.2891135729255687,
+          "gap_null": 0.13945201042623007,
+          "gap_corrected": 0.14966156249933865,
+          "n_used_real": 79,
+          "n_used_null": 13
+        },
+        {
+          "radius": 1.1525737484444192,
+          "gap_real": -0.00803653345659372,
+          "gap_null": -0.09723974240246858,
+          "gap_corrected": 0.08920320894587486,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.5367649979258924,
+          "gap_real": -1.8590804797657956e-05,
+          "gap_null": -0.0047567027800394235,
+          "gap_corrected": 0.0047381119752417655,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 1,
+      "kind": "key",
+      "k": 32,
+      "gap_best": 0.0005421452573207142,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.8291230373107422,
+      "mse_global_real": 0.14238682863182123,
+      "mse_global_null": 0.14644899887513052,
+      "by_radius": [
+        {
+          "radius": 0.4145615186553711,
+          "gap_real": 0.14236458134984722,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 57,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6218422779830567,
+          "gap_real": 0.14237084013248202,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 59,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.8291230373107422,
+          "gap_real": 0.1422884215562317,
+          "gap_null": -0.009020944043217516,
+          "gap_corrected": 0.1513093655994492,
+          "n_used_real": 84,
+          "n_used_null": 61
+        },
+        {
+          "radius": 1.2436845559661134,
+          "gap_real": -0.07442531693458618,
+          "gap_null": -0.05403703867555168,
+          "gap_corrected": -0.020388278259034498,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.6582460746214844,
+          "gap_real": 0.0,
+          "gap_null": -0.0005421452573207142,
+          "gap_corrected": 0.0005421452573207142,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 1,
+      "kind": "value",
+      "k": 8,
+      "gap_best": 0.15076723839530248,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7424260206879691,
+      "mse_global_real": 0.4179152169781533,
+      "mse_global_null": 0.39242617145595965,
+      "by_radius": [
+        {
+          "radius": 0.3712130103439846,
+          "gap_real": 0.4178495063554833,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 53,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5568195155159769,
+          "gap_real": 0.41544022355440696,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 57,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7424260206879691,
+          "gap_real": 0.4081010362895538,
+          "gap_null": 0.2190462100518417,
+          "gap_corrected": 0.1890548262377121,
+          "n_used_real": 68,
+          "n_used_null": 3
+        },
+        {
+          "radius": 1.1136390310319537,
+          "gap_real": 0.1190906815098805,
+          "gap_null": -0.03167655688542198,
+          "gap_corrected": 0.15076723839530248,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.4848520413759383,
+          "gap_real": -0.0054971723726447985,
+          "gap_null": -0.025942200792916648,
+          "gap_corrected": 0.02044502842027185,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 1,
+      "kind": "value",
+      "k": 16,
+      "gap_best": 0.10989367144165543,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7666138346919149,
+      "mse_global_real": 0.268073170849765,
+      "mse_global_null": 0.2795662087118366,
+      "by_radius": [
+        {
+          "radius": 0.38330691734595745,
+          "gap_real": 0.2680422283861649,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 56,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5749603760189361,
+          "gap_real": 0.2640332613508079,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 63,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7666138346919149,
+          "gap_real": 0.2605153701383172,
+          "gap_null": 0.15804248524605183,
+          "gap_corrected": 0.10247288489226539,
+          "n_used_real": 77,
+          "n_used_null": 5
+        },
+        {
+          "radius": 1.1499207520378723,
+          "gap_real": 0.028022280651300385,
+          "gap_null": -0.08187139079035505,
+          "gap_corrected": 0.10989367144165543,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.5332276693838298,
+          "gap_real": -0.007868927767923639,
+          "gap_null": -0.011170894961772704,
+          "gap_corrected": 0.0033019671938490647,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 0,
+      "head": 1,
+      "kind": "value",
+      "k": 32,
+      "gap_best": 0.002159407292610549,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.8259139155107004,
+      "mse_global_real": 0.13398035994558466,
+      "mse_global_null": 0.1379531284019331,
+      "by_radius": [
+        {
+          "radius": 0.4129569577553502,
+          "gap_real": 0.1339759520513761,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 50,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6194354366330252,
+          "gap_real": 0.13317545349978285,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 67,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.8259139155107004,
+          "gap_real": 0.1269814683636203,
+          "gap_null": 0.0038231278347999054,
+          "gap_corrected": 0.12315834052882038,
+          "n_used_real": 84,
+          "n_used_null": 26
+        },
+        {
+          "radius": 1.2388708732660505,
+          "gap_real": -0.06319637663368269,
+          "gap_null": -0.051080465939388975,
+          "gap_corrected": -0.012115910694293713,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.6518278310214007,
+          "gap_real": -4.899066805102992e-05,
+          "gap_null": -0.002208397960661579,
+          "gap_corrected": 0.002159407292610549,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 0,
+      "kind": "key",
+      "k": 8,
+      "gap_best": 0.022827611589816277,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.3028874406639203,
+      "mse_global_real": 0.07949947464833342,
+      "mse_global_null": 0.07983690867676047,
+      "by_radius": [
+        {
+          "radius": 0.15144372033196016,
+          "gap_real": 0.07740331412102869,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 3,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.22716558049794022,
+          "gap_real": 0.07155622608526788,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 15,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.3028874406639203,
+          "gap_real": 0.06041526303461793,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 83,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.45433116099588045,
+          "gap_real": 0.03197012044356322,
+          "gap_null": 0.009142508853746942,
+          "gap_corrected": 0.022827611589816277,
+          "n_used_real": 150,
+          "n_used_null": 147
+        },
+        {
+          "radius": 0.6057748813278406,
+          "gap_real": 0.006525343656733518,
+          "gap_null": -0.007578038168572013,
+          "gap_corrected": 0.01410338182530553,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 0,
+      "kind": "key",
+      "k": 16,
+      "gap_best": 0.02625346144527603,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.320586450606697,
+      "mse_global_real": 0.05273997475811426,
+      "mse_global_null": 0.05518650591890679,
+      "by_radius": [
+        {
+          "radius": 0.1602932253033485,
+          "gap_real": 0.052219630018612774,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 5,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.24043983795502274,
+          "gap_real": 0.04818033005259253,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 19,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.320586450606697,
+          "gap_real": 0.038460220940521525,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 73,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.4808796759100455,
+          "gap_real": 0.015105996945177023,
+          "gap_null": -0.011147464500099007,
+          "gap_corrected": 0.02625346144527603,
+          "n_used_real": 150,
+          "n_used_null": 147
+        },
+        {
+          "radius": 0.641172901213394,
+          "gap_real": 0.0038558683508905928,
+          "gap_null": -0.006208285142778602,
+          "gap_corrected": 0.010064153493669195,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 0,
+      "kind": "key",
+      "k": 32,
+      "gap_best": 0.012696752225701848,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.3412693586842646,
+      "mse_global_real": 0.0285023004177123,
+      "mse_global_null": 0.02650491883988391,
+      "by_radius": [
+        {
+          "radius": 0.1706346793421323,
+          "gap_real": 0.02850229002756712,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 1,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.2559520190131985,
+          "gap_real": 0.025338317624069545,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 9,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.3412693586842646,
+          "gap_real": 0.0181899840728915,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 66,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.511904038026397,
+          "gap_real": 0.002500936669857845,
+          "gap_null": -0.010195815555844003,
+          "gap_corrected": 0.012696752225701848,
+          "n_used_real": 150,
+          "n_used_null": 149
+        },
+        {
+          "radius": 0.6825387173685292,
+          "gap_real": 0.001974040386648654,
+          "gap_null": -0.0013212641644972517,
+          "gap_corrected": 0.0032953045511459056,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 0,
+      "kind": "value",
+      "k": 8,
+      "gap_best": 0.047300970509585594,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.9155919549324889,
+      "mse_global_real": 0.669622960478754,
+      "mse_global_null": 0.6617550900907452,
+      "by_radius": [
+        {
+          "radius": 0.45779597746624445,
+          "gap_real": 0.6679720658156448,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 2,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6866939661993667,
+          "gap_real": 0.5656417322280898,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 9,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.9155919549324889,
+          "gap_real": 0.4598673118879924,
+          "gap_null": 0.4013787095497155,
+          "gap_corrected": 0.05848860233827691,
+          "n_used_real": 75,
+          "n_used_null": 9
+        },
+        {
+          "radius": 1.3733879323987335,
+          "gap_real": -0.013564950185526836,
+          "gap_null": -0.06086592069511243,
+          "gap_corrected": 0.047300970509585594,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.8311839098649778,
+          "gap_real": 0.0,
+          "gap_null": -0.0027100280174569003,
+          "gap_corrected": 0.0027100280174569003,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 0,
+      "kind": "value",
+      "k": 16,
+      "gap_best": 0.00035196588872760115,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.9690037347934626,
+      "mse_global_real": 0.4859754637085258,
+      "mse_global_null": 0.4963689634754104,
+      "by_radius": [
+        {
+          "radius": 0.4845018673967313,
+          "gap_real": 0.48574385825728233,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 4,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.726752801095097,
+          "gap_real": 0.42534255798533877,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 17,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.9690037347934626,
+          "gap_real": 0.2998280284763224,
+          "gap_null": 0.21612836246038497,
+          "gap_corrected": 0.08369966601593742,
+          "n_used_real": 87,
+          "n_used_null": 27
+        },
+        {
+          "radius": 1.453505602190194,
+          "gap_real": -0.16257838000705055,
+          "gap_null": -0.15435962743204767,
+          "gap_corrected": -0.008218752575002874,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.9380074695869252,
+          "gap_real": 0.0,
+          "gap_null": -0.00035196588872760115,
+          "gap_corrected": 0.00035196588872760115,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 0,
+      "kind": "value",
+      "k": 32,
+      "gap_best": 2.4473030269311913e-05,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 1.0042819303658002,
+      "mse_global_real": 0.2759990408082392,
+      "mse_global_null": 0.261768000492885,
+      "by_radius": [
+        {
+          "radius": 0.5021409651829001,
+          "gap_real": 0.2759984934792123,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 1,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7532114477743501,
+          "gap_real": 0.21356850845641506,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 7,
+          "n_used_null": 0
+        },
+        {
+          "radius": 1.0042819303658002,
+          "gap_real": 0.15406227231497066,
+          "gap_null": 0.02511129247419225,
+          "gap_corrected": 0.1289509798407784,
+          "n_used_real": 65,
+          "n_used_null": 51
+        },
+        {
+          "radius": 1.5064228955487002,
+          "gap_real": -0.10689433605051452,
+          "gap_null": -0.09013929462227782,
+          "gap_corrected": -0.016755041428236694,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 2.0085638607316003,
+          "gap_real": 0.0,
+          "gap_null": -2.4473030269311913e-05,
+          "gap_corrected": 2.4473030269311913e-05,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 1,
+      "kind": "key",
+      "k": 8,
+      "gap_best": 0.02744929847484119,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.4007858672598841,
+      "mse_global_real": 0.13305308884803665,
+      "mse_global_null": 0.13482338892313706,
+      "by_radius": [
+        {
+          "radius": 0.20039293362994204,
+          "gap_real": 0.13301861728296507,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 5,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.30058940044491306,
+          "gap_real": 0.12088366040073394,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 14,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.4007858672598841,
+          "gap_real": 0.10129728716777589,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 67,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6011788008898261,
+          "gap_real": 0.03343509535866539,
+          "gap_null": 0.005985796883824196,
+          "gap_corrected": 0.02744929847484119,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 0.8015717345197682,
+          "gap_real": 0.005171124840006008,
+          "gap_null": -0.010922353807174795,
+          "gap_corrected": 0.016093478647180803,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 1,
+      "kind": "key",
+      "k": 16,
+      "gap_best": 0.033298779114965926,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.42184202507185015,
+      "mse_global_real": 0.09437572608835192,
+      "mse_global_null": 0.09225708517799383,
+      "by_radius": [
+        {
+          "radius": 0.21092101253592507,
+          "gap_real": 0.09224555586344065,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 4,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.3163815188038876,
+          "gap_real": 0.0861182816194243,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 13,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.42184202507185015,
+          "gap_real": 0.06543293003463357,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 74,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6327630376077752,
+          "gap_real": 0.008542548949098283,
+          "gap_null": -0.024756230165867643,
+          "gap_corrected": 0.033298779114965926,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 0.8436840501437003,
+          "gap_real": 0.0022921495587888002,
+          "gap_null": -0.007746226784918209,
+          "gap_corrected": 0.010038376343707009,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 1,
+      "kind": "key",
+      "k": 32,
+      "gap_best": 0.016465287888876655,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.4419236028594392,
+      "mse_global_real": 0.04970132283004695,
+      "mse_global_null": 0.049572999663043925,
+      "by_radius": [
+        {
+          "radius": 0.2209618014297196,
+          "gap_real": 0.04968325713222642,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 2,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.3314427021445794,
+          "gap_real": 0.0490396810610123,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 5,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.4419236028594392,
+          "gap_real": 0.030908867218594867,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 70,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6628854042891588,
+          "gap_real": -0.007154965665285576,
+          "gap_null": -0.02362025355416223,
+          "gap_corrected": 0.016465287888876655,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 0.8838472057188784,
+          "gap_real": 0.0018939943590669597,
+          "gap_null": -0.002230497276615645,
+          "gap_corrected": 0.004124491635682605,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 1,
+      "kind": "value",
+      "k": 8,
+      "gap_best": 0.16001430978446224,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.84196411701327,
+      "mse_global_real": 0.6670528564469224,
+      "mse_global_null": 0.6761600574520368,
+      "by_radius": [
+        {
+          "radius": 0.420982058506635,
+          "gap_real": 0.6443002385624111,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 8,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6314730877599525,
+          "gap_real": 0.5816357445034126,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 29,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.84196411701327,
+          "gap_real": 0.5328234425384153,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 67,
+          "n_used_null": 0
+        },
+        {
+          "radius": 1.262946175519905,
+          "gap_real": 0.20344650860829488,
+          "gap_null": 0.043432198823832646,
+          "gap_corrected": 0.16001430978446224,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.68392823402654,
+          "gap_real": -7.231430865506372e-05,
+          "gap_null": -0.0300002476121779,
+          "gap_corrected": 0.029927933303522836,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 1,
+      "kind": "value",
+      "k": 16,
+      "gap_best": 0.05556373939068415,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.9547353349713148,
+      "mse_global_real": 0.5226322830954451,
+      "mse_global_null": 0.49461585729646573,
+      "by_radius": [
+        {
+          "radius": 0.4773676674856574,
+          "gap_real": 0.49328012647421204,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 10,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.716051501228486,
+          "gap_real": 0.44440814259490924,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 34,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.9547353349713148,
+          "gap_real": 0.39450134282430455,
+          "gap_null": 0.2505683988399624,
+          "gap_corrected": 0.14393294398434214,
+          "n_used_real": 84,
+          "n_used_null": 12
+        },
+        {
+          "radius": 1.432103002456972,
+          "gap_real": -0.11531292900637913,
+          "gap_null": -0.17087666839706328,
+          "gap_corrected": 0.05556373939068415,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.9094706699426296,
+          "gap_real": 0.0,
+          "gap_null": -0.0016095785382814753,
+          "gap_corrected": 0.0016095785382814753,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "head": 1,
+      "kind": "value",
+      "k": 32,
+      "gap_best": 0.0008102443721032526,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.9618157634185417,
+      "mse_global_real": 0.2988987328437746,
+      "mse_global_null": 0.2866261420747309,
+      "by_radius": [
+        {
+          "radius": 0.48090788170927085,
+          "gap_real": 0.2883384307548269,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 4,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7213618225639062,
+          "gap_real": 0.25809011129935816,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 23,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.9618157634185417,
+          "gap_real": 0.22389482242434583,
+          "gap_null": 0.09562120661170112,
+          "gap_corrected": 0.1282736158126447,
+          "n_used_real": 67,
+          "n_used_null": 14
+        },
+        {
+          "radius": 1.4427236451278125,
+          "gap_real": -0.24981256548365832,
+          "gap_null": -0.2025751336958389,
+          "gap_corrected": -0.04723743178781942,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.9236315268370834,
+          "gap_real": 0.0,
+          "gap_null": -0.0008102443721032526,
+          "gap_corrected": 0.0008102443721032526,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 0,
+      "kind": "key",
+      "k": 8,
+      "gap_best": 0.07877724505025241,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7368482427236609,
+      "mse_global_real": 0.4424551346299364,
+      "mse_global_null": 0.410908718603452,
+      "by_radius": [
+        {
+          "radius": 0.36842412136183045,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5526361820427457,
+          "gap_real": 0.36659630515615704,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 8,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7368482427236609,
+          "gap_real": 0.3085435199279704,
+          "gap_null": 0.24653148906688596,
+          "gap_corrected": 0.06201203086108445,
+          "n_used_real": 75,
+          "n_used_null": 2
+        },
+        {
+          "radius": 1.1052723640854913,
+          "gap_real": 0.039083675610655066,
+          "gap_null": -0.03969356943959734,
+          "gap_corrected": 0.07877724505025241,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.4736964854473218,
+          "gap_real": 0.01501063830297833,
+          "gap_null": -0.017963831632994753,
+          "gap_corrected": 0.03297446993597308,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 0,
+      "kind": "key",
+      "k": 16,
+      "gap_best": 0.037705639055936824,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.768062775881587,
+      "mse_global_real": 0.30307670428770644,
+      "mse_global_null": 0.292666006093767,
+      "by_radius": [
+        {
+          "radius": 0.3840313879407935,
+          "gap_real": 0.3030282086077908,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 3,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5760470819111903,
+          "gap_real": 0.26595848168975167,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 10,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.768062775881587,
+          "gap_real": 0.1930093398737221,
+          "gap_null": 0.12996120667531866,
+          "gap_corrected": 0.06304813319840344,
+          "n_used_real": 69,
+          "n_used_null": 7
+        },
+        {
+          "radius": 1.1520941638223805,
+          "gap_real": -0.06433582783840958,
+          "gap_null": -0.1020414668943464,
+          "gap_corrected": 0.037705639055936824,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.536125551763174,
+          "gap_real": 0.008526662572699517,
+          "gap_null": -0.004359885819940512,
+          "gap_corrected": 0.01288654839264003,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 0,
+      "kind": "key",
+      "k": 32,
+      "gap_best": 0.006818783221634844,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7983456746107106,
+      "mse_global_real": 0.16452284505429088,
+      "mse_global_null": 0.16567352135846747,
+      "by_radius": [
+        {
+          "radius": 0.3991728373053553,
+          "gap_real": 0.1645218222093341,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 4,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5987592559580329,
+          "gap_real": 0.14775791076114358,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 12,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7983456746107106,
+          "gap_real": 0.08345362347203816,
+          "gap_null": 0.038946552199195655,
+          "gap_corrected": 0.04450707127284251,
+          "n_used_real": 64,
+          "n_used_null": 11
+        },
+        {
+          "radius": 1.1975185119160658,
+          "gap_real": -0.11015720083198532,
+          "gap_null": -0.1144916831468965,
+          "gap_corrected": 0.004334482314911181,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.5966913492214212,
+          "gap_real": 0.0036382641099491353,
+          "gap_null": -0.003180519111685709,
+          "gap_corrected": 0.006818783221634844,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 0,
+      "kind": "value",
+      "k": 8,
+      "gap_best": 0.12379371965052055,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.6870606171742664,
+      "mse_global_real": 0.401063499244576,
+      "mse_global_null": 0.36503601492133886,
+      "by_radius": [
+        {
+          "radius": 0.3435303085871332,
+          "gap_real": 0.36091011951002283,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 3,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5152954628806998,
+          "gap_real": 0.3365682026659892,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 22,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6870606171742664,
+          "gap_real": 0.2789190754823523,
+          "gap_null": 0.22014912855350544,
+          "gap_corrected": 0.05876994692884685,
+          "n_used_real": 66,
+          "n_used_null": 1
+        },
+        {
+          "radius": 1.0305909257613997,
+          "gap_real": 0.09802015034945738,
+          "gap_null": -0.02577356930106317,
+          "gap_corrected": 0.12379371965052055,
+          "n_used_real": 149,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.3741212343485327,
+          "gap_real": 0.0004547836308608222,
+          "gap_null": -0.015017419706652324,
+          "gap_corrected": 0.015472203337513146,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 0,
+      "kind": "value",
+      "k": 16,
+      "gap_best": 0.09849806573911707,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7179059134632717,
+      "mse_global_real": 0.2830913015686278,
+      "mse_global_null": 0.2674521300829801,
+      "by_radius": [
+        {
+          "radius": 0.35895295673163585,
+          "gap_real": 0.2771798600462842,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 4,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5384294350974538,
+          "gap_real": 0.23868805535819648,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 18,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7179059134632717,
+          "gap_real": 0.1767323092120907,
+          "gap_null": 0.1183691130455907,
+          "gap_corrected": 0.058363196166500014,
+          "n_used_real": 71,
+          "n_used_null": 5
+        },
+        {
+          "radius": 1.0768588701949076,
+          "gap_real": 0.008172603198269679,
+          "gap_null": -0.09032546254084739,
+          "gap_corrected": 0.09849806573911707,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.4358118269265434,
+          "gap_real": 0.0021402840482245278,
+          "gap_null": -0.004654969412230647,
+          "gap_corrected": 0.006795253460455175,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 0,
+      "kind": "value",
+      "k": 32,
+      "gap_best": 0.05602652368534222,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.742715474380478,
+      "mse_global_real": 0.1602025753269654,
+      "mse_global_null": 0.1535705744601214,
+      "by_radius": [
+        {
+          "radius": 0.371357737190239,
+          "gap_real": 0.1575280150370529,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 5,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5570366057853585,
+          "gap_real": 0.13145979549301745,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 22,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.742715474380478,
+          "gap_real": 0.08440256226872712,
+          "gap_null": 0.04102390890347683,
+          "gap_corrected": 0.04337865336525029,
+          "n_used_real": 73,
+          "n_used_null": 7
+        },
+        {
+          "radius": 1.114073211570717,
+          "gap_real": -0.05635462713559308,
+          "gap_null": -0.1123811508209353,
+          "gap_corrected": 0.05602652368534222,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.485430948760956,
+          "gap_real": 0.0009762153696002696,
+          "gap_null": -0.0036789572556292782,
+          "gap_corrected": 0.004655172625229548,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 1,
+      "kind": "key",
+      "k": 8,
+      "gap_best": 0.07594384867850668,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.6975850785341295,
+      "mse_global_real": 0.41076351795604166,
+      "mse_global_null": 0.404780406901637,
+      "by_radius": [
+        {
+          "radius": 0.34879253926706477,
+          "gap_real": 0.41075847434662316,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 3,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5231888089005972,
+          "gap_real": 0.3736440677631617,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 7,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6975850785341295,
+          "gap_real": 0.3019725499216867,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 74,
+          "n_used_null": 0
+        },
+        {
+          "radius": 1.0463776178011943,
+          "gap_real": 0.0673846321666518,
+          "gap_null": -0.008559216511854872,
+          "gap_corrected": 0.07594384867850668,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.395170157068259,
+          "gap_real": 0.010227016405279898,
+          "gap_null": -0.05415148338322928,
+          "gap_corrected": 0.06437849978850918,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 1,
+      "kind": "key",
+      "k": 16,
+      "gap_best": 0.04736637986890957,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7392195560711028,
+      "mse_global_real": 0.27846880118039924,
+      "mse_global_null": 0.27138614479477385,
+      "by_radius": [
+        {
+          "radius": 0.3696097780355514,
+          "gap_real": 0.27845973169500704,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 1,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5544146670533271,
+          "gap_real": 0.23417017512712093,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 7,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7392195560711028,
+          "gap_real": 0.1815925731544687,
+          "gap_null": 0.13778319999415872,
+          "gap_corrected": 0.04380937316030997,
+          "n_used_real": 68,
+          "n_used_null": 2
+        },
+        {
+          "radius": 1.1088293341066542,
+          "gap_real": -0.06279817706721486,
+          "gap_null": -0.11016455693612442,
+          "gap_corrected": 0.04736637986890957,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.4784391121422056,
+          "gap_real": 0.008080147180006159,
+          "gap_null": -0.010804092629185968,
+          "gap_corrected": 0.018884239809192127,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 1,
+      "kind": "key",
+      "k": 32,
+      "gap_best": 0.014736513495788917,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7929708030138936,
+      "mse_global_real": 0.13580444686654355,
+      "mse_global_null": 0.1326767745587476,
+      "by_radius": [
+        {
+          "radius": 0.3964854015069468,
+          "gap_real": 0.13580297515562437,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 4,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.5947281022604202,
+          "gap_real": 0.12258669817369781,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 8,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7929708030138936,
+          "gap_real": 0.06629677644054666,
+          "gap_null": 0.014585205837572751,
+          "gap_corrected": 0.051711570602973905,
+          "n_used_real": 88,
+          "n_used_null": 16
+        },
+        {
+          "radius": 1.1894562045208403,
+          "gap_real": -0.058570358502157194,
+          "gap_null": -0.07330687199794611,
+          "gap_corrected": 0.014736513495788917,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.585941606027787,
+          "gap_real": 0.0028050955553590162,
+          "gap_null": -0.0012341564833934504,
+          "gap_corrected": 0.004039252038752467,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 1,
+      "kind": "value",
+      "k": 8,
+      "gap_best": 0.09169578095090891,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.8633902380041072,
+      "mse_global_real": 0.6016215167224611,
+      "mse_global_null": 0.5760837981629934,
+      "by_radius": [
+        {
+          "radius": 0.4316951190020536,
+          "gap_real": 0.6012888227406573,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 3,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6475426785030804,
+          "gap_real": 0.5208156384536444,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 17,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.8633902380041072,
+          "gap_real": 0.4125620910662201,
+          "gap_null": 0.3429116527718219,
+          "gap_corrected": 0.06965043829439821,
+          "n_used_real": 76,
+          "n_used_null": 11
+        },
+        {
+          "radius": 1.295085357006161,
+          "gap_real": 0.032234019325766305,
+          "gap_null": -0.059461761625142606,
+          "gap_corrected": 0.09169578095090891,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.7267804760082144,
+          "gap_real": 0.0,
+          "gap_null": -0.00281342075900215,
+          "gap_corrected": 0.00281342075900215,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 1,
+      "kind": "value",
+      "k": 16,
+      "gap_best": 0.04404527476234826,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.9079918760906367,
+      "mse_global_real": 0.45753122756988335,
+      "mse_global_null": 0.45259284504423436,
+      "by_radius": [
+        {
+          "radius": 0.45399593804531835,
+          "gap_real": 0.4566191468178733,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 1,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6809939070679776,
+          "gap_real": 0.375164320652417,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 13,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.9079918760906367,
+          "gap_real": 0.28594343330735883,
+          "gap_null": 0.19824327246062684,
+          "gap_corrected": 0.08770016084673199,
+          "n_used_real": 70,
+          "n_used_null": 22
+        },
+        {
+          "radius": 1.3619878141359552,
+          "gap_real": -0.0929212699661422,
+          "gap_null": -0.13696654472849046,
+          "gap_corrected": 0.04404527476234826,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.8159837521812734,
+          "gap_real": 0.0,
+          "gap_null": -0.001140570803056129,
+          "gap_corrected": 0.001140570803056129,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "layer": 11,
+      "head": 1,
+      "kind": "value",
+      "k": 32,
+      "gap_best": 0.010449936713180508,
+      "n_vectors": 10150,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.9483608842736869,
+      "mse_global_real": 0.26432167607115076,
+      "mse_global_null": 0.26037482572419,
+      "by_radius": [
+        {
+          "radius": 0.47418044213684346,
+          "gap_real": 0.26420421650502174,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 4,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.7112706632052652,
+          "gap_real": 0.22615746732389516,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 13,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.9483608842736869,
+          "gap_real": 0.12371920896447383,
+          "gap_null": 0.04280542990036709,
+          "gap_corrected": 0.08091377906410674,
+          "n_used_real": 72,
+          "n_used_null": 44
+        },
+        {
+          "radius": 1.4225413264105304,
+          "gap_real": -0.13165170448458713,
+          "gap_null": -0.14210164119776764,
+          "gap_corrected": 0.010449936713180508,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.8967217685473738,
+          "gap_real": 0.0,
+          "gap_null": -0.00010230459500970568,
+          "gap_corrected": 0.00010230459500970568,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "script": "manifold_reach_embeddings.py",
+    "git_commit": "0acb576",
+    "python": "3.12.13",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "numpy": "1.26.4",
+    "timestamp": "2026-08-25T17:14:19"
+  }
+}
