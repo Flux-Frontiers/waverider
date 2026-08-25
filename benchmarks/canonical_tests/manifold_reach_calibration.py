@@ -195,13 +195,20 @@ def _usable_gap(case, min_used):
     return max(usable) if usable else float("nan")
 
 
+_KIND_SEED_OFFSET = {"linear": 0, "sphere": 1, "torus": 2}
+
+
 def run_phase(phase_name, d_values, n, n_holdout, seed):
     print(f"\n{'=' * 70}\n{phase_name}: d* in {d_values}\n{'=' * 70}")
     cases = []
     for d in d_values:
         for kind in ("linear", "sphere", "torus"):
             t0 = time.time()
-            case = measure_case(kind, d, n, n_holdout, seed=seed + hash((kind, d)) % 10_000)
+            # Python's hash() on str/tuple is randomized per process
+            # (PYTHONHASHSEED) unless explicitly seeded -- using it here made
+            # every run of this "reproducible" sweep produce different numbers.
+            case_seed = seed + d * 10 + _KIND_SEED_OFFSET[kind]
+            case = measure_case(kind, d, n, n_holdout, seed=case_seed)
             cases.append(case)
             gap = _usable_gap(case, n_holdout // 2)
             print(

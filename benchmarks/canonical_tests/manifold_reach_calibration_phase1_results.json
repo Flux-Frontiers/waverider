@@ -14,12 +14,12 @@
       "ambient": 28,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 4.349283585487749,
-      "mse_global_real": 5.567831475966158e-29,
-      "mse_global_null": 1.369646957076444e-15,
+      "base_radius_knn_median": 4.3257597720791505,
+      "mse_global_real": 3.483663399745768e-29,
+      "mse_global_null": 1.4173443345777372e-15,
       "by_radius": [
         {
-          "radius": 2.1746417927438744,
+          "radius": 2.1628798860395753,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -27,39 +27,39 @@
           "n_used_null": 0
         },
         {
-          "radius": 3.2619626891158116,
-          "gap_real": 5.495766788565834e-29,
+          "radius": 3.244319829059363,
+          "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
-          "n_used_real": 1,
+          "n_used_real": 0,
           "n_used_null": 0
         },
         {
-          "radius": 4.349283585487749,
-          "gap_real": 4.7872224703862344e-29,
-          "gap_null": -1.9937322456577976e-14,
-          "gap_corrected": 1.9937322456578023e-14,
-          "n_used_real": 82,
-          "n_used_null": 92
+          "radius": 4.3257597720791505,
+          "gap_real": 1.8585849982100578e-29,
+          "gap_null": -1.7487541433432792e-15,
+          "gap_corrected": 1.7487541433432977e-15,
+          "n_used_real": 75,
+          "n_used_null": 85
         },
         {
-          "radius": 6.523925378231623,
-          "gap_real": 2.8309651571684886e-29,
-          "gap_null": -2.1180511309690923e-17,
-          "gap_corrected": 2.1180511309719233e-17,
+          "radius": 6.488639658118726,
+          "gap_real": 6.062328944986532e-30,
+          "gap_null": -3.777528695698489e-17,
+          "gap_corrected": 3.7775286956990953e-17,
           "n_used_real": 150,
           "n_used_null": 150
         },
         {
-          "radius": 8.698567170975497,
-          "gap_real": 2.1085486962264636e-29,
-          "gap_null": -7.91786570132804e-19,
-          "gap_corrected": 7.917865701538894e-19,
+          "radius": 8.651519544158301,
+          "gap_real": 2.9668298581999747e-30,
+          "gap_null": 1.1823696079011429e-19,
+          "gap_corrected": -1.1823696078714746e-19,
           "n_used_real": 150,
           "n_used_null": 150
         },
         {
-          "radius": 13.047850756463246,
+          "radius": 12.977279316237452,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -74,12 +74,12 @@
       "ambient": 29,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 1.006894387002625,
-      "mse_global_real": 0.050113357152627235,
-      "mse_global_null": 0.04463442557513237,
+      "base_radius_knn_median": 1.0076664797178037,
+      "mse_global_real": 0.04264296770662351,
+      "mse_global_null": 0.0496127223924051,
       "by_radius": [
         {
-          "radius": 0.5034471935013125,
+          "radius": 0.5038332398589018,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -87,7 +87,7 @@
           "n_used_null": 0
         },
         {
-          "radius": 0.7551707902519688,
+          "radius": 0.7557498597883527,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -95,31 +95,31 @@
           "n_used_null": 0
         },
         {
-          "radius": 1.006894387002625,
-          "gap_real": -0.03292794436938231,
-          "gap_null": 0.0003088709126440464,
-          "gap_corrected": -0.03323681528202636,
-          "n_used_real": 43,
-          "n_used_null": 95
+          "radius": 1.0076664797178037,
+          "gap_real": -0.044974682170299436,
+          "gap_null": -0.0021243761040764947,
+          "gap_corrected": -0.04285030606622294,
+          "n_used_real": 48,
+          "n_used_null": 96
         },
         {
-          "radius": 1.5103415805039375,
-          "gap_real": -0.7366623822952559,
-          "gap_null": -0.6020856719040825,
-          "gap_corrected": -0.13457671039117347,
+          "radius": 1.5114997195767055,
+          "gap_real": -0.7482227323924816,
+          "gap_null": -0.5606228232381076,
+          "gap_corrected": -0.18759990915437397,
           "n_used_real": 150,
           "n_used_null": 150
         },
         {
-          "radius": 2.01378877400525,
+          "radius": 2.0153329594356073,
           "gap_real": 0.0,
-          "gap_null": -0.02547606530333984,
-          "gap_corrected": 0.02547606530333984,
+          "gap_null": -0.015492823702356724,
+          "gap_corrected": 0.015492823702356724,
           "n_used_real": 150,
           "n_used_null": 150
         },
         {
-          "radius": 3.020683161007875,
+          "radius": 3.022999439153411,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -134,12 +134,12 @@
       "ambient": 48,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 5.034771861063243,
-      "mse_global_real": 9.810410207198698,
-      "mse_global_null": 9.0126720514256,
+      "base_radius_knn_median": 5.026984933018655,
+      "mse_global_real": 9.653229531321683,
+      "mse_global_null": 8.860297136364382,
       "by_radius": [
         {
-          "radius": 2.5173859305316215,
+          "radius": 2.5134924665093274,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -147,7 +147,7 @@
           "n_used_null": 0
         },
         {
-          "radius": 3.7760788957974323,
+          "radius": 3.770238699763991,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -155,23 +155,23 @@
           "n_used_null": 0
         },
         {
-          "radius": 5.034771861063243,
-          "gap_real": 3.3608713293300267,
-          "gap_null": 2.078136909735143,
-          "gap_corrected": 1.2827344195948838,
-          "n_used_real": 51,
-          "n_used_null": 93
+          "radius": 5.026984933018655,
+          "gap_real": 3.1692943249174563,
+          "gap_null": 1.8794116024936125,
+          "gap_corrected": 1.2898827224238438,
+          "n_used_real": 28,
+          "n_used_null": 104
         },
         {
-          "radius": 7.5521577915948646,
-          "gap_real": -1.628154988474174,
-          "gap_null": -3.7326341227782898,
-          "gap_corrected": 2.104479134304116,
+          "radius": 7.540477399527982,
+          "gap_real": -1.698422710736665,
+          "gap_null": -3.408916901051061,
+          "gap_corrected": 1.710494190314396,
           "n_used_real": 150,
           "n_used_null": 150
         },
         {
-          "radius": 10.069543722126486,
+          "radius": 10.05396986603731,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -179,7 +179,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 15.104315583189729,
+          "radius": 15.080954799055965,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -194,12 +194,12 @@
       "ambient": 58,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 8.329309524921563,
-      "mse_global_real": 1.154336147141174e-28,
-      "mse_global_null": 2.0827185272408784e-15,
+      "base_radius_knn_median": 8.172443412907898,
+      "mse_global_real": 1.4587129871648103e-28,
+      "mse_global_null": 2.20446457351556e-15,
       "by_radius": [
         {
-          "radius": 4.164654762460781,
+          "radius": 4.086221706453949,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -207,7 +207,7 @@
           "n_used_null": 0
         },
         {
-          "radius": 6.246982143691172,
+          "radius": 6.129332559680924,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -215,23 +215,23 @@
           "n_used_null": 0
         },
         {
-          "radius": 8.329309524921563,
-          "gap_real": 3.970397174163789e-29,
-          "gap_null": -1.2746647760696272e-13,
-          "gap_corrected": 1.2746647760696277e-13,
-          "n_used_real": 85,
-          "n_used_null": 90
+          "radius": 8.172443412907898,
+          "gap_real": 4.782351095964651e-29,
+          "gap_null": -1.8917308937798204e-13,
+          "gap_corrected": 1.891730893779821e-13,
+          "n_used_real": 67,
+          "n_used_null": 58
         },
         {
-          "radius": 12.493964287382344,
-          "gap_real": -9.587541688963861e-30,
-          "gap_null": -4.985141903221001e-18,
-          "gap_corrected": 4.985141903211414e-18,
+          "radius": 12.258665119361847,
+          "gap_real": 1.8668735292976057e-29,
+          "gap_null": -6.1531212913910795e-18,
+          "gap_corrected": 6.153121291409748e-18,
           "n_used_real": 150,
           "n_used_null": 150
         },
         {
-          "radius": 16.658619049843125,
+          "radius": 16.344886825815795,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -239,7 +239,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 24.987928574764688,
+          "radius": 24.517330238723694,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -254,12 +254,12 @@
       "ambient": 59,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 1.2046240679312399,
-      "mse_global_real": 0.019483149249901768,
-      "mse_global_null": 0.018801013507762677,
+      "base_radius_knn_median": 1.2064247649081552,
+      "mse_global_real": 0.019557602446500566,
+      "mse_global_null": 0.016345019333603817,
       "by_radius": [
         {
-          "radius": 0.6023120339656199,
+          "radius": 0.6032123824540776,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -267,7 +267,7 @@
           "n_used_null": 0
         },
         {
-          "radius": 0.9034680509484299,
+          "radius": 0.9048185736811164,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -275,23 +275,23 @@
           "n_used_null": 0
         },
         {
-          "radius": 1.2046240679312399,
-          "gap_real": -0.07170136197342133,
-          "gap_null": -0.05982175489802411,
-          "gap_corrected": -0.011879607075397224,
-          "n_used_real": 36,
-          "n_used_null": 100
+          "radius": 1.2064247649081552,
+          "gap_real": -0.07056675622506031,
+          "gap_null": -0.05722669598921197,
+          "gap_corrected": -0.013340060235848342,
+          "n_used_real": 42,
+          "n_used_null": 103
         },
         {
-          "radius": 1.8069361018968597,
+          "radius": 1.8096371473622328,
           "gap_real": 0.0,
-          "gap_null": -0.002737704478922704,
-          "gap_corrected": 0.002737704478922704,
+          "gap_null": -0.005702862879021987,
+          "gap_corrected": 0.005702862879021987,
           "n_used_real": 150,
           "n_used_null": 150
         },
         {
-          "radius": 2.4092481358624798,
+          "radius": 2.4128495298163104,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -299,7 +299,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 3.6138722037937194,
+          "radius": 3.6192742947244656,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -314,12 +314,12 @@
       "ambient": 108,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 8.964338626978874,
-      "mse_global_real": 25.064842452283653,
-      "mse_global_null": 21.776058710402886,
+      "base_radius_knn_median": 8.963342343492805,
+      "mse_global_real": 24.501042246432917,
+      "mse_global_null": 21.164010084862568,
       "by_radius": [
         {
-          "radius": 4.482169313489437,
+          "radius": 4.481671171746402,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -327,7 +327,7 @@
           "n_used_null": 0
         },
         {
-          "radius": 6.723253970234156,
+          "radius": 6.722506757619604,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -335,23 +335,23 @@
           "n_used_null": 0
         },
         {
-          "radius": 8.964338626978874,
-          "gap_real": -1.887004864087249,
-          "gap_null": -3.8707352631820306,
-          "gap_corrected": 1.9837303990947817,
-          "n_used_real": 28,
-          "n_used_null": 110
+          "radius": 8.963342343492805,
+          "gap_real": -2.3744509413116184,
+          "gap_null": -4.677552331228426,
+          "gap_corrected": 2.303101389916808,
+          "n_used_real": 41,
+          "n_used_null": 109
         },
         {
-          "radius": 13.446507940468312,
+          "radius": 13.445013515239207,
           "gap_real": 0.0,
-          "gap_null": -0.004579203423084266,
-          "gap_corrected": 0.004579203423084266,
+          "gap_null": -0.0009888723279196654,
+          "gap_corrected": 0.0009888723279196654,
           "n_used_real": 150,
           "n_used_null": 150
         },
         {
-          "radius": 17.928677253957748,
+          "radius": 17.92668468698561,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -359,7 +359,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 26.893015880936623,
+          "radius": 26.890027030478414,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -374,12 +374,12 @@
       "ambient": 108,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 12.718772391170067,
-      "mse_global_real": 3.9139337211129767e-28,
-      "mse_global_null": 2.106301222187033e-15,
+      "base_radius_knn_median": 12.65127830050853,
+      "mse_global_real": 3.6032616452600754e-28,
+      "mse_global_null": 2.1676785046089234e-15,
       "by_radius": [
         {
-          "radius": 6.359386195585033,
+          "radius": 6.325639150254265,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -387,7 +387,7 @@
           "n_used_null": 0
         },
         {
-          "radius": 9.53907929337755,
+          "radius": 9.488458725381397,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -395,15 +395,23 @@
           "n_used_null": 0
         },
         {
-          "radius": 12.718772391170067,
-          "gap_real": 1.1745249845835084e-28,
-          "gap_null": -1.5226093879995047e-14,
-          "gap_corrected": 1.5226093879995164e-14,
+          "radius": 12.65127830050853,
+          "gap_real": 7.219483554668511e-29,
+          "gap_null": -8.266246860242623e-15,
+          "gap_corrected": 8.266246860242696e-15,
           "n_used_real": 69,
-          "n_used_null": 75
+          "n_used_null": 72
         },
         {
-          "radius": 19.0781585867551,
+          "radius": 18.976917450762794,
+          "gap_real": 0.0,
+          "gap_null": -1.7752832903797215e-19,
+          "gap_corrected": 1.7752832903797215e-19,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 25.30255660101706,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -411,15 +419,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 25.437544782340133,
-          "gap_real": 0.0,
-          "gap_null": 0.0,
-          "gap_corrected": 0.0,
-          "n_used_real": 150,
-          "n_used_null": 150
-        },
-        {
-          "radius": 38.1563171735102,
+          "radius": 37.95383490152559,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -434,12 +434,12 @@
       "ambient": 109,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 1.29248293651471,
-      "mse_global_real": 0.010390624463433881,
-      "mse_global_null": 0.006007470911724609,
+      "base_radius_knn_median": 1.2928334145782254,
+      "mse_global_real": 0.01192928284791705,
+      "mse_global_null": 0.006728837668179728,
       "by_radius": [
         {
-          "radius": 0.646241468257355,
+          "radius": 0.6464167072891127,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -447,7 +447,7 @@
           "n_used_null": 0
         },
         {
-          "radius": 0.9693622023860324,
+          "radius": 0.9696250609336691,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -455,15 +455,15 @@
           "n_used_null": 0
         },
         {
-          "radius": 1.29248293651471,
-          "gap_real": -0.047783005194791166,
-          "gap_null": -0.0360245009922344,
-          "gap_corrected": -0.011758504202556766,
-          "n_used_real": 18,
-          "n_used_null": 112
+          "radius": 1.2928334145782254,
+          "gap_real": -0.07176209382185665,
+          "gap_null": -0.028613203250261184,
+          "gap_corrected": -0.04314889057159547,
+          "n_used_real": 24,
+          "n_used_null": 105
         },
         {
-          "radius": 1.9387244047720649,
+          "radius": 1.9392501218673381,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -471,7 +471,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 2.58496587302942,
+          "radius": 2.585666829156451,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -479,7 +479,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 3.8774488095441297,
+          "radius": 3.8785002437346763,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -494,12 +494,12 @@
       "ambient": 208,
       "n": 2000,
       "n_holdout": 150,
-      "base_radius_knn_median": 13.290734659337968,
-      "mse_global_real": 50.314337454979345,
-      "mse_global_null": 41.05881548589176,
+      "base_radius_knn_median": 13.293346905714507,
+      "mse_global_real": 50.06578448770238,
+      "mse_global_null": 41.096272228786646,
       "by_radius": [
         {
-          "radius": 6.645367329668984,
+          "radius": 6.646673452857254,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -507,7 +507,7 @@
           "n_used_null": 0
         },
         {
-          "radius": 9.968050994503475,
+          "radius": 9.97001017928588,
           "gap_real": NaN,
           "gap_null": NaN,
           "gap_corrected": NaN,
@@ -515,15 +515,15 @@
           "n_used_null": 0
         },
         {
-          "radius": 13.290734659337968,
-          "gap_real": -14.427984379706807,
-          "gap_null": -16.29244940633867,
-          "gap_corrected": 1.864465026631862,
-          "n_used_real": 18,
-          "n_used_null": 100
+          "radius": 13.293346905714507,
+          "gap_real": -15.799441274227895,
+          "gap_null": -16.276834117279286,
+          "gap_corrected": 0.4773928430513905,
+          "n_used_real": 30,
+          "n_used_null": 104
         },
         {
-          "radius": 19.93610198900695,
+          "radius": 19.94002035857176,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -531,7 +531,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 26.581469318675936,
+          "radius": 26.586693811429015,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -539,7 +539,7 @@
           "n_used_null": 150
         },
         {
-          "radius": 39.8722039780139,
+          "radius": 39.88004071714352,
           "gap_real": 0.0,
           "gap_null": 0.0,
           "gap_corrected": 0.0,
@@ -551,10 +551,10 @@
   ],
   "provenance": {
     "script": "manifold_reach_calibration.py",
-    "git_commit": "f85245e",
+    "git_commit": "352f1dc",
     "python": "3.12.13",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "numpy": "1.26.4",
-    "timestamp": "2026-08-25T16:54:04"
+    "timestamp": "2026-08-25T17:19:47"
   }
 }
