@@ -7,6 +7,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# All jobs only read the repo; grant nothing else (CodeQL
+# actions/missing-workflow-permissions).
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint & Format
