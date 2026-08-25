@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`run_e4_scale_test.sh` -- the E4 width sweep, launchable anywhere, aimed at
+  the scale hypothesis** (`benchmarks/canonical_tests/run_e4_scale_test.sh`).
+  E4 on CIFAR-10 found the empirical optimum at w=59: an exact hit for the
+  TwoNN prescription and a 2x undershoot for the shipped k=25 per-class-max
+  convention. One exact hit on one dataset is suggestive, not evidence -- but
+  it is cheaply testable, and it is the difference between "our prescription
+  failed" and "our prescription was measuring the wrong scale". The script runs
+  the identical E4 protocol (30 widths x 3 trials x 60 epochs, CPU) on MNIST
+  and Fashion-MNIST by default (`nohup ./run_e4_scale_test.sh &` from
+  `benchmarks/canonical_tests/`), takes dataset names as arguments, supports
+  `E4_QUICK=1` for a smoke test, and logs to `logs/`. Smoke-tested end to end
+  on MNIST (quick mode, artifact discarded). The decisive question it answers:
+  does w = TwoNN + C - 1 land on the empirical optimum on the two cheap
+  datasets as well? Companion change: the three UB manuscripts were reframed
+  from optimality to sufficiency claims against E2/E4/E5's verdicts (private
+  repo, `1fe0ad4`).
+
 - **`probe-convention` (experiment 5) trained the wrong-width model and would have produced a meaningless result.** The function is supposed to replicate `manifold_dim_probe.py`'s construction under both aggregation conventions: that script trains `ManifoldResNet-d*` at bottleneck width `d_star` (`manifold_dim_probe.py:718`) and defines `n_extra = d_star - k_90` (`:770`). The version that ran first instead built the model at `w_star` and set `n_extra = w_star - k_90` — a different construction that cannot test the published claim, since `w_star = d_star + C - 1` makes `k_90 + (w_star - k_90) == d_star` reduce to `w_star == d_star`, false by pure arithmetic whenever `C > 1`. The "identity fails" output that run produced (`n_extra=18` and `21` against a target of `C-1=9`) was not a measurement of anything and is not reported. Fixed to train at `d_star` and define `n_extra = d_star - k_90`, and the CLI defaults corrected to match that script's actual protocol (`epochs=30, batch_size=256, dropout=0.0`) rather than the inherited `prescription`-sweep defaults (`epochs=60, batch_size=512, dropout=0.3`), which this experiment had never overridden.
 
 - **Experiment 5 ran (corrected), and the dimension-probe identity does not survive the convention its own `w*` is built from** (`benchmarks/canonical_tests/estimator_calibration_probe_convention_cifar10_results.json`, `estimator_calibration_report.md` §5). Under the **global-mean** aggregation the probe was originally published with: `d*=16, k₉₀=7, n_extra=9` — an **exact reproduction** of the committed `manifold_dim_probe_results.json`, from an independent training run with a different script, which is real corroboration the published number isn't a fluke. Under **per-class-max** — the aggregation every `w*` in the ResNet experiments actually comes from — the same protocol on the same dataset gives `d*=19, k₉₀=8, n_extra=11`: **11 ≠ C−1=9**. The identity `k₉₀+n_extra=d*` holds in both rows, but that half is true by construction (`n_extra` is *defined* as `d*-k₉₀`); the one substantive claim, `n_extra=C-1`, is convention-specific — it holds for the aggregation the probe reports its headline number under and fails for the aggregation the rest of the project uses for `w*`, with nothing else changed between the two rows. Answers checklist step 9 against keeping the section's "mechanistic confirmation" framing as-is.
