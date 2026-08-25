@@ -1,0 +1,257 @@
+{
+  "experiment": "profile",
+  "dataset": "cifar10",
+  "n_classes": 10,
+  "subsample": 10000,
+  "config": {
+    "command": "profile",
+    "dataset": "cifar10",
+    "n_probe": 300,
+    "subsample": 10000
+  },
+  "estimates": {
+    "label": "cifar10",
+    "n_probe": 300,
+    "seed": 20260818,
+    "local_pca": {
+      "k5_tau0.85": {
+        "mean": 3.2666666666666666,
+        "median": 3.0,
+        "max": 4,
+        "radius_median": 42.40538959043696,
+        "tau_corrected_median": 3.5294117647058822
+      },
+      "k10_tau0.85": {
+        "mean": 6.413333333333333,
+        "median": 6.0,
+        "max": 7,
+        "radius_median": 43.50014988765675,
+        "tau_corrected_median": 7.0588235294117645
+      },
+      "k25_tau0.85": {
+        "mean": 13.883333333333333,
+        "median": 14.0,
+        "max": 16,
+        "radius_median": 45.1635430932547,
+        "tau_corrected_median": 16.47058823529412
+      },
+      "k50_tau0.85": {
+        "mean": 23.2,
+        "median": 23.0,
+        "max": 27,
+        "radius_median": 46.73020756054808,
+        "tau_corrected_median": 27.058823529411764
+      },
+      "k100_tau0.85": {
+        "mean": 36.55,
+        "median": 37.0,
+        "max": 44,
+        "radius_median": 48.39438975721194,
+        "tau_corrected_median": 43.529411764705884
+      },
+      "k200_tau0.85": {
+        "mean": 52.693333333333335,
+        "median": 54.0,
+        "max": 64,
+        "radius_median": 50.29908227726784,
+        "tau_corrected_median": 63.529411764705884
+      },
+      "k5_tau0.9": {
+        "mean": 3.783333333333333,
+        "median": 4.0,
+        "max": 4,
+        "radius_median": 42.40538959043696,
+        "tau_corrected_median": 4.444444444444445
+      },
+      "k10_tau0.9": {
+        "mean": 7.123333333333333,
+        "median": 7.0,
+        "max": 8,
+        "radius_median": 43.50014988765675,
+        "tau_corrected_median": 7.777777777777778
+      },
+      "k25_tau0.9": {
+        "mean": 16.203333333333333,
+        "median": 16.0,
+        "max": 18,
+        "radius_median": 45.1635430932547,
+        "tau_corrected_median": 17.77777777777778
+      },
+      "k50_tau0.9": {
+        "mean": 28.39666666666667,
+        "median": 29.0,
+        "max": 32,
+        "radius_median": 46.73020756054808,
+        "tau_corrected_median": 32.22222222222222
+      },
+      "k100_tau0.9": {
+        "mean": 47.07666666666667,
+        "median": 48.0,
+        "max": 54,
+        "radius_median": 48.39438975721194,
+        "tau_corrected_median": 53.33333333333333
+      },
+      "k200_tau0.9": {
+        "mean": 72.14333333333333,
+        "median": 74.0,
+        "max": 85,
+        "radius_median": 50.29908227726784,
+        "tau_corrected_median": 82.22222222222221
+      },
+      "k5_tau0.95": {
+        "mean": 3.99,
+        "median": 4.0,
+        "max": 4,
+        "radius_median": 42.40538959043696,
+        "tau_corrected_median": 4.2105263157894735
+      },
+      "k10_tau0.95": {
+        "mean": 8.033333333333333,
+        "median": 8.0,
+        "max": 9,
+        "radius_median": 43.50014988765675,
+        "tau_corrected_median": 8.421052631578947
+      },
+      "k25_tau0.95": {
+        "mean": 19.303333333333335,
+        "median": 19.0,
+        "max": 21,
+        "radius_median": 45.1635430932547,
+        "tau_corrected_median": 20.0
+      },
+      "k50_tau0.95": {
+        "mean": 35.64,
+        "median": 36.0,
+        "max": 39,
+        "radius_median": 46.73020756054808,
+        "tau_corrected_median": 37.89473684210527
+      },
+      "k100_tau0.95": {
+        "mean": 63.123333333333335,
+        "median": 64.0,
+        "max": 70,
+        "radius_median": 48.39438975721194,
+        "tau_corrected_median": 67.36842105263158
+      },
+      "k200_tau0.95": {
+        "mean": 104.62,
+        "median": 106.5,
+        "max": 118,
+        "radius_median": 50.29908227726784,
+        "tau_corrected_median": 112.10526315789474
+      }
+    },
+    "per_class_max": {
+      "k25_tau0.9": 19,
+      "k50_tau0.9": 33
+    },
+    "global_mean_shipped": {
+      "k25": 16,
+      "k50": 28
+    },
+    "mle": {
+      "k3": 28.379323338124827,
+      "k5": 27.951706783588914,
+      "k10": 25.867629074663707,
+      "k20": 24.339163855308787
+    },
+    "twonn": 50.324435923874205,
+    "profile": [
+      {
+        "k": 5,
+        "mean": 3.783333333333333,
+        "median": 4.0,
+        "std": 0.41197356981027583,
+        "max": 4,
+        "radius_median": 42.40538959043696,
+        "tau": 0.9,
+        "n_probe": 300
+      },
+      {
+        "k": 10,
+        "mean": 7.123333333333333,
+        "median": 7.0,
+        "std": 0.4634532218993508,
+        "max": 8,
+        "radius_median": 43.50014988765675,
+        "tau": 0.9,
+        "n_probe": 300
+      },
+      {
+        "k": 25,
+        "mean": 16.203333333333333,
+        "median": 16.0,
+        "std": 0.9739895048487718,
+        "max": 18,
+        "radius_median": 45.1635430932547,
+        "tau": 0.9,
+        "n_probe": 300
+      },
+      {
+        "k": 50,
+        "mean": 28.39666666666667,
+        "median": 29.0,
+        "std": 1.9981630452882355,
+        "max": 32,
+        "radius_median": 46.73020756054808,
+        "tau": 0.9,
+        "n_probe": 300
+      },
+      {
+        "k": 100,
+        "mean": 47.07666666666667,
+        "median": 48.0,
+        "std": 4.082987740477418,
+        "max": 54,
+        "radius_median": 48.39438975721194,
+        "tau": 0.9,
+        "n_probe": 300
+      },
+      {
+        "k": 200,
+        "mean": 72.14333333333333,
+        "median": 74.0,
+        "std": 7.613329684762698,
+        "max": 85,
+        "radius_median": 50.29908227726784,
+        "tau": 0.9,
+        "n_probe": 300
+      }
+    ],
+    "plateau": null,
+    "plateau_tau_corrected": null,
+    "reach_proxy": null
+  },
+  "knn_radii": {
+    "25": {
+      "median": 45.1635430932547,
+      "mean": 45.68403414433239,
+      "std": 8.582595655695135,
+      "p10": 35.16289534461887,
+      "p90": 56.52441132163358,
+      "min": 24.65100571919645,
+      "max": 75.48677707405243,
+      "k": 25,
+      "n_probe": 300
+    },
+    "50": {
+      "median": 46.73020756054808,
+      "mean": 47.26967294891088,
+      "std": 8.534887773140253,
+      "p10": 36.61384046474381,
+      "p90": 57.894424651964975,
+      "min": 26.614353172723625,
+      "max": 77.45647999456192,
+      "k": 50,
+      "n_probe": 300
+    }
+  },
+  "provenance": {
+    "script": "estimator_calibration.py",
+    "git_commit": "7b39a7a",
+    "python": "3.12.13",
+    "platform": "macOS-26.6-arm64-arm-64bit",
+    "numpy": "1.26.4",
+    "timestamp": "2026-08-18T15:23:58"
+  }
+}

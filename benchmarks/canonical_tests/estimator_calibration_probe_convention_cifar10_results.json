@@ -1,0 +1,94 @@
+{
+  "experiment": "probe_convention",
+  "dataset": "cifar10",
+  "n_classes": 10,
+  "config": {
+    "command": "probe-convention",
+    "dataset": "cifar10",
+    "n_probe": 300,
+    "subsample": 10000,
+    "metal": false,
+    "epochs": 30,
+    "batch_size": 256,
+    "lr": 0.001,
+    "dropout": 0.0,
+    "quick": false,
+    "k_pca": 25,
+    "n_trials": 1
+  },
+  "conventions": [
+    {
+      "convention": "global_mean",
+      "d_star": 16,
+      "w_star": 25,
+      "test_acc": 0.6578999757766724,
+      "k_90": 7,
+      "n_extra": 9,
+      "identity_k90_plus_extra": 16,
+      "identity_holds": true,
+      "n_extra_equals_C_minus_1": true,
+      "explained_variance_ratio": [
+        0.4034351706504822,
+        0.1939796805381775,
+        0.10004249215126038,
+        0.07909102737903595,
+        0.06193852052092552,
+        0.056759312748909,
+        0.02517782524228096,
+        0.019532768055796623,
+        0.018139220774173737,
+        0.012441296130418777,
+        0.008536074310541153,
+        0.006033844780176878,
+        0.0043253484182059765,
+        0.003897710470482707,
+        0.0037469896487891674,
+        0.0029227240011096
+      ]
+    },
+    {
+      "convention": "per_class_max",
+      "d_star": 19,
+      "w_star": 28,
+      "test_acc": 0.6633999943733215,
+      "k_90": 8,
+      "n_extra": 11,
+      "identity_k90_plus_extra": 19,
+      "identity_holds": true,
+      "n_extra_equals_C_minus_1": false,
+      "explained_variance_ratio": [
+        0.3296147286891937,
+        0.22683551907539368,
+        0.10749996453523636,
+        0.07405636459589005,
+        0.06975649297237396,
+        0.047577619552612305,
+        0.03225906938314438,
+        0.023764200508594513,
+        0.021571515128016472,
+        0.014171097427606583,
+        0.011480596847832203,
+        0.011012738570570946,
+        0.0070714196190238,
+        0.005813383962959051,
+        0.004714342299848795,
+        0.0038374424912035465,
+        0.003272885689511895,
+        0.0028861246537417173,
+        0.0028044949285686016
+      ]
+    }
+  ],
+  "provenance": {
+    "script": "estimator_calibration.py",
+    "git_commit": "3c14b06",
+    "python": "3.12.13",
+    "platform": "macOS-26.6-arm64-arm-64bit",
+    "numpy": "1.26.4",
+    "timestamp": "2026-08-22T11:35:24",
+    "device": {
+      "tensorflow_version": "2.21.0",
+      "device_used": "CPU"
+    }
+  }
+}

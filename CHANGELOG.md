@@ -9,11 +9,101 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`run_e4_scale_test.sh` -- the E4 width sweep, launchable anywhere, aimed at
+  the scale hypothesis** (`benchmarks/canonical_tests/run_e4_scale_test.sh`).
+  E4 on CIFAR-10 found the empirical optimum at w=59: an exact hit for the
+  TwoNN prescription and a 2x undershoot for the shipped k=25 per-class-max
+  convention. One exact hit on one dataset is suggestive, not evidence -- but
+  it is cheaply testable, and it is the difference between "our prescription
+  failed" and "our prescription was measuring the wrong scale". The script runs
+  the identical E4 protocol (30 widths x 3 trials x 60 epochs, CPU) on MNIST
+  and Fashion-MNIST by default (`nohup ./run_e4_scale_test.sh &` from
+  `benchmarks/canonical_tests/`), takes dataset names as arguments, supports
+  `E4_QUICK=1` for a smoke test, and logs to `logs/`. Smoke-tested end to end
+  on MNIST (quick mode, artifact discarded). The decisive question it answers:
+  does w = TwoNN + C - 1 land on the empirical optimum on the two cheap
+  datasets as well? Companion change: the three UB manuscripts were reframed
+  from optimality to sufficiency claims against E2/E4/E5's verdicts (private
+  repo, `1fe0ad4`).
+
+- **`probe-convention` (experiment 5) trained the wrong-width model and would have produced a meaningless result.** The function is supposed to replicate `manifold_dim_probe.py`'s construction under both aggregation conventions: that script trains `ManifoldResNet-d*` at bottleneck width `d_star` (`manifold_dim_probe.py:718`) and defines `n_extra = d_star - k_90` (`:770`). The version that ran first instead built the model at `w_star` and set `n_extra = w_star - k_90` — a different construction that cannot test the published claim, since `w_star = d_star + C - 1` makes `k_90 + (w_star - k_90) == d_star` reduce to `w_star == d_star`, false by pure arithmetic whenever `C > 1`. The "identity fails" output that run produced (`n_extra=18` and `21` against a target of `C-1=9`) was not a measurement of anything and is not reported. Fixed to train at `d_star` and define `n_extra = d_star - k_90`, and the CLI defaults corrected to match that script's actual protocol (`epochs=30, batch_size=256, dropout=0.0`) rather than the inherited `prescription`-sweep defaults (`epochs=60, batch_size=512, dropout=0.3`), which this experiment had never overridden.
+
+- **Experiment 5 ran (corrected), and the dimension-probe identity does not survive the convention its own `w*` is built from** (`benchmarks/canonical_tests/estimator_calibration_probe_convention_cifar10_results.json`, `estimator_calibration_report.md` §5). Under the **global-mean** aggregation the probe was originally published with: `d*=16, k₉₀=7, n_extra=9` — an **exact reproduction** of the committed `manifold_dim_probe_results.json`, from an independent training run with a different script, which is real corroboration the published number isn't a fluke. Under **per-class-max** — the aggregation every `w*` in the ResNet experiments actually comes from — the same protocol on the same dataset gives `d*=19, k₉₀=8, n_extra=11`: **11 ≠ C−1=9**. The identity `k₉₀+n_extra=d*` holds in both rows, but that half is true by construction (`n_extra` is *defined* as `d*-k₉₀`); the one substantive claim, `n_extra=C-1`, is convention-specific — it holds for the aggregation the probe reports its headline number under and fails for the aggregation the rest of the project uses for `w*`, with nothing else changed between the two rows. Answers checklist step 9 against keeping the section's "mechanistic confirmation" framing as-is.
+
+- **Calibration results, and the headline is a negative one: CIFAR-10 has no plateau** (`benchmarks/canonical_tests/estimator_calibration_report.md` and three result JSONs). Run on `tesla`, seeded, every estimator parameter in the artifact.
+  - **`profile`** — the local-PCA estimate on CIFAR-10 climbs **4 → 7 → 16 → 29 → 48 → 74** as `k` goes 5 → 200 and never stops climbing. `plateau: null`. **No probed scale gives a stable tangent estimate, so every `d*` in this repo is a function of the `k` it was measured at.** The estimate rises 18× while the median k-NN radius rises 19% (42.4 → 50.3): in 3,072 dimensions the nearest 5 and the nearest 200 neighbours are at nearly the same distance, so `k` is not selecting a scale, it is selecting the sample size the local covariance is estimated from. The run also **reproduces the entire 34/29/19/16 spread in one go** — per-class max 19 at k=25 and 33 at k=50, global mean 16 at k=25 and 28 at k=50 — which until now had to be inferred across three committed artifacts. MLE on the same data: 28.4/28.0/25.9/24.3 at k=3/5/10/20; TwoNN 50.3. Our canonical `d*`=19 sits **below** every MLE reading.
+  - **`synthetic`** — the estimator under-reports at every setting, and the shortfall widens with `d` (median `d̂` at τ=0.90, k=200: 4 at true `d`=5, 9 at 10, 17 at 20, 32 at 40). At true `d`=5 and 10 a plateau exists and plateau + τ-correction agrees with an independent MLE to **within a quarter of a dimension** (cube `d`=10: 8.52 vs 8.57). At `d`=20 and 40 there is no plateau on any manifold — the Narayanan–Mitter sample-complexity wall, with 5,000 points unable to certify dimension 20. Two things the handoff did not anticipate: **ambient noise at σ=0.02 destroys every plateau** and inflates MLE 6–15× (swiss roll `d`=5: 4.2 clean → 65.2 noisy), so "no plateau" is what a noisy low-dimensional manifold looks like *as well as* a high-dimensional one and this experiment cannot separate them; and the **torus found a plateau only on its noisy run, at 7.67 for a true `d`=5** — a detected plateau is not self-certifying and should be cross-checked against MLE.
+  - **`noise`** — Pope et al. Table 3 replication. MLE(k=3) goes 28.3 → 41.0 → 53.3 → 71.8 → 91.4 → 113.7 → 127.3 as 256…2560 known dimensions are injected, against their 19.7 → 136.1. **The estimator responds to dimension**, monotonically, over a 4.5× range; a flat response would have been serious. Ours starts higher at low injected `d` and converges on their column by 2048, consistent with our `StandardScaler` against their raw pixels.
+  - **Experiments 4 and 5 had not run as of this entry.** *(Corrected below: the "no GPU" reading was wrong — these benchmarks run on CPU by design, matching the device every comparison baseline was produced on. Experiment 4 has since run; see the entry below.)*
+
+- **Experiment 4 (`prescription`) ran to completion, and the shipped design rule undershoots the empirical optimum by 2×** (`benchmarks/canonical_tests/estimator_calibration_prescription_cifar10_results.json`, `estimator_calibration_report.md` §4). CIFAR-10, 30 widths, 3 trials, 60 epochs, CPU, ~29 h wall-clock. `optimum_is_broad: false` — the optimum is genuinely sharp, not a flat plateau: only w=48, 57, 59 (of 30 tested) are statistically indistinguishable from the best.
+  - **Empirical optimum: w=59, 75.70% ± 1.41%. Shipped prescription (k=25, per-class max): w=28, 69.59% ± 1.09%.** A 6.1-point gap, roughly 5–6σ given w=28's own standard deviation — not noise.
+  - **Of 27 estimator settings tested, only 2 land in the optimum band: TwoNN (w=59, exact) and local PCA at k=100/τ=0.9 (w=57).** Every other setting misses, including the manuscript's own convention, every MLE variant (k=3/5/10/20, all prescribing w=33–37), and the global-mean convention (w=25). This is not a coincidence of which two happen to land there: **TwoNN and large-k local PCA are exactly the two estimators the `synthetic` and `profile` experiments above already showed are biased upward.** The optimum isn't validating the design rule; it's landing near where the over-estimating estimators point, while the convention that tries to measure actual local dimension undershoots by nearly 2×.
+  - Reading this against the three outcomes named in advance (handoff §4): this is **"sharp optimum, most estimators miss it"** — publishable, but only if the paper says so and names the estimator and the gap.
+  - Cost was ~29 h, not the 15–20 h estimated: the largest widths (up to 188K params) cost far more per epoch than the smallest (3K params), a spread that wasn't known when the estimate was made.
+
+- **Estimator provenance travels with every `d*`.** `estimator_params()` builds
+  a JSON-serialisable block naming the neighbourhood size `k`, the threshold
+  `tau`, the probe budgets, the seed, the aggregation and the preprocessing, and
+  every benchmark that writes a results JSON now writes it. The headline
+  `d* = 19 -> w* = 28` for CIFAR-10 was previously not reproducible from its own
+  artifact: `resnet_manifold_architecture_results.json` recorded `tau` and not
+  `k`, and `k` is what separates it from the 34 in
+  `cifar10_architecture_results.json`.
+
+- **`--discovery-seed` on every benchmark that measures `d*`, defaulting to 0.**
+  Probe-point selection drew from the global NumPy RNG, so `d*` moved by one to
+  two between identical runs and no committed `d*` could be reproduced by
+  re-running its script.
+
+- **Bootstrap confidence interval on the mean estimate.** Both estimators now
+  return `n_probe`, `mean_ci95_low` and `mean_ci95_high` alongside the point
+  estimate. Deliberately not offered for the per-class *maximum*: that is an
+  order statistic over the probe budget, and the bootstrap of a sample maximum
+  is inconsistent.
+
+- **`tests/test_dimensionality_calibration.py`** — the estimator measured
+  against manifolds whose intrinsic dimension is known by construction (uniform
+  cubes and spheres, rigidly embedded), with a committed bias table as a
+  regression guard. It pins three structural facts: the estimate rises
+  monotonically with `k`, it rises monotonically with `tau` toward a ceiling
+  near `tau * d`, and the per-class maximum drifts upward with the probe budget.
+  The previous tests covered only exactly flat, noiseless subspaces, where local
+  PCA is trivially exact.
+
 ### Changed
+
+- **`DEFAULT_K_PCA = 25` is now the shared `--k-pca` default** across the
+  benchmark scripts that prescribe a bottleneck width, replacing per-script
+  defaults of 25, 30 and 50. That single inconsistency produced CIFAR-10 reading
+  34 in one canonical artifact and 19 in another, which `docs/RESULTS.md`
+  attributed to differing preprocessing; both scripts in fact apply the same
+  `StandardScaler`, and the difference was `k`. Two scripts deviate on purpose
+  and now say so inline: `iris_manifold_architecture.py` (k=10, four features and
+  50 points per class) and `clinical/disease_manifold_architecture.py` (k=20).
+
+  **This changes results for scripts previously defaulting to 30 or 50.** Pass
+  `--k-pca 50` to reproduce a pre-existing artifact recorded at 50.
+
+- `docs/RESULTS.md` and `README.md` now state one canonical convention — local
+  PCA at k=25, tau=0.90, per-class maximum — with the other readings tabulated as
+  sensitivity rather than presented as competing measurements of one quantity.
+  The README previously gave three different CIFAR-10 `d*` values (34, 19, 16)
+  in three sections without saying they were different statistics.
 
 ### Removed
 
 ### Fixed
+
+- **`estimator_calibration.py` deadlocked on the first `model.fit()`, silently.** It bootstrapped TensorFlow lazily, inside `run_prescription`, after the estimator sweep had already driven Accelerate's BLAS threadpool. Every other canonical benchmark calls `setup_tensorflow()` at **module scope, before importing keras** — `resnet_manifold_architecture.py:70`, `cifar_architecture_sweep.py:79`, `manifold_dim_probe.py:52` and six others. With the lazy version the main thread parked in `ProcessFunctionLibraryRuntime::RunSync → Notification::WaitForNotification` while every Eigen worker idled in `WaitForWork`: **seven minutes at 0% CPU, no error and no timeout**, which reads as a slow run rather than a hang. The same fit takes **11.3 s** with the bootstrap at import. Moved to module scope; the `prescription` smoke test now completes in about four minutes.
+
+- **The `--gpu` flag was off-convention** and is now `--metal`, with `--gpu` kept as an accepted alias. Six canonical benchmarks spell it `--metal`; only this script and one other used `--gpu`.
+
+- `docs/RESULTS.md` attributed the CIFAR-10 34-vs-19 gap to preprocessing. It is
+  the neighbourhood size.
+
+- `local_pca_dimension()` passed a possibly-`None` `radius` to `float()` on a
+  path the type checker could not narrow.
 
 ## [0.14.0] - 2026-08-10
 
