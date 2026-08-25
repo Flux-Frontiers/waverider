@@ -316,9 +316,19 @@ def estimate_all(X, y, n_probe, seed, label=""):
     :returns: Dict of estimator name -> estimate, plus the profile and plateau.
     """
     out = {"label": label, "n_probe": n_probe, "seed": seed, "local_pca": {}}
+    t_start = time.perf_counter()
+    n_settings = len(TAU_VALUES) * len(K_VALUES)
+    i = 0
     for tau in TAU_VALUES:
         for k in K_VALUES:
+            i += 1
+            t0 = time.perf_counter()
             est = local_pca_dimension(X, k=k, tau=tau, n_probe=n_probe, seed=seed)
+            print(
+                f"  [{i:2d}/{n_settings}] local_pca   k={k:<3d} tau={tau:.2f}"
+                f"  -> median d={est['median']:5.1f}  ({time.perf_counter() - t0:.1f}s)",
+                flush=True,
+            )
             out["local_pca"][f"k{k}_tau{tau}"] = {
                 "mean": est["mean"],
                 "median": est["median"],
@@ -329,26 +339,55 @@ def estimate_all(X, y, n_probe, seed, label=""):
     if y is not None:
         out["per_class_max"] = {}
         for k in (25, 50):
+            t0 = time.perf_counter()
             cls = discover_per_class_dimensionality(
                 X, y, k=k, tau=0.90, n_samples_per_class=max(5, n_probe // len(set(y))), seed=seed
             )
-            out["per_class_max"][f"k{k}_tau0.9"] = int(max(c["max"] for c in cls.values()))
-    out["global_mean_shipped"] = {
-        f"k{k}": int(
+            d = int(max(c["max"] for c in cls.values()))
+            out["per_class_max"][f"k{k}_tau0.9"] = d
+            print(
+                f"  per-class max        k={k:<3d} tau=0.90"
+                f"  -> d={d:<3d}          ({time.perf_counter() - t0:.1f}s)",
+                flush=True,
+            )
+    out["global_mean_shipped"] = {}
+    for k in (25, 50):
+        t0 = time.perf_counter()
+        d = int(
             round(
                 discover_dimensionality(
                     X, n_samples=n_probe, k=k, variance_thresholds=(0.90,), seed=seed
                 )[0.90]["mean"]
             )
         )
-        for k in (25, 50)
-    }
-    out["mle"] = {
-        f"k{k}": mle_levina_bickel(X, k=k, n_probe=n_probe, seed=seed) for k in MLE_K_VALUES
-    }
+        out["global_mean_shipped"][f"k{k}"] = d
+        print(
+            f"  global mean          k={k:<3d} tau=0.90"
+            f"  -> d={d:<3d}          ({time.perf_counter() - t0:.1f}s)",
+            flush=True,
+        )
+    out["mle"] = {}
+    for k in MLE_K_VALUES:
+        t0 = time.perf_counter()
+        d = mle_levina_bickel(X, k=k, n_probe=n_probe, seed=seed)
+        out["mle"][f"k{k}"] = d
+        print(
+            f"  MLE                  k={k:<3d}          -> d={d:5.1f}"
+            f"        ({time.perf_counter() - t0:.1f}s)",
+            flush=True,
+        )
+    t0 = time.perf_counter()
     out["twonn"] = twonn(X, n_probe=n_probe, seed=seed)
+    print(
+        f"  TwoNN                             -> d={out['twonn']:5.1f}"
+        f"        ({time.perf_counter() - t0:.1f}s)",
+        flush=True,
+    )
+    t0 = time.perf_counter()
     prof = dimension_profile(X, k_values=K_VALUES, tau=0.90, n_probe=n_probe, seed=seed)
+    print(f"  dimension profile (k={K_VALUES})  ({time.perf_counter() - t0:.1f}s)", flush=True)
     plateau = find_plateau(prof)
+    print(f"  estimator sweep done in {(time.perf_counter() - t_start) / 60:.1f} min", flush=True)
     out["profile"] = prof
     out["plateau"] = plateau
     out["plateau_tau_corrected"] = tau_corrected(plateau["dimension"], 0.90) if plateau else None
