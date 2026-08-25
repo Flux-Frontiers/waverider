@@ -1,0 +1,379 @@
+{
+  "phase": "phase0",
+  "d_values": [
+    5,
+    10
+  ],
+  "n": 1500,
+  "n_holdout": 150,
+  "cases": [
+    {
+      "kind": "linear",
+      "d": 5,
+      "ambient": 13,
+      "n": 1500,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.8966213236535964,
+      "mse_global_real": 2.6299230118644647e-30,
+      "mse_global_null": 7.534701167384977e-16,
+      "by_radius": [
+        {
+          "radius": 0.4483106618267982,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.6724659927401972,
+          "gap_real": 2.5609674788102006e-30,
+          "gap_null": -2.398822271391354e-14,
+          "gap_corrected": 2.3988222713913542e-14,
+          "n_used_real": 4,
+          "n_used_null": 9
+        },
+        {
+          "radius": 0.8966213236535964,
+          "gap_real": 2.312402363012849e-30,
+          "gap_null": -3.0442313935271165e-15,
+          "gap_corrected": 3.044231393527119e-15,
+          "n_used_real": 60,
+          "n_used_null": 63
+        },
+        {
+          "radius": 1.3449319854803945,
+          "gap_real": 2.4669817944401502e-30,
+          "gap_null": -7.143330775356867e-16,
+          "gap_corrected": 7.143330775356892e-16,
+          "n_used_real": 125,
+          "n_used_null": 131
+        },
+        {
+          "radius": 1.7932426473071927,
+          "gap_real": 1.5285430487721627e-30,
+          "gap_null": -7.494070135697256e-17,
+          "gap_corrected": 7.494070135697409e-17,
+          "n_used_real": 147,
+          "n_used_null": 146
+        },
+        {
+          "radius": 2.689863970960789,
+          "gap_real": 1.8250295388350415e-30,
+          "gap_null": -2.546769570061204e-17,
+          "gap_corrected": 2.5467695700613864e-17,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "kind": "sphere",
+      "d": 5,
+      "ambient": 14,
+      "n": 1500,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.46008033298933415,
+      "mse_global_real": 0.17299586364520944,
+      "mse_global_null": 0.1773134427680734,
+      "by_radius": [
+        {
+          "radius": 0.23004016649466708,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.3450602497420006,
+          "gap_real": NaN,
+          "gap_null": 0.17603319205510534,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 4
+        },
+        {
+          "radius": 0.46008033298933415,
+          "gap_real": 0.16727971887912121,
+          "gap_null": 0.16937845554173145,
+          "gap_corrected": -0.0020987366626102344,
+          "n_used_real": 48,
+          "n_used_null": 53
+        },
+        {
+          "radius": 0.6901204994840012,
+          "gap_real": 0.14578223033859977,
+          "gap_null": 0.15140309748813502,
+          "gap_corrected": -0.005620867149535247,
+          "n_used_real": 150,
+          "n_used_null": 125
+        },
+        {
+          "radius": 0.9201606659786683,
+          "gap_real": 0.08690515664148366,
+          "gap_null": 0.05730613010500117,
+          "gap_corrected": 0.029599026536482484,
+          "n_used_real": 150,
+          "n_used_null": 148
+        },
+        {
+          "radius": 1.3802409989680025,
+          "gap_real": -0.2258306298320026,
+          "gap_null": -0.32929931648291066,
+          "gap_corrected": 0.10346868665090805,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "kind": "torus",
+      "d": 5,
+      "ambient": 18,
+      "n": 1500,
+      "n_holdout": 150,
+      "base_radius_knn_median": 1.3607617935646577,
+      "mse_global_real": 2.577046703321437,
+      "mse_global_null": 2.6226804283876284,
+      "by_radius": [
+        {
+          "radius": 0.6803808967823288,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 1.0205713451734932,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 1.3607617935646577,
+          "gap_real": 2.44152234109097,
+          "gap_null": 2.426954382788248,
+          "gap_corrected": 0.014567958302722062,
+          "n_used_real": 34,
+          "n_used_null": 30
+        },
+        {
+          "radius": 2.0411426903469865,
+          "gap_real": 2.078676981769121,
+          "gap_null": 1.7400706277299527,
+          "gap_corrected": 0.33860635403916817,
+          "n_used_real": 150,
+          "n_used_null": 145
+        },
+        {
+          "radius": 2.7215235871293153,
+          "gap_real": 0.9764162778499417,
+          "gap_null": 0.46315251285132897,
+          "gap_corrected": 0.5132637649986127,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 4.082285380693973,
+          "gap_real": -1.6242324468904457,
+          "gap_null": -1.312887342916171,
+          "gap_corrected": -0.31134510397427473,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "kind": "linear",
+      "d": 10,
+      "ambient": 18,
+      "n": 1500,
+      "n_holdout": 150,
+      "base_radius_knn_median": 2.291369670804182,
+      "mse_global_real": 1.2989323655870251e-29,
+      "mse_global_null": 9.11579631670245e-16,
+      "by_radius": [
+        {
+          "radius": 1.145684835402091,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 1.7185272531031366,
+          "gap_real": 1.1798291714758343e-29,
+          "gap_null": -1.9639187679139473e-15,
+          "gap_corrected": 1.963918767913959e-15,
+          "n_used_real": 1,
+          "n_used_null": 3
+        },
+        {
+          "radius": 2.291369670804182,
+          "gap_real": 1.2195630189748661e-29,
+          "gap_null": -5.254982378749479e-15,
+          "gap_corrected": 5.254982378749491e-15,
+          "n_used_real": 65,
+          "n_used_null": 75
+        },
+        {
+          "radius": 3.437054506206273,
+          "gap_real": 9.967644916499957e-30,
+          "gap_null": -7.746127695170578e-16,
+          "gap_corrected": 7.746127695170678e-16,
+          "n_used_real": 148,
+          "n_used_null": 149
+        },
+        {
+          "radius": 4.582739341608364,
+          "gap_real": 7.213075088792931e-30,
+          "gap_null": -6.120533318262236e-18,
+          "gap_corrected": 6.120533318269449e-18,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 6.874109012412546,
+          "gap_real": 4.447092990161784e-30,
+          "gap_null": 1.2105305936970892e-18,
+          "gap_corrected": -1.210530593692642e-18,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "kind": "sphere",
+      "d": 10,
+      "ambient": 19,
+      "n": 1500,
+      "n_holdout": 150,
+      "base_radius_knn_median": 0.7853199490656014,
+      "mse_global_real": 0.09182795136195598,
+      "mse_global_null": 0.09477520258059428,
+      "by_radius": [
+        {
+          "radius": 0.3926599745328007,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 0.588989961799201,
+          "gap_real": NaN,
+          "gap_null": 0.0880831367115833,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 5
+        },
+        {
+          "radius": 0.7853199490656014,
+          "gap_real": 0.0525929708157416,
+          "gap_null": 0.07739313932795697,
+          "gap_corrected": -0.024800168512215365,
+          "n_used_real": 31,
+          "n_used_null": 85
+        },
+        {
+          "radius": 1.177979923598402,
+          "gap_real": -0.20498366207622182,
+          "gap_null": -0.21578818349745799,
+          "gap_corrected": 0.010804521421236168,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 1.5706398981312029,
+          "gap_real": -0.6620137453014909,
+          "gap_null": -0.4780094102284947,
+          "gap_corrected": -0.18400433507299624,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 2.355959847196804,
+          "gap_real": 0.0,
+          "gap_null": -0.012125724050560643,
+          "gap_corrected": 0.012125724050560643,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    },
+    {
+      "kind": "torus",
+      "d": 10,
+      "ambient": 28,
+      "n": 1500,
+      "n_holdout": 150,
+      "base_radius_knn_median": 3.0244648812911747,
+      "mse_global_real": 4.841534860073432,
+      "mse_global_null": 4.492343450077865,
+      "by_radius": [
+        {
+          "radius": 1.5122324406455874,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 2.268348660968381,
+          "gap_real": NaN,
+          "gap_null": NaN,
+          "gap_corrected": NaN,
+          "n_used_real": 0,
+          "n_used_null": 0
+        },
+        {
+          "radius": 3.0244648812911747,
+          "gap_real": 3.143426442206197,
+          "gap_null": 2.540048355591943,
+          "gap_corrected": 0.6033780866142537,
+          "n_used_real": 35,
+          "n_used_null": 91
+        },
+        {
+          "radius": 4.536697321936762,
+          "gap_real": -2.1106674025649568,
+          "gap_null": -2.399038658920743,
+          "gap_corrected": 0.2883712563557861,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 6.0489297625823495,
+          "gap_real": -0.008360645066116668,
+          "gap_null": -1.2908169066622461,
+          "gap_corrected": 1.2824562615961295,
+          "n_used_real": 150,
+          "n_used_null": 150
+        },
+        {
+          "radius": 9.073394643873524,
+          "gap_real": 0.0,
+          "gap_null": 0.0,
+          "gap_corrected": 0.0,
+          "n_used_real": 150,
+          "n_used_null": 150
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "script": "manifold_reach_calibration.py",
+    "git_commit": "f85245e",
+    "python": "3.12.13",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "numpy": "1.26.4",
+    "timestamp": "2026-08-25T16:53:34"
+  }
+}
