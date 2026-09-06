@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`kg` extra floors raised to `doc-kg>=0.24.1` and `pycode-kg>=0.25.1`.**
+  Both skip the `.0` of that minor deliberately: 0.24.0 and 0.25.0 shipped the
+  snapshot key scheme with a `save_snapshot` that dropped
+  `snapshot_key`/`subject`/`tool` on the way to disk, so every snapshot they
+  wrote fell back to a tree-hash key -- the exact behaviour the scheme replaced.
+  The lock also picks up `kgmodule-utils` 0.19.0, where that scheme originates.
+
 ### Added
 
 - **`run_e4_scale_test.sh` -- the E4 width sweep, launchable anywhere, aimed at

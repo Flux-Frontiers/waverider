@@ -74,9 +74,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# The .1 releases, not the .0: doc-kg 0.24.0 and pycode-kg 0.25.0 shipped the
+# snapshot key scheme with a `save_snapshot` that dropped
+# snapshot_key/subject/tool on the way to disk, so every snapshot they wrote
+# fell back to a tree-hash key. Pinning past them keeps a known-bad release out
+# of any resolution here.
 kg = [
-    "doc-kg>=0.22.0",
-    "pycode-kg>=0.23.1",
+    "doc-kg>=0.24.1",
+    "pycode-kg>=0.25.1",
     "proteuspy>=0.100.1",
 ]
 
