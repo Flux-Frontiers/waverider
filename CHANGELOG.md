@@ -91,6 +91,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The README previously gave three different CIFAR-10 `d*` values (34, 19, 16)
   in three sections without saying they were different statistics.
 
+- **`quiltwright` floor raised to `>=0.14.1`** (was `>=0.7.0`), to stay
+  current with the fleet's other consumer rather than for anything called
+  here directly. This repo's `view_cone` kwarg passes straight through to
+  `render_quilt()` and has always meant "use exactly this cone"; the 35-degree
+  cap `quiltwright.quilt.resolve_view_cone()` added in 0.14.0 is a separate
+  function this repo never calls, so nothing here changes behavior.
+
 ### Removed
 
 ### Fixed

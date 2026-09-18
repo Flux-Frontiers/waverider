@@ -5593,14 +5593,14 @@ cffi = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "quiltwright"
-version = "0.8.0"
-description = "Holographic output for Looking Glass displays: off-axis multi-view quilts from PyVista or POV-Ray scenes"
+version = "0.14.1"
+description = "Holographic output for Looking Glass displays: off-axis multi-view quilts from PyVista, POV-Ray or Blender Cycles scenes"
 optional = false
 python-versions = "<3.14,>=3.12"
 groups = ["main"]
 files = [
-    {file = "quiltwright-0.8.0-py3-none-any.whl", hash = "sha256:0efd4510f7efafc9daa9ac8278f939955165da5f53f44e2d13e95118242582dd"},
-    {file = "quiltwright-0.8.0.tar.gz", hash = "sha256:cd2a7a6aaed3c6adb12c5183e897a367e6de11690022420b18c4e6330b031e40"},
+    {file = "quiltwright-0.14.1-py3-none-any.whl", hash = "sha256:f8f0576ac7ee66298f1d3f1109c51d3b167cff7bc1bd599e6987daaa44d710ee"},
+    {file = "quiltwright-0.14.1.tar.gz", hash = "sha256:e53a633eb22e72aec2de7b866d8b97294755764398698f68fed928f6cb87be78"},
 ]
 
 [package.dependencies]
@@ -5609,6 +5609,7 @@ numpy = ">=1.26"
 pillow = ">=10.0"
 
 [package.extras]
+heic = ["pillow-heif (>=0.16)"]
 molecules = ["pypdb2pov (>=0.1.1)"]
 video = ["imageio-ffmpeg (>=0.4)"]
 viz = ["pyvista (>=0.44)"]
@@ -7740,4 +7741,4 @@ kg = ["doc-kg", "proteuspy", "pycode-kg"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "22c834f7ccf05975601a3c7e975426fa3c7cd91d2a1de66676656f2efa1d8302"
+content-hash = "87566ed2f428ad98f8509385d62c0373b5b6939ea792cee420b6f749ed624a1a"
