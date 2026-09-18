@@ -3,6 +3,13 @@ name: Release
 on:
   push:
     tags: ['v*']
+  # Publish an already-released tag to PyPI without re-releasing it. Takes the
+  # assets off the existing GitHub Release, so PyPI gets the same bytes.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to publish, e.g. v0.15.0"
+        required: true
 
 permissions:
   contents: write  # needed to create GitHub Releases and upload assets
@@ -10,6 +17,7 @@ permissions:
 jobs:
   release:
     name: Build & Release
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -32,6 +40,14 @@ jobs:
       - name: Build wheel and sdist
         run: poetry build
 
+      # Hand the built files to the publish job rather than letting it rebuild,
+      # so PyPI and the GitHub Release carry byte-identical artifacts.
+      - name: Stash dist for the publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -45,3 +61,48 @@ jobs:
               --title "WaveRider $TAG" \
               --notes-file release-notes.md
           fi
+
+  fetch-release:
+    name: Fetch assets of an existing release
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the release's wheel and sdist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir dist
+          gh release download "${{ inputs.tag }}" --repo "${{ github.repository }}" \
+            --dir dist --pattern '*.whl' --pattern '*.tar.gz'
+          ls -l dist
+
+      - name: Stash dist for the publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: [release, fetch-release]
+    # Exactly one of the two producers runs; the other is skipped.
+    if: >-
+      always() &&
+      (needs.release.result == 'success' || needs.fetch-release.result == 'success')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/waverider
+    # Replaces the workflow-level `contents: write` for this job: publishing
+    # needs to mint an OIDC token and nothing else.
+    permissions:
+      id-token: write
+    steps:
+      - name: Fetch the artifacts the producing job stashed
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
