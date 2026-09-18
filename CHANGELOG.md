@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Releases now publish to PyPI.** `release.yml` built the wheel and sdist
+  and created the GitHub Release, but had no publish step, so every version on
+  PyPI got there by hand and 0.15.0 never did. It now has the fleet's Trusted
+  Publishing `publish` job, which uploads the same files the GitHub Release
+  carries. A `workflow_dispatch` path takes an existing tag and publishes that
+  release's assets, so a release that missed PyPI can be published without
+  re-releasing it.
+
 ## [0.15.0] - 2026-09-18
 
 ### Added
