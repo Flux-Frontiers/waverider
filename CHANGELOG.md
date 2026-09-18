@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-09-18
+
 ### Added
 
 - **`run_e4_scale_test.sh` -- the E4 width sweep, launchable anywhere, aimed at
@@ -97,8 +99,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `render_quilt()` and has always meant "use exactly this cone"; the 35-degree
   cap `quiltwright.quilt.resolve_view_cone()` added in 0.14.0 is a separate
   function this repo never calls, so nothing here changes behavior.
-
-### Removed
 
 ### Fixed
 

@@ -11,8 +11,6 @@ This little guy has seen quite a life and has built thousands of molecules!
 His big brother turtleNd does the realwork in Waverider though.
 
 License: CC 4.0
-
-Last revision 2026-08-04 10:28:04 -egs-
 """
 
 __pdoc__ = {"__all__": True}
