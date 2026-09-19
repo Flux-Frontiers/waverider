@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   release's assets, so a release that missed PyPI can be published without
   re-releasing it.
 
+### Changed
+
+- **Fleet dependencies current.** The `kg` extra floors `doc-kg` 0.22.0 ->
+  0.26.0, `pycode-kg` 0.23.1 -> 0.27.1 and `proteuspy` 0.100.1 -> 0.100.3,
+  and the lock moves `kgmodule-utils` 0.18.1 -> 0.22.0 to match.
+
 ## [0.15.0] - 2026-09-18
 
 ### Added
