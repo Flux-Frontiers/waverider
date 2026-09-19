@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **`CIFAR10_CLAIM_VERIFICATION.md` and `AGENT_BRIEF_CIFAR10_CLAIM.md`** leave
+  the public repository. They are internal audit notes, not project
+  documentation, and are kept in the private companion repository. The +8.5 pp result they verify is
+  unchanged and reproducible from
+  `benchmarks/canonical_tests/resnet_manifold_architecture_results.json`.
+
 ### Fixed
 
 - **Releases now publish to PyPI.** `release.yml` built the wheel and sdist
