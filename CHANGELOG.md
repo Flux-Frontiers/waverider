@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`quiltwright` floor raised to `>=0.15.0`** (was `>=0.14.1`) and the `ruff`
+  floor from `>=0.4.0` to `>=0.15`, inside the existing `<0.16` cap
+  (`kgrag_priv` sweep item 49, tier 1). Nothing here depends on 0.15.0's
+  toe-in geometry specifically; this is a currency bump.
+
 ### Removed
 
 - **`CIFAR10_CLAIM_VERIFICATION.md` and `AGENT_BRIEF_CIFAR10_CLAIM.md`** leave
