@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Fleet dependency floors raised and relocked** (`kgrag_priv` sweep item 46):
+  `doc-kg` to `>=0.27.0`, `pycode-kg` to `>=0.28.0`. The three packages released on 2026-09-20 and put
+  every consumer's lock behind them within hours; this is the routine
+  currency bump that follows.
+
 - **`quiltwright` floor raised to `>=0.15.0`** (was `>=0.14.1`) and the `ruff`
   floor from `>=0.4.0` to `>=0.15`, inside the existing `<0.16` cap
   (`kgrag_priv` sweep item 49, tier 1). Nothing here depends on 0.15.0's

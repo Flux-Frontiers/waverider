@@ -81,8 +81,8 @@ dependencies = [
 
 [project.optional-dependencies]
 kg = [
-    "doc-kg>=0.26.0",
-    "pycode-kg>=0.27.1",
+    "doc-kg>=0.27.0",
+    "pycode-kg>=0.28.0",
     "proteuspy>=0.100.3",
 ]
 
