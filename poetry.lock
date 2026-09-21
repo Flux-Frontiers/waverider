@@ -6506,6 +6506,21 @@ tests = ["autopep8", "isort", "llnl-hatchet", "numpy", "pytest", "pytest-forked"
 tutorials = ["matplotlib", "pandas", "tabulate"]
 
 [[package]]
+name = "turtlend"
+version = "0.1.0"
+description = "A turtle that carries its own orthonormal frame through 3- or N-dimensional space"
+optional = false
+python-versions = "<3.14,>=3.12"
+groups = ["main"]
+files = [
+    {file = "turtlend-0.1.0-py3-none-any.whl", hash = "sha256:40a910ada561088cd64897999c62abecf530db5ead856dad3057685f0a00aa04"},
+    {file = "turtlend-0.1.0.tar.gz", hash = "sha256:feba41cd25e4c211080bcdad1e1917ce920ad038bd0ce8254fb97a2f64874152"},
+]
+
+[package.dependencies]
+numpy = ">=1.26"
+
+[[package]]
 name = "ty"
 version = "0.0.65"
 description = "An extremely fast Python type checker, written in Rust."
@@ -7139,4 +7154,4 @@ bench = ["proteuspy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "b38b0907e6d45d26d8df8e8bf493d33a1fe7cef5aab97480a633a80a52801c13"
+content-hash = "34e1f574295893e429cfb277824f30349ea3c0f47472f81e8897ba56eddad800"
