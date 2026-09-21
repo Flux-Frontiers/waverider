@@ -11,13 +11,13 @@
 #   poetry install --with benchmarks             core + scientific computing for benchmarks
 #   poetry install --with viz                    core + voxel/Streamlit visualization
 #   poetry install --with benchmarks,viz         full install
-#   poetry install --extras "kg"                 core + KG integrations (doc-kg, pycode-kg, proteuspy)
+#   poetry install --extras "bench"              core + proteusPy for the canonical benchmarks
 #   poetry install --all-extras --with dev       everything
 #
 # Quick install (pip)
 # -------------------
 #   pip install -e "."                           core only
-#   pip install -e ".[kg]"                       core + KG integrations
+#   pip install -e ".[bench]"                    core + proteusPy for the canonical benchmarks
 #
 # Run tests
 # ---------
@@ -80,9 +80,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-kg = [
-    "doc-kg>=0.27.0",
-    "pycode-kg>=0.28.0",
+# Benchmark-only. Nothing under src/ imports proteusPy -- turtle3D.py is a
+# vendored port and from_proteuspy() is duck-typed -- but the canonical
+# benchmarks in benchmarks/canonical_tests/ import it directly.
+#
+# This is an extra rather than a member of the `benchmarks` Poetry group
+# below so that pip installs can reach it: `pip install -e ".[bench]"`.
+# The group carries the rest of the benchmark toolchain (matplotlib, scipy).
+#
+# doc-kg and pycode-kg used to sit here. They are global tools now: this repo
+# ran their CLIs and never imported them. See FLEET_STANDARDS.md,
+# "Tools are global" (2026-09-20).
+bench = [
     "proteuspy>=0.100.3",
 ]
 
