@@ -59,6 +59,7 @@ classifiers = [
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy>=1.26,<2",
+    "turtlend>=0.1.0",
     # Holographic output, split out of this package at 0.13.0.  Core is
     # numpy + pillow only; the PyVista backend comes in via the viz group.
     # >=0.4.0 unmarked, per the fleet standard: 0.4.0 widened requires-python
@@ -186,17 +187,6 @@ unresolved-import = "ignore"
 # its imports are Unknown, the errors it triggers never fire, and any local
 # suppressions look "unused". Don't fail the build on that.
 unused-type-ignore-comment = "ignore"
-
-[[tool.ty.overrides]]
-# Legacy proteusPy code — numpy.array used as type hints, not worth rewriting.
-include = ["src/waverider/turtle3D.py"]
-
-[tool.ty.overrides.rules]
-invalid-type-form    = "ignore"
-invalid-argument-type = "ignore"
-unresolved-attribute = "ignore"
-no-matching-overload = "ignore"
-call-non-callable    = "ignore"
 
 [[tool.ty.overrides]]
 # Optional fields are None only before fit(); methods are only called post-fit.

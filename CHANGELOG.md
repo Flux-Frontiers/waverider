@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`TurtleND`, `Turtle3D` and `Vector3D` now come from the `turtlend`
+  package** ([PyPI](https://pypi.org/project/turtlend/), BSD-3-Clause, NumPy
+  only). This repo and proteusPy each carried an identical copy of
+  `turtleND.py`, `turtle3D.py` and `vector3D.py`; `turtlend` 0.1.0 is now the
+  single source. The three modules here are re-exports, so
+  `waverider.turtleND`, `waverider.turtle3D`, `waverider.vector3D` and
+  `waverider.TurtleND` keep resolving and no caller changes. `turtlend>=0.1.0`
+  is a new main dependency. Verified before and after: 359 tests pass, and a
+  `ManifoldObserver` field over 80 points plus a 300-step `TurtleND` walk are
+  identical to eight decimal places.
+
+  The `ty` override that silenced five rules for `turtle3D.py` is deleted.
+  `turtlend` fixed the annotations it was hiding, and `ty` passes without it.
+
 - **Fleet dependency floors raised and relocked** (`kgrag_priv` sweep item 46):
   `doc-kg` to `>=0.27.0`, `pycode-kg` to `>=0.28.0`. The three packages released on 2026-09-20 and put
   every consumer's lock behind them within hours; this is the routine
