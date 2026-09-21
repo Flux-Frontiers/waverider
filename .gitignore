@@ -55,7 +55,6 @@ papers/clinical_manifolds/kan_*/sp_*.png
 *.snm
 *.vrb
 .claude/
-.mcp.json
 .vscode/
 
 # CodeKG generated artifacts — databases are transient/reproducible, snapshots are tracked
