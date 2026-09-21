@@ -36,7 +36,6 @@ a Python package for the manipulation and analysis of macromolecules.
 Author: Eric G. Suchanek, PhD
 Affiliation: Flux-Frontiers, https://github.com/Flux-Frontiers
 License: BSD
-Last revised: 2026-03-23 -egs-
 """
 
 __pdoc__ = {"__all__": True}

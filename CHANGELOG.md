@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-09-21
+
 ### Changed
 
 - **`TurtleND`, `Turtle3D` and `Vector3D` now come from the `turtlend`
@@ -33,6 +35,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`kgrag_priv` sweep item 49, tier 1). Nothing here depends on 0.15.0's
   toe-in geometry specifically; this is a currency bump.
 
+- **`doc-kg` and `pycode-kg` are no longer dependencies, and the `kg` extra
+  is renamed `bench`** (`kgrag_priv` sweep item 50, #25). Nothing under `src/`
+  imports either tool; they build this repo's own indices and are installed
+  once, globally. The `bench` extra keeps `proteusPy`, which the canonical
+  benchmarks import.
+
+- **Fleet dependencies current.** The `kg` extra floors `doc-kg` 0.22.0 ->
+  0.26.0, `pycode-kg` 0.23.1 -> 0.27.1 and `proteuspy` 0.100.1 -> 0.100.3,
+  and the lock moves `kgmodule-utils` 0.18.1 -> 0.22.0 to match.
+
 ### Removed
 
 - **`CIFAR10_CLAIM_VERIFICATION.md` and `AGENT_BRIEF_CIFAR10_CLAIM.md`** leave
@@ -50,12 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   carries. A `workflow_dispatch` path takes an existing tag and publishes that
   release's assets, so a release that missed PyPI can be published without
   re-releasing it.
-
-### Changed
-
-- **Fleet dependencies current.** The `kg` extra floors `doc-kg` 0.22.0 ->
-  0.26.0, `pycode-kg` 0.23.1 -> 0.27.1 and `proteuspy` 0.100.1 -> 0.100.3,
-  and the lock moves `kgmodule-utils` 0.18.1 -> 0.22.0 to match.
 
 ## [0.15.0] - 2026-09-18
 

@@ -54,7 +54,6 @@ Part of WaveRider, https://github.com/Flux-Frontiers/waverider
 Author: Eric G. Suchanek, PhD
 Affiliation: Flux-Frontiers
 License: Elastic 2.0
-Last revised: 2026-05-25
 """
 
 from __future__ import annotations

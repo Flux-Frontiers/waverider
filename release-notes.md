@@ -1,20 +1,20 @@
-# Release Notes — v0.15.0
+# Release Notes -- v0.16.0
 
-> Released: 2026-09-18
+> Released: 2026-09-21
 
-Two completed calibration experiments, a negative result worth having, and a silent seven-minute hang fixed.
+The turtle moves out. `TurtleND`, `Turtle3D` and `Vector3D` now come from the `turtlend` package, and WaveRider releases reach PyPI on their own.
 
 ## What changed
 
-**CIFAR-10 has no plateau, and the shipped design rule undershoots.** Experiment 4 (`prescription`) swept 30 widths over 3 trials each and found the optimum sharp rather than broad — only w=48, 57, 59 are statistically indistinguishable from the best — and the design formula the project ships lands at roughly half the empirical optimum. Experiment 5 (`probe-convention`) reran the dimension-probe identity under both aggregation conventions: it reproduces the published number exactly under global-mean aggregation, the one the probe was originally validated with, and fails under per-class-max, the one every `w*` in the ResNet experiments actually uses. The identity holds by construction; the one substantive claim doesn't survive the switch. Both runs are seeded, and estimator provenance — every parameter that went into a given `d*` — now travels with the artifact so a result can be checked without rerunning it.
+**One source for the turtles.** WaveRider and proteusPy each carried an identical copy of `turtleND.py`, `turtle3D.py` and `vector3D.py`. Both now depend on [`turtlend`](https://pypi.org/project/turtlend/) 0.1.0, a BSD-3-Clause package whose only dependency is NumPy. The three modules in this repo are re-exports, so `waverider.turtleND`, `waverider.turtle3D`, `waverider.vector3D` and `waverider.TurtleND` keep resolving and no caller changes. Before and after the switch, the full suite passes the same 359 tests, and a `ManifoldObserver` field over 80 points plus a 300-step `TurtleND` walk produce identical numbers to eight decimal places. The `ty` override that silenced five rules for `turtle3D.py` is gone; `turtlend` fixed the annotations it was hiding. The move also brings three `Turtle3D` fixes that nothing here called: `orient` left `Position` stale, `ResetTape` raised `TypeError`, and `orient_at_residue` raised `AttributeError`.
 
-**A calibration script was hanging for seven minutes at 0% CPU, silently.** `estimator_calibration.py` bootstrapped TensorFlow lazily, after the estimator sweep had already claimed Accelerate's BLAS threadpool — every other canonical benchmark initializes TensorFlow before that happens. The deadlock looked like a slow run, not a bug; the same fit now takes 11 seconds.
+**Releases publish to PyPI.** `release.yml` used to build the wheel and create the GitHub Release and stop there, so every PyPI version was uploaded by hand and 0.15.0 never was. It now carries the fleet's Trusted Publishing job, which uploads the same files the GitHub Release holds, and a `workflow_dispatch` path that publishes an existing tag's assets for a release that missed PyPI.
 
-**Housekeeping.** `--k-pca` defaults are now unified at 25 across the benchmark scripts that had drifted to 25, 30 and 50 independently — the inconsistency was silently producing different CIFAR-10 readings from scripts that were supposed to agree. `--gpu` is renamed `--metal` to match the rest of the fleet's convention, with `--gpu` kept as an alias. `quiltwright` moves to `>=0.14.1`, a currency bump only.
+**Dependencies current.** The `doc-kg` and `pycode-kg` tools left the dependency list under the fleet's tools-are-global rule; the `kg` extra is now `bench` and holds only `proteusPy`, which the canonical benchmarks import. `quiltwright` is floored at 0.15.0 and `ruff` at 0.15. Two CIFAR-10 claim-verification documents move to the private companion repository; they are audit notes, not documentation, and the +8.5 pp result they verify is unchanged.
 
 ## Upgrading
 
-`poetry update quiltwright` or a fresh install. Reproducing a pre-existing artifact recorded at k-pca 30 or 50 needs the flag passed explicitly now that 25 is the default.
+`pip install --upgrade waverider` pulls in `turtlend` automatically. Nothing changes for code that imports the turtles through `waverider`. Code that wants the turtles without the rest of the stack can now `pip install turtlend` and import from it directly.
 
 ---
 
