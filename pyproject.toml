@@ -59,7 +59,7 @@ classifiers = [
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy>=1.26,<2",
-    "turtlend>=0.1.0",
+    "turtlend>=0.1.1",
     # Holographic output, split out of this package at 0.13.0.  Core is
     # numpy + pillow only; the PyVista backend comes in via the viz group.
     # >=0.4.0 unmarked, per the fleet standard: 0.4.0 widened requires-python
@@ -72,7 +72,7 @@ dependencies = [
     # view_cone kwarg this repo passes through to render_quilt() has always
     # meant "use exactly this cone," untouched by 0.14.0's cap in
     # resolve_view_cone(), which this repo never calls.
-    "quiltwright>=0.15.0",
+    "quiltwright>=0.16.0",
     "scikit-learn>=1.3",
     "tensorflow==2.21.0",
     "tf-keras>=2.16.0",
@@ -93,7 +93,7 @@ dependencies = [
 # ran their CLIs and never imported them. See FLEET_STANDARDS.md,
 # "Tools are global" (2026-09-20).
 bench = [
-    "proteuspy>=0.100.3",
+    "proteuspy>=0.100.5",
 ]
 
 [project.urls]
