@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Fleet floors raised to the current releases:** `turtlend` 0.1.0 -> 0.1.1,
   `quiltwright` 0.15.0 -> 0.16.0, and `proteuspy` (the `bench` extra)
-  0.100.3 -> 0.100.4. The lock moves with them. 359 tests pass.
+  0.100.3 -> 0.100.5. The lock moves with them. 359 tests pass.
 
 ## [0.16.0] - 2026-09-21
 

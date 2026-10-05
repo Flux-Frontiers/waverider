@@ -4404,15 +4404,15 @@ files = [
 
 [[package]]
 name = "proteuspy"
-version = "0.100.4"
+version = "0.100.5"
 description = "proteusPy - Protein Structure Analysis and Modeling Tools"
 optional = true
 python-versions = "<3.14,>=3.12"
 groups = ["main"]
 markers = "extra == \"bench\""
 files = [
-    {file = "proteuspy-0.100.4-py3-none-any.whl", hash = "sha256:45b6acfc4078bc9501cb25484d7c5499019ae18b6fc12f3e514bd30ff00dc774"},
-    {file = "proteuspy-0.100.4.tar.gz", hash = "sha256:145368fb0c3c6f215cbfd68eb02e7880aeaa4d98344c253c5ab44bf3a9678a7f"},
+    {file = "proteuspy-0.100.5-py3-none-any.whl", hash = "sha256:f904ed603bf0676de30bf607f74047d54a660cedde05b904cd2e6cbe4759440e"},
+    {file = "proteuspy-0.100.5.tar.gz", hash = "sha256:bac7eb994661d3cd63302906e344504e9cb026a793900fbe66f1d4660c2ba988"},
 ]
 
 [package.dependencies]
@@ -4441,7 +4441,7 @@ seaborn = "0.13.2"
 setuptools = "*"
 tabulate = "*"
 tqdm = "4.67.0"
-turtlend = ">=0.1.0"
+turtlend = ">=0.1.1"
 wheel = "*"
 
 [package.extras]
@@ -7157,4 +7157,4 @@ bench = ["proteuspy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "0f3db44a5ddfc737dc83f2ba1143f436926afe9a92789f07aeeb163bea05f9df"
+content-hash = "9cdad8a8cc985bfbf35966bf502f0e94c40d88c8e623fa38fd84934a2f291c90"
