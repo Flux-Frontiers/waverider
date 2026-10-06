@@ -93,7 +93,7 @@ dependencies = [
 # ran their CLIs and never imported them. See FLEET_STANDARDS.md,
 # "Tools are global" (2026-09-20).
 bench = [
-    "proteuspy>=0.100.5",
+    "proteuspy>=0.100.6",
 ]
 
 [project.urls]

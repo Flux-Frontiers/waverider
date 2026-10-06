@@ -4404,15 +4404,15 @@ files = [
 
 [[package]]
 name = "proteuspy"
-version = "0.100.5"
+version = "0.100.6"
 description = "proteusPy - Protein Structure Analysis and Modeling Tools"
 optional = true
 python-versions = "<3.14,>=3.12"
 groups = ["main"]
 markers = "extra == \"bench\""
 files = [
-    {file = "proteuspy-0.100.5-py3-none-any.whl", hash = "sha256:f904ed603bf0676de30bf607f74047d54a660cedde05b904cd2e6cbe4759440e"},
-    {file = "proteuspy-0.100.5.tar.gz", hash = "sha256:bac7eb994661d3cd63302906e344504e9cb026a793900fbe66f1d4660c2ba988"},
+    {file = "proteuspy-0.100.6-py3-none-any.whl", hash = "sha256:9fdafe46779e4518cb765749d5f709da9aeabd0462fb880e2a5ba874ac3a5d85"},
+    {file = "proteuspy-0.100.6.tar.gz", hash = "sha256:51744d8cdd5fdb344b521debf21d164ec4297c877d7bc5cfc5154e9b06e44374"},
 ]
 
 [package.dependencies]
@@ -4442,6 +4442,7 @@ setuptools = "*"
 tabulate = "*"
 tqdm = "4.67.0"
 turtlend = ">=0.1.1"
+urllib3 = ">=2.8.0"
 wheel = "*"
 
 [package.extras]
@@ -6611,14 +6612,14 @@ dev = ["flake8", "flake8-annotations", "flake8-bandit", "flake8-bugbear", "flake
 
 [[package]]
 name = "urllib3"
-version = "2.7.0"
+version = "2.8.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "dev", "viz"]
 files = [
-    {file = "urllib3-2.7.0-py3-none-any.whl", hash = "sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897"},
-    {file = "urllib3-2.7.0.tar.gz", hash = "sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c"},
+    {file = "urllib3-2.8.0-py3-none-any.whl", hash = "sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"},
+    {file = "urllib3-2.8.0.tar.gz", hash = "sha256:63bf2ead4c879426ebf22ef2a781eeb4aa3b4ae798a0435506f8687fd5bb9b63"},
 ]
 
 [package.extras]
@@ -7157,4 +7158,4 @@ bench = ["proteuspy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "9cdad8a8cc985bfbf35966bf502f0e94c40d88c8e623fa38fd84934a2f291c90"
+content-hash = "09e45efdfa4fe21f8e2bdc3a8744435a8dca914eea5faba9715610644f53f8dd"
