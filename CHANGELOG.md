@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`waverider-voxel-viz --hld --still` now writes a PNG in manifold mode.**
+  The flag was honored by the CT and TVB demos but ignored by the manifold
+  path, which always rendered the turntable video. `render_hld_single()`
+  takes `still=` and the CLI passes it through. Two tests pin the still path
+  on the function and on the dispatch.
+
 ## [0.16.1] - 2026-10-05
 
 ### Changed
