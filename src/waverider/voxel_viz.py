@@ -1076,6 +1076,7 @@ def render_hld_single(
     orbit: float = 360.0,
     shadow: bool = True,
     zoom: float = 1.0,
+    still: bool = False,
 ) -> Path:
     """Render the single-scalar scene as a Hololuminescent Display video.
 
@@ -1108,9 +1109,17 @@ def render_hld_single(
     :param zoom: Extra camera zoom applied after safe-area framing.  1.0 =
         no extra zoom; values > 1 enlarge the subject (useful for portrait
         subjects in the 16:9 frame).
-    :return: Path of the MP4 written.
+    :param still: Write one ``*_hld.png`` at 3840x2160 instead of the
+        video.  No ffmpeg required; ``n_frames``, ``fps`` and ``orbit`` are
+        ignored.
+    :return: Path of the MP4 (or PNG) written.
     """
-    from quiltwright.hld import add_floor_shadow, render_hld_video, style_plotter_for_hld
+    from quiltwright.hld import (
+        add_floor_shadow,
+        render_hld_still,
+        render_hld_video,
+        style_plotter_for_hld,
+    )
 
     _require_viz("render_hld_single")
 
@@ -1131,6 +1140,12 @@ def render_hld_single(
     if shadow:
         add_floor_shadow(p, grid.bounds)
     style_plotter_for_hld(p, zoom=zoom)
+
+    if still:
+        saved = render_hld_still(p, out_path)
+        p.close()
+        print(f"  Saved HLD still {saved}  (3840×2160, white background)")
+        return saved
 
     saved = render_hld_video(p, out_path, n_frames=n_frames, fps=fps, orbit_degrees=orbit)
     p.close()
@@ -2578,6 +2593,7 @@ def main() -> None:
             orbit=args.orbit,
             shadow=not args.no_shadow,
             zoom=args.zoom if args.zoom is not None else 1.0,
+            still=args.still,
         )
     elif args.quilt:
         stem = out_path if out_path else Path(f"manifold_{args.dataset}_{args.scalar}")
