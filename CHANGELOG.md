@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.2] - 2026-10-06
+
 ### Fixed
 
 - **`waverider-voxel-viz --hld --still` now writes a PNG in manifold mode.**
@@ -14,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   path, which always rendered the turntable video. `render_hld_single()`
   takes `still=` and the CLI passes it through. Two tests pin the still path
   on the function and on the dispatch.
+
+### Changed
+
+- **`proteuspy` floor raised to 0.100.6** in the `bench` extra, the current
+  release. The lock moves with it, and `poetry lock` also took `urllib3`
+  2.7.0 to 2.8.0 as a transitive bump. 361 tests pass.
 
 ## [0.16.1] - 2026-10-05
 

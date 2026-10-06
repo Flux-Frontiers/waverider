@@ -1,23 +1,29 @@
-# Release Notes -- v0.16.1
+# Release Notes -- v0.16.2
 
-> Released: 2026-10-05
+> Released: 2026-10-06
 
-A dependency-only release. WaveRider now requires the current releases of
-the fleet packages it builds on, so a fresh install can no longer resolve to
-the older `turtlend` and `quiltwright` that 0.16.0 still allowed.
+A bug-fix release. `waverider-voxel-viz --hld --still` now writes a single PNG
+for manifold datasets, as it already did for the CT and TVB demos, instead of
+silently producing the ten-second turntable video.
 
 ## What changed
 
-**Fleet floors current.** `turtlend` is floored at 0.1.1 and `quiltwright` at
-0.16.0, and the `bench` extra's `proteusPy` at 0.100.5, which itself now
-requires `turtlend` 0.1.1. No code in WaveRider changes and the public API is
-the same; the full suite passes 359 tests against the new versions.
+**`--still` works in manifold mode.** The flag exports one 3840x2160 PNG with
+the HLD white background and needs no ffmpeg. The CT and TVB paths honored it,
+but the manifold path checked only `--hld` and always rendered the video, so
+the flag did nothing and gave no warning. `render_hld_single()` now takes a
+`still` argument and the command line passes it through. Two new tests cover
+the function and the dispatch; the full suite passes 361 tests.
+
+**`proteusPy` floor current.** The `bench` extra now requires `proteusPy`
+0.100.6, the current release. The lock also moved `urllib3` from 2.7.0 to
+2.8.0, a transitive update that changes none of WaveRider's own constraints.
 
 ## Upgrading
 
-`pip install --upgrade waverider` pulls in the newer `turtlend` and
-`quiltwright`. Add `[bench]` to update `proteusPy` too. No code changes are
-needed.
+`pip install --upgrade waverider`. Add `[bench]` to update `proteusPy` too.
+If you were passing `--hld --still` on a manifold dataset and getting a video,
+you will now get a PNG named `<stem>_hld.png`. No other behavior changes.
 
 ---
 
