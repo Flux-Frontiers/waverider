@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.3] - 2026-11-02
+
+### Security
+
+- **quiltwright 0.17.0 is the floor**, the first quiltwright release that
+  floors Pillow at 13.0.0, so a fresh install cannot pull Pillow 12.3.0 and
+  its 41 advisories in through it. The lock moves quiltwright to 0.17.0.
+- **Three lock refreshes** clear every open Dependabot alert: #30 (anyio,
+  fsspec, gitpython, keras, multidict, tornado, virtualenv and more), #31
+  (aiohttp 3.14.5, a dev-only dependency) and #32 (Pillow 13.0.0, Streamlit
+  1.66.1, certifi, filelock, msgpack, nbconvert, setuptools, tornado 6.6).
+
 ## [0.16.2] - 2026-10-06
 
 ### Fixed

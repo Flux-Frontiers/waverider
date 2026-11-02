@@ -5066,20 +5066,20 @@ cffi = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "quiltwright"
-version = "0.16.0"
+version = "0.17.0"
 description = "Holographic output for Looking Glass displays: off-axis multi-view quilts from PyVista, POV-Ray or Blender Cycles scenes"
 optional = false
 python-versions = "<3.14,>=3.12"
 groups = ["main"]
 files = [
-    {file = "quiltwright-0.16.0-py3-none-any.whl", hash = "sha256:f00fdbaf68ef8c9d560812e1604108f2a8a656d8d2eb0cf25b84b9ed65867cf2"},
-    {file = "quiltwright-0.16.0.tar.gz", hash = "sha256:b175cac71af722c320ef246a675ab064c34bfeb8839847a59e896af584b09ebe"},
+    {file = "quiltwright-0.17.0-py3-none-any.whl", hash = "sha256:bf293333396c28d5c111f0badfdfbdaf945985b1b12d8b30f98d7e5f60d063a3"},
+    {file = "quiltwright-0.17.0.tar.gz", hash = "sha256:8560f434f49a797eac1cc080f32deeffad85e5755127f496bb4646cabce41b9f"},
 ]
 
 [package.dependencies]
 click = ">=8.1.0,<9"
 numpy = ">=1.26"
-pillow = ">=10.0"
+pillow = ">=13.0.0"
 
 [package.extras]
 heic = ["pillow-heif (>=0.16)"]
@@ -7152,4 +7152,4 @@ bench = ["proteuspy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "09e45efdfa4fe21f8e2bdc3a8744435a8dca914eea5faba9715610644f53f8dd"
+content-hash = "b5babd436d0a49f1450ddd598a1486ea36c8c52978ddec89dcc6a98fce8a11ae"
