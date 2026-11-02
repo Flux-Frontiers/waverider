@@ -68,7 +68,7 @@ from .voxel_viz import (
     voxelize,
 )
 
-__version__ = "0.16.2"
+__version__ = "0.16.3"
 __all__ = [
     # Protein backbone
     "BackboneResidue",

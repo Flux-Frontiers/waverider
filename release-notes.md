@@ -1,29 +1,28 @@
-# Release Notes -- v0.16.2
+# Release Notes -- v0.16.3
 
-> Released: 2026-10-06
+> Released: 2026-11-02
 
-A bug-fix release. `waverider-voxel-viz --hld --still` now writes a single PNG
-for manifold datasets, as it already did for the CT and TVB demos, instead of
-silently producing the ten-second turntable video.
+A security release. WaveRider renders its holograms through quiltwright, and
+a fresh install could resolve an older quiltwright and, through it, Pillow
+12.3.0 and its 41 advisories, some of them critical. WaveRider now floors
+quiltwright at 0.17.0, the first release that floors Pillow at 13.0.0. The
+lock is refreshed past every open Dependabot alert. The geometry, the
+benchmarks and the visualizations do not change.
 
 ## What changed
 
-**`--still` works in manifold mode.** The flag exports one 3840x2160 PNG with
-the HLD white background and needs no ffmpeg. The CT and TVB paths honored it,
-but the manifold path checked only `--hld` and always rendered the video, so
-the flag did nothing and gave no warning. `render_hld_single()` now takes a
-`still` argument and the command line passes it through. Two new tests cover
-the function and the dispatch; the full suite passes 361 tests.
+**quiltwright 0.17.0 is the floor.** The core dependency moves from
+`quiltwright>=0.16.0` to `>=0.17.0`, which carries `pillow>=13.0.0` in its
+own metadata, so every install gets the patched Pillow.
 
-**`proteusPy` floor current.** The `bench` extra now requires `proteusPy`
-0.100.6, the current release. The lock also moved `urllib3` from 2.7.0 to
-2.8.0, a transitive update that changes none of WaveRider's own constraints.
+**The lock is refreshed.** Three refreshes since 0.16.2 move Pillow to
+13.0.0, Streamlit to 1.66.1, tornado to 6.6, and certifi, filelock, msgpack,
+nbconvert, setuptools, aiohttp, anyio, fsspec, gitpython, keras, multidict
+and virtualenv to patched releases.
 
 ## Upgrading
 
-`pip install --upgrade waverider`. Add `[bench]` to update `proteusPy` too.
-If you were passing `--hld --still` on a manifold dataset and getting a video,
-you will now get a PNG named `<stem>_hld.png`. No other behavior changes.
+`pip install -U waverider`. No API changes.
 
 ---
 
