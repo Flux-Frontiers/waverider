@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **An Art Techno logo.** The manifold: a lattice of vias for the ambient
+  space and one true arc through it where the data lies, a die at its
+  middle, with the tagline WIDTH FROM GEOMETRY. `scripts/build_logo.py`
+  draws the mark, a 64 px icon and a banner as SVG under `assets/` and
+  writes the PNGs. The README shows the banner at the top, by absolute raw
+  URL so PyPI shows it too. No code changes.
+
 ## [0.16.3] - 2026-11-02
 
 ### Security
